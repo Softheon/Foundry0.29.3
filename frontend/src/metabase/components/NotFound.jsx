@@ -14,23 +14,13 @@ export default class NotFound extends Component {
           <p className="h4 mb1">
             {t`The page you asked for couldn't be found`}.
           </p>
-          <p className="h4">{t`You might've been tricked by a ninja, but in all likelihood, you were just given a bad link.`}</p>
+         
           <p className="h4 my4">{t`You can always:`}</p>
           <div className="flex align-center">
             <Link to={Urls.question()} className="Button Button--primary">
-              <div className="p1">{t`Ask a new question.`}</div>
+              <div className="p1">{t`Ask a new query.`}</div>
             </Link>
-            <span className="mx2">{t`or`}</span>
-            <a
-              className="Button Button--withIcon"
-              target="_blank"
-              href="https://giphy.com/tv/search/kitten"
-            >
-              <div className="p1 flex align-center relative">
-                <span className="h2">😸</span>
-                <span className="ml1">{t`Take a kitten break.`}</span>
-              </div>
-            </a>
+            
           </div>
         </div>
       </div>

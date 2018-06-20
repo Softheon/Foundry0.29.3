@@ -9,12 +9,12 @@ const GoogleNoAccount = () => (
     <div className="wrapper">
       <div className="Login-wrapper Grid  Grid--full md-Grid--1of2">
         <div className="Grid-cell flex layout-centered text-brand">
-          <LogoIcon className="Logo my4 sm-my0" width={66} height={85} />
+          <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} /> 
         </div>
         <div className="Grid-cell text-centered bordered rounded shadowed p4">
-          <h3 className="mt4 mb2">{t`No Metabase account exists for this Google account.`}</h3>
+          <h3 className="mt4 mb2">{t`No Softheon account exists for this Google account.`}</h3>
           <p className="mb4 ml-auto mr-auto" style={{ maxWidth: 360 }}>
-            {t`You'll need an administrator to create a Metabase account before you can use Google to log in.`}
+            {t`You'll need an administrator to create a Softheon account before you can use Google to log in.`}
           </p>
 
           <BackToLogin />

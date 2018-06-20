@@ -108,11 +108,7 @@ export default class PasswordResetApp extends Component {
             <div className="wrapper">
               <div className="Login-wrapper Grid  Grid--full md-Grid--1of2">
                 <div className="Grid-cell flex layout-centered text-brand">
-                  <LogoIcon
-                    className="Logo my4 sm-my0"
-                    width={66}
-                    height={85}
-                  />
+                  <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} />
                 </div>
                 <div className="Grid-cell bordered rounded shadowed">
                   <h3 className="Login-header Form-offset mt4">{t`Whoops, that's an expired link`}</h3>
@@ -132,7 +128,7 @@ export default class PasswordResetApp extends Component {
         <div className="full-height bg-white flex flex-column flex-full md-layout-centered">
           <div className="Login-wrapper wrapper Grid  Grid--full md-Grid--1of2">
             <div className="Grid-cell flex layout-centered text-brand">
-              <LogoIcon className="Logo my4 sm-my0" width={66} height={85} />
+              <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} />
             </div>
             {!resetSuccess ? (
               <div className="Grid-cell">

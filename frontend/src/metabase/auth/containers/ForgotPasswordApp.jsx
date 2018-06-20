@@ -48,7 +48,7 @@ export default class ForgotPasswordApp extends Component {
       <div className="full-height bg-white flex flex-column flex-full md-layout-centered">
         <div className="Login-wrapper wrapper Grid Grid--full md-Grid--1of2">
           <div className="Grid-cell flex layout-centered text-brand">
-            <LogoIcon className="Logo my4 sm-my0" width={66} height={85} />
+            <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} /> 
           </div>
           {!emailConfigured ? (
             <div className="Grid-cell">
@@ -81,7 +81,7 @@ export default class ForgotPasswordApp extends Component {
                       <input
                         className="Form-input Form-offset full"
                         name="email"
-                        placeholder={t`The email you use for your Metabase account`}
+                        placeholder={t`The email you use for your Softheon account`}
                         type="text"
                         onChange={e => this.setState({ email: e.target.value })}
                         defaultValue={this.state.email}

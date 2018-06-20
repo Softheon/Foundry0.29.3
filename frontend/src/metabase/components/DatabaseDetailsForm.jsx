@@ -14,14 +14,19 @@ function isEmpty(str) {
   return !str || 0 === str.length;
 }
 
+//const AUTH_URL_PREFIXES = {
+//  bigquery:
+//    "https://accounts.google.com/o/oauth2/auth?redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code&scope=https://www.googleapis.com/auth/bigquery&client_id=",
+//    "https://accounts.google.com/o/oauth2/auth?redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code&scope=https://www.googleapis.com/auth/bigquery%20https://www.googleapis.com/auth/drive&client_id=",
+//  googleanalytics:
+ //   "https://accounts.google.com/o/oauth2/auth?access_type=offline&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code&scope=https://www.googleapis.com/auth/analytics.readonly&client_id=",
+//};
 const AUTH_URL_PREFIXES = {
-  bigquery:
-    "https://accounts.google.com/o/oauth2/auth?redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code&scope=https://www.googleapis.com/auth/bigquery&client_id=",
-  bigquery_with_drive:
-    "https://accounts.google.com/o/oauth2/auth?redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code&scope=https://www.googleapis.com/auth/bigquery%20https://www.googleapis.com/auth/drive&client_id=",
-  googleanalytics:
-    "https://accounts.google.com/o/oauth2/auth?access_type=offline&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code&scope=https://www.googleapis.com/auth/analytics.readonly&client_id=",
+  bigquery:'',
+  bigquery_with_drive: '',
+  googleanalystics:'',
 };
+
 
 const ENABLE_API_PREFIXES = {
   googleanalytics:
@@ -240,9 +245,9 @@ export default class DatabaseDetailsForm extends Component {
             </div>
             <div className="px2">
               <h3
-              >{t`This is a large database, so let me choose when Metabase syncs and scans`}</h3>
+              >{t`This is a large database, so let me choose when Softheon syncs and scans`}</h3>
               <div style={{ maxWidth: "40rem" }} className="pt1">
-                {t`By default, Metabase does a lightweight hourly sync and an intensive daily scan of field values.
+                {t`By default, Softheon does a lightweight hourly sync and an intensive daily scan of field values.
                                 If you have a large database, we recommend turning this on and reviewing when and how often the field value scans happen.`}
               </div>
             </div>
@@ -317,7 +322,7 @@ export default class DatabaseDetailsForm extends Component {
         enableAPILink = (
           <div className="flex align-center Form-offset">
             <div className="Grid-cell--top">
-              {t`To use Metabase with this data you must enable API access in the Google Developers Console.`}
+              {t`To use Softheon with this data you must enable API access in the Google Developers Console.`}
             </div>
             <div className="Grid-cell--top ml1">
               {jt`${(

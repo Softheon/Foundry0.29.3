@@ -92,17 +92,7 @@ const SECTIONS = [
       },
     ],
   },
-  {
-    name: t`Updates`,
-    slug: "updates",
-    settings: [
-      {
-        key: "check-for-updates",
-        display_name: t`Check for updates`,
-        type: "boolean",
-      },
-    ],
-  },
+ 
   {
     name: t`Email`,
     slug: "email",
@@ -190,6 +180,12 @@ const SECTIONS = [
       {
         key: "google-auth-auto-create-accounts-domain",
       },
+      {
+        key: "identity-server-uri"
+      },
+      {
+        key:"api-secret"
+      }
     ],
   },
   {
@@ -291,7 +287,7 @@ const SECTIONS = [
       {
         key: "map-tile-server-url",
         display_name: t`Map tile server URL`,
-        note: t`Metabase uses OpenStreetMaps by default.`,
+        note: t`Softheon uses OpenStreetMaps by default.`,
         type: "string",
       },
       {
@@ -354,7 +350,7 @@ const SECTIONS = [
       },
       {
         key: "enable-embedding",
-        display_name: t`Enable Embedding Metabase in other Applications`,
+        display_name: t`Enable Embedding Softheon in other Applications`,
         type: "boolean",
         getHidden: settings => !settings["enable-embedding"],
       },

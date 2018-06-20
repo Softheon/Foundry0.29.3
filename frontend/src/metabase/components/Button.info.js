@@ -4,7 +4,7 @@ import { t } from "c-3po";
 export const component = Button;
 
 export const description = `
-Metabase's main button component.
+Softheon's main button component.
 `;
 
 export const examples = {

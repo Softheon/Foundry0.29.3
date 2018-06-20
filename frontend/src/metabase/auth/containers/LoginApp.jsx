@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { findDOMNode } from "react-dom";
 import { Link } from "react-router";
 import { connect } from "react-redux";
-
+import { CallbackComponent } from "redux-oidc"
 import cx from "classnames";
 import { t } from "c-3po";
 import AuthScene from "../components/AuthScene.jsx";
@@ -13,6 +13,7 @@ import FormMessage from "metabase/components/form/FormMessage.jsx";
 import LogoIcon from "metabase/components/LogoIcon.jsx";
 import Settings from "metabase/lib/settings";
 import Utils from "metabase/lib/utils";
+import userManager from "../userManager";
 
 import * as authActions from "../auth";
 
@@ -34,6 +35,7 @@ export default class LoginApp extends Component {
     this.state = {
       credentials: {},
       valid: false,
+      showPassword: false
     };
   }
 
@@ -92,6 +94,25 @@ export default class LoginApp extends Component {
     this.onChange(fieldName, fieldValue.trim());
   }
 
+  onblurUserNmae(value){
+    if(!Settings.ssoEnabled()){
+      this.setShowPassword(true);
+      return;
+    }
+    if(value){
+      if(value.endsWith("@softheon.com")){
+        userManager.signinRedirect();
+      }
+      else{
+        this.setShowPassword(true);
+      }
+    }
+  }
+
+  setShowPassword(value){
+    this.setState({showPassword :value});
+  }
+
   onChange(fieldName, fieldValue) {
     this.setState({
       credentials: { ...this.state.credentials, [fieldName]: fieldValue },
@@ -115,7 +136,7 @@ export default class LoginApp extends Component {
       <div className="full-height full bg-white flex flex-column flex-full md-layout-centered">
         <div className="Login-wrapper wrapper Grid Grid--full md-Grid--1of2 relative z2">
           <div className="Grid-cell flex layout-centered text-brand">
-            <LogoIcon className="Logo my4 sm-my0" width={66} height={85} />
+            <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} /> 
           </div>
           <div className="Login-content Grid-cell">
             <form
@@ -123,20 +144,9 @@ export default class LoginApp extends Component {
               name="form"
               onSubmit={e => this.formSubmitted(e)}
             >
-              <h3 className="Login-header Form-offset">{t`Sign in to Metabase`}</h3>
+              <h3 className="Login-header Form-offset">{t`Sign in to Softheon`}</h3>
 
-              {Settings.ssoEnabled() && (
-                <div className="mx4 mb4 py3 border-bottom relative">
-                  <SSOLoginButton provider="google" ref="ssoLoginButton" />
-                  {/*<div className="g-signin2 ml1 relative z2" id="g-signin2"></div>*/}
-                  <div
-                    className="mx1 absolute text-centered left right"
-                    style={{ bottom: -8 }}
-                  >
-                    <span className="text-bold px3 py2 text-grey-3 bg-white">{t`OR`}</span>
-                  </div>
-                </div>
-              )}
+             
 
               <FormMessage
                 formError={
@@ -145,7 +155,7 @@ export default class LoginApp extends Component {
               />
 
               <FormField
-                key="username"
+                key="userNameFormField"
                 fieldName="username"
                 formError={loginError}
               >
@@ -169,34 +179,37 @@ export default class LoginApp extends Component {
                      * in auth, set the input type to email so we get built in
                      * validation in modern browsers
                      * */
-                    ldapEnabled ? "text" : "email"
+                    //ldapEnabled ? "text" : "email"
+                    "text"
                   }
+                  onBlur={(e) => this.onBlurUserName(e.target.value)}
                   onChange={e => this.onChange("username", e.target.value)}
                   autoFocus
                 />
                 <span className="Form-charm" />
               </FormField>
 
-              <FormField
-                key="password"
-                fieldName="password"
-                formError={loginError}
-              >
-                <FormLabel
-                  title={t`Password`}
-                  fieldName={"password"}
+              {this.state.showPassword &&
+                <FormField
+                  key="password"
+                  fieldName="password"
                   formError={loginError}
-                />
-                <input
-                  className="Form-input Form-offset full py1"
-                  name="password"
-                  placeholder="Shh..."
-                  type="password"
-                  onChange={e => this.onChange("password", e.target.value)}
-                />
-                <span className="Form-charm" />
-              </FormField>
-
+                >
+                  <FormLabel
+                    title={t`Password`}
+                    fieldName={"password"}
+                    formError={loginError}
+                  />
+                  <input
+                    className="Form-input Form-offset full py1"
+                    name="password"
+                    placeholder="Shh..."
+                    type="password"
+                    onChange={e => this.onChange("password", e.target.value)}
+                  />
+                  <span className="Form-charm" />
+                </FormField>
+              }
               <div className="Form-field">
                 <ul className="Form-offset">
                   <input name="remember" type="checkbox" defaultChecked />{" "}

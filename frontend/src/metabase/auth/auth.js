@@ -16,7 +16,7 @@ import { clearGoogleAuthCredentials } from "metabase/lib/auth";
 import { refreshCurrentUser } from "metabase/redux/user";
 
 import { SessionApi } from "metabase/services";
-
+import userManager from "./userManager";
 // login
 export const LOGIN = "metabase/auth/LOGIN";
 export const login = createThunkAction(LOGIN, function(
@@ -73,7 +73,7 @@ export const loginGoogle = createThunkAction(LOGIN_GOOGLE, function(
       dispatch(push(redirectUrl || "/"));
     } catch (error) {
       clearGoogleAuthCredentials();
-      // If we see a 428 ("Precondition Required") that means we need to show the "No Metabase account exists for this Google Account" page
+      // If we see a 428 ("Precondition Required") that means we need to show the "No Softheon account exists for this Google Account" page
       if (error.status === 428) {
         dispatch(push("/auth/google_no_mb_account"));
       } else {
@@ -88,7 +88,7 @@ export const LOGOUT = "metabase/auth/LOGOUT";
 export const logout = createThunkAction(LOGOUT, function() {
   return function(dispatch, getState) {
     // TODO: as part of a logout we want to clear out any saved state that we have about anything
-
+    userManager.signoutRedirect();
     let sessionId = MetabaseCookies.setSessionCookie();
     if (sessionId) {
       // actively delete the session

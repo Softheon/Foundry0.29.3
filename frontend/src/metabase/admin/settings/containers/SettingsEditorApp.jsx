@@ -169,16 +169,9 @@ export default class SettingsEditorApp extends Component {
               updateLdapSettings={this.props.updateLdapSettings}
             />
           );
-        } else if (this.props.params.authType === "google") {
+        } else if (this.props.params.authType === "softheon") {
           return (
-            <SettingsSingleSignOnForm
-              elements={
-                _.findWhere(this.props.sections, {
-                  slug: slugify("Single Sign-On"),
-                }).settings
-              }
-              updateSetting={this.updateSetting}
-            />
+            <div>Hi ! </div>
           );
         }
       } else {

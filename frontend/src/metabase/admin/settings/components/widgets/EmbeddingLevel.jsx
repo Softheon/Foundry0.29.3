@@ -5,8 +5,8 @@ import SettingsInput from "./SettingInput";
 import cx from "classnames";
 
 const PREMIUM_EMBEDDING_STORE_URL =
-  "https://store.metabase.com/product/embedding";
-const PREMIUM_EMBEDDING_SETTING_KEY = "premium-embedding-token";
+  "";
+const PREMIUM_EMBEDDING_SETTING_KEY = "";
 
 class PremiumTokenInput extends Component {
   state = {
@@ -28,20 +28,6 @@ class PremiumTokenInput extends Component {
 
     return (
       <div className="mb3">
-        <h3 className={cx("mb1", { "text-danger": errorMessage })}>
-          {message}
-        </h3>
-        <SettingsInput
-          onChange={async value => {
-            try {
-              await onChangeSetting(PREMIUM_EMBEDDING_SETTING_KEY, value);
-            } catch (error) {
-              this.setState({ errorMessage: error.data });
-            }
-          }}
-          setting={{ value: token }}
-          autoFocus={!token}
-        />
       </div>
     );
   }
@@ -49,20 +35,7 @@ class PremiumTokenInput extends Component {
 
 const PremiumExplanation = ({ showEnterScreen }) => (
   <div>
-    <h2>Premium embedding</h2>
-    <p className="mt1">{t`Premium embedding lets you disable "Powered by Metabase" on your embedded dashboards and questions.`}</p>
-    <div className="mt2 mb3">
-      <a
-        className="link mx1"
-        href={PREMIUM_EMBEDDING_STORE_URL}
-        target="_blank"
-      >
-        {t`Buy a token`}
-      </a>
-      <a className="link mx1" onClick={showEnterScreen}>
-        {t`Enter a token`}
-      </a>
-    </div>
+    
   </div>
 );
 
@@ -102,17 +75,6 @@ class EmbeddingLevel extends Component {
         className="bordered rounded full text-centered"
         style={{ maxWidth: 820 }}
       >
-        <ReactRetinaImage
-          src={`app/assets/img/${
-            premiumToken ? "premium_embed_added" : "premium_embed"
-          }.png`}
-        />
-        <div className="flex align-center justify-center">
-          <PremiumEmbedding
-            token={premiumToken}
-            onChangeSetting={onChangeSetting}
-          />
-        </div>
       </div>
     );
   }
