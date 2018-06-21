@@ -25,7 +25,7 @@
 
 (defsetting site-name
   (tru "The name used for this instance of Softheon Foundry.")
-  :default "Metabase")
+  :default "Softheon")
 
 (defsetting site-uuid
   ;; Don't i18n this docstring because it's not user-facing! :)
@@ -51,7 +51,7 @@
                                                (not (s/starts-with? new-value "http")) (str "http://"))))))
 
 (defsetting site-locale
-  (str  (tru "The default language for this Metabase instance.")
+  (str  (tru "The default language for this Softheon instance.")
         (tru "This only applies to emails, Pulses, etc. Users'' browsers will specify the language used in the user interface."))
   :type    :string
   :setter  (fn [new-value]
@@ -63,7 +63,7 @@
   (tru "The email address users should be referred to if they encounter a problem."))
 
 (defsetting anon-tracking-enabled
-  (tru "Enable the collection of anonymous usage data in order to help Metabase improve.")
+  (tru "Enable the collection of anonymous usage data in order to help Softheon improve.")
   :type   :boolean
   :default true)
 
@@ -106,7 +106,7 @@
   :default (* 60 60 24 100)) ; 100 days
 
 (defsetting query-caching-min-ttl
-  (tru "Metabase will cache all saved questions with an average query execution time longer than this many seconds:")
+  (tru "Softheon will cache all saved questions with an average query execution time longer than this many seconds:")
   :type    :integer
   :default 60)
 

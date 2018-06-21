@@ -94,7 +94,7 @@ export default class LoginApp extends Component {
     this.onChange(fieldName, fieldValue.trim());
   }
 
-  onblurUserNmae(value){
+  onBlurUserName(value){
     if(!Settings.ssoEnabled()){
       this.setShowPassword(true);
       return;
@@ -136,7 +136,7 @@ export default class LoginApp extends Component {
       <div className="full-height full bg-white flex flex-column flex-full md-layout-centered">
         <div className="Login-wrapper wrapper Grid Grid--full md-Grid--1of2 relative z2">
           <div className="Grid-cell flex layout-centered text-brand">
-            <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} /> 
+            <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png"/> 
           </div>
           <div className="Login-content Grid-cell">
             <form
@@ -145,9 +145,6 @@ export default class LoginApp extends Component {
               onSubmit={e => this.formSubmitted(e)}
             >
               <h3 className="Login-header Form-offset">{t`Sign in to Softheon`}</h3>
-
-             
-
               <FormMessage
                 formError={
                   loginError && loginError.data.message ? loginError : null
