@@ -88,7 +88,7 @@ export default class Navbar extends Component {
         <div className="sm-pl4 flex align-center pr1">
           <div className="NavTitle flex align-center">
             <Icon name={"gear"} className="AdminGear" size={22} />
-            <span className="NavItem-text ml1 hide sm-show text-bold">{t`Metabase Admin`}</span>
+            <span className="NavItem-text ml1 hide sm-show text-bold">{t`Softheon Admin`}</span>
           </div>
 
           <ul className="sm-ml4 flex flex-full">
@@ -130,13 +130,7 @@ export default class Navbar extends Component {
       <nav className="Nav sm-py1 relative">
         <ul className="wrapper flex align-center">
           <li>
-            <Link
-              to="/"
-              data-metabase-event={"Navbar;Logo"}
-              className="NavItem cursor-pointer flex align-center"
-            >
-              <LogoIcon className="text-brand my2" />
-            </Link>
+             <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} />
           </li>
         </ul>
       </nav>
@@ -148,14 +142,7 @@ export default class Navbar extends Component {
       <nav className="Nav relative bg-brand">
         <ul className="md-pl4 flex align-center md-pr1">
           <li>
-            <Link
-              to="/"
-              data-metabase-event={"Navbar;Logo"}
-              className="LogoNavItem NavItem cursor-pointer text-white flex align-center transition-background justify-center"
-              activeClassName="NavItem--selected"
-            >
-              <LogoIcon dark={true} />
-            </Link>
+            <img src="https://www.softheon.com/HTMLCache/Resources/Logo-navbar-01.png" width="155" height="40" />
           </li>
           <li className="md-pl3 hide xs-show">
             <MainNavLink
@@ -168,11 +155,12 @@ export default class Navbar extends Component {
           <li className="md-pl1 hide xs-show">
             <MainNavLink
               to="/questions"
-              name={t`Questions`}
+              name={t`Queries`}
               eventName="Questions"
               icon="all"
             />
           </li>
+          {/*
           <li className="md-pl1 hide xs-show">
             <MainNavLink
               to="/pulse"
@@ -181,6 +169,7 @@ export default class Navbar extends Component {
               icon="pulse"
             />
           </li>
+          */}
           <li className="md-pl1 hide xs-show">
             <MainNavLink
               to="/reference/guide"
@@ -196,7 +185,7 @@ export default class Navbar extends Component {
               style={BUTTON_PADDING_STYLES.newQuestion}
               className="NavNewQuestion rounded inline-block bg-white text-brand text-bold cursor-pointer px2 no-decoration transition-all"
             >
-              {t`New Question`}
+              {t`New Query`}
             </Link>
           </li>
           <li className="flex-align-right transition-background hide sm-show">

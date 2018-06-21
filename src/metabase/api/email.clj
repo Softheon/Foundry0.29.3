@@ -102,10 +102,10 @@
   []
   (api/check-superuser)
   (let [response (email/send-message!
-                   :subject      "Metabase Test Email"
+                   :subject      "Softheon Test Email"
                    :recipients   [(:email @api/*current-user*)]
                    :message-type :text
-                   :message      "Your Metabase emails are working — hooray!")]
+                   :message      "Your Softheon emails are working")]
     (if (= :SUCCESS (:error response))
       {:ok true}
       {:status 500

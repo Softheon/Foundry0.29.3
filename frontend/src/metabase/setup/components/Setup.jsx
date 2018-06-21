@@ -42,15 +42,7 @@ export default class Setup extends Component {
     const { tag } = MetabaseSettings.get("version");
     return (
       <div className="SetupHelp bordered border-dashed p2 rounded mb4">
-        {t`If you feel stuck`},{" "}
-        <a
-          className="link"
-          href={
-            "http://www.metabase.com/docs/" + tag + "/setting-up-metabase.html"
-          }
-          target="_blank"
-        >{t`our getting started guide`}</a>{" "}
-        {t`is just a click away.`}
+       
       </div>
     );
   }
@@ -84,7 +76,7 @@ export default class Setup extends Component {
       return (
         <div className="relative full-height flex flex-full layout-centered">
           <div className="wrapper wrapper--trim text-centered">
-            <LogoIcon className="text-brand mb4" width={89} height={118} />
+            <img src="https://www.softheon.com/HTMLCache/Resources/Logo-loginpage-02.png" alt="logo" />
             <div
               className="relative z2 text-centered ml-auto mr-auto"
               style={{ maxWidth: 550 }}
@@ -92,7 +84,7 @@ export default class Setup extends Component {
               <h1
                 style={{ fontSize: "2.2rem" }}
                 className="text-brand"
-              >{t`Welcome to Metabase`}</h1>
+              >{t`Welcome to Softheon`}</h1>
               <p className="text-body">{t`Looks like everything is working. Now let’s get to know you, connect to your data, and start finding you some answers!`}</p>
               <button
                 className="Button Button--primary mt4"
@@ -109,7 +101,7 @@ export default class Setup extends Component {
       return (
         <div>
           <nav className="SetupNav text-brand py2 flex layout-centered">
-            <LogoIcon width={41} height={51} />
+             <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={48} height={48} />
           </nav>
 
           <div className="wrapper wrapper--small">
@@ -144,16 +136,14 @@ export default class Setup extends Component {
                     className="text-light pt2 pb2"
                   >{t`You're all set up!`}</h1>
                   <div className="pt4">
-                    <NewsletterForm
-                      initialEmail={userDetails && userDetails.email}
-                    />
+                    
                   </div>
                   <div className="pt4 pb2">
                     <Link
                       to="/explore"
                       className="Button Button--primary"
                       onClick={this.completeSetup.bind(this)}
-                    >{t`Take me to Metabase`}</Link>
+                    >{t`Take me to Softheon`}</Link>
                   </div>
                 </section>
               ) : null}

@@ -63,6 +63,7 @@ export default class DashCard extends Component {
       isEditingParameter,
       onAddSeries,
       onRemove,
+      onRefresh,
       navigateToNewCardFromDashboard,
       metadata,
     } = this.props;
@@ -152,9 +153,7 @@ export default class DashCard extends Component {
                   this.props.onReplaceAllVisualizationSettings
                 }
               />
-            ) : (
-              undefined
-            )
+            ) : <DashCardRefreshButton onRefresh={onRefresh} />
           }
           onUpdateVisualizationSettings={
             this.props.onUpdateVisualizationSettings
@@ -207,6 +206,12 @@ const DashCardActionButtons = ({
   </span>
 );
 
+const DashCardRefreshButton = ({onRefresh}) =>(
+  <span>  
+           <RefreshButton onRefresh={onRefresh} />  
+       </span>
+)
+
 const ChartSettingsButton = ({ series, onReplaceAllVisualizationSettings }) => (
   <ModalWithTrigger
     wide
@@ -235,6 +240,12 @@ const RemoveButton = ({ onRemove }) => (
   </a>
 );
 
+const RefreshButton = ({onRefresh}) => (
+   <a className="text-grey-2 text-grey-4-hover" data-metabase-event="Dashboard;Refresh Card Modal" onClick={onRefresh} style={HEADER_ACTION_STYLE}> 
+      <Icon name="refresh" size={HEADER_ICON_SIZE} />  
+  </a>
+)
+       
 const AddSeriesButton = ({ series, onAddSeries }) => (
   <a
     data-metabase-event={"Dashboard;Edit Series Modal;open"}

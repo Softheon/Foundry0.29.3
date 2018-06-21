@@ -51,7 +51,7 @@ export default class ArchiveCollectionWidget extends Component {
           <Button warning onClick={this._onArchive}>{t`Archive`}</Button>,
         ]}
       >
-        <div className="px4 pb4">{t`The saved questions in this collection will also be archived.`}</div>
+        <div className="px4 pb4">{t`The saved queries in this collection will also be archived.`}</div>
       </ModalWithTrigger>
     );
   }

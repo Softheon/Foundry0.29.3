@@ -75,7 +75,7 @@ describe("QuestionIndex", () => {
     });
   });
 
-  describe("no saved questions state", () => {
+  describe("no saved queries state", () => {
     const eitherAdminOrNot = [true, false];
 
     it("should be shown if no collections or questions", () => {

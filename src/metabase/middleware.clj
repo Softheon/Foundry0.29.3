@@ -196,7 +196,8 @@
                                             "localhost:8080")]
                             :child-src   ["'self'"
                                           ;; TODO - double check that we actually need this for Google Auth
-                                          "https://accounts.google.com"]
+                                          "https://accounts.google.com"
+                                          "https://login-model.softheon.com"]
                             :style-src   ["'unsafe-inline'"
                                           "'self'"
                                           "fonts.googleapis.com"]
@@ -210,7 +211,8 @@
                             :connect-src ["'self'"
                                           "metabase.us10.list-manage.com"
                                           (when config/is-dev?
-                                            "localhost:8080 ws://localhost:8080")]}]
+                                            "localhost:8080 ws://localhost:8080"
+                                            "https://login-model.softheon.com")]}]
                 (format "%s %s; " (name k) (apply str (interpose " " vs)))))})
 
 (defsetting ssl-certificate-public-key

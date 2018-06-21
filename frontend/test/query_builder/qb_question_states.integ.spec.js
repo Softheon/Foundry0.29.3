@@ -39,7 +39,7 @@ describe("QueryBuilder", () => {
   beforeAll(async () => {
     useSharedAdminLogin();
   });
-  describe("for saved questions", async () => {
+  describe("for saved queries", async () => {
     let savedQuestion = null;
     beforeAll(async () => {
       savedQuestion = await createSavedQuestion(unsavedOrderCountQuestion);

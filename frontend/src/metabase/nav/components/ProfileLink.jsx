@@ -15,6 +15,7 @@ import Logs from "metabase/components/Logs.jsx";
 import UserAvatar from "metabase/components/UserAvatar.jsx";
 import Icon from "metabase/components/Icon.jsx";
 import LogoIcon from "metabase/components/LogoIcon.jsx";
+import userManager from '../../auth/userManager';
 
 export default class ProfileLink extends Component {
   constructor(props, context) {
@@ -136,40 +137,6 @@ export default class ProfileLink extends Component {
                   </li>
                 ) : null}
 
-                <li>
-                  <a
-                    data-metabase-event={"Navbar;Profile Dropdown;Help " + tag}
-                    className="Dropdown-item block text-white no-decoration"
-                    href={"http://www.metabase.com/docs/" + tag}
-                    target="_blank"
-                  >
-                    {t`Help`}
-                  </a>
-                </li>
-
-                {user.is_superuser && (
-                  <li>
-                    <a
-                      data-metabase-event={
-                        "Navbar;Profile Dropdown;Debugging " + tag
-                      }
-                      onClick={this.openModal.bind(this, "logs")}
-                      className="Dropdown-item block text-white no-decoration"
-                    >
-                      {t`Logs`}
-                    </a>
-                  </li>
-                )}
-
-                <li>
-                  <a
-                    data-metabase-event={"Navbar;Profile Dropdown;About " + tag}
-                    onClick={this.openModal.bind(this, "about")}
-                    className="Dropdown-item block text-white no-decoration"
-                  >
-                    {t`About Metabase`}
-                  </a>
-                </li>
 
                 <li className="border-top border-light">
                   <Link
@@ -195,10 +162,10 @@ export default class ProfileLink extends Component {
                 <Icon name={"close"} size={16} />
               </span>
               <div className="text-brand pb2">
-                <LogoIcon width={48} height={48} />
+                <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={48} height={48} />
               </div>
               <h2 style={{ fontSize: "1.75em" }} className="text-dark">
-                {t`Thanks for using`} Metabase!
+                {t`Thanks for using`} Softheon Foundry!
               </h2>
               <div className="pt2">
                 <h3 className="text-dark mb1">

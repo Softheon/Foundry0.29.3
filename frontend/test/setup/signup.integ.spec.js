@@ -129,7 +129,7 @@ describe("setup wizard", () => {
 
     // add h2 database
     chooseSelectOption(app.find("option[value='h2']"));
-    setInputValue(databaseStep.find("input[name='name']"), "Metabase H2");
+    setInputValue(databaseStep.find("input[name='name']"), "Softheon H2");
 
     const nextButton = databaseStep.find('button[children="Next"]');
     expect(nextButton.props().disabled).toBe(true);
@@ -145,7 +145,7 @@ describe("setup wizard", () => {
     expect(preferencesStep.find(".SetupStep--active").length).toBe(1);
   });
 
-  it('should show you scheduling step if you select "Let me choose when Metabase syncs and scans"', async () => {
+  it('should show you scheduling step if you select "Let me choose when Softheon syncs and scans"', async () => {
     // we can conveniently test returning to database settings now as well
     const connectionStep = app.find(DatabaseConnectionStep);
     click(connectionStep.find("h3"));

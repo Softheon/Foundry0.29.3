@@ -219,7 +219,7 @@ const QUERY_BUILDER_STEPS = [
           <a
             className="link"
             target="_blank"
-            href="http://www.metabase.com/docs/latest/users-guide/start.html"
+            href=""
           >{t`User's Guide`}</a>. {t`Have fun exploring your data!`}
         </p>
         <a className="Button Button--primary" onClick={props.onNext}>
@@ -234,7 +234,7 @@ const QUERY_BUILDER_STEPS = [
       <div className="text-centered">
         <h3>{t`Save Your Questions`}!</h3>
         <p
-        >{t`By the way, you can save your questions so you can refer to them later. Saved Questions can also be put into dashboards or Pulses.`}</p>
+        >{t`By the way, you can save your Queries so you can refer to them later. Saved Questions can also be put into dashboards or Pulses.`}</p>
         <a
           className="Button Button--primary"
           onClick={props.onClose}

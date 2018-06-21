@@ -42,7 +42,7 @@ const TableSidebar = ({ database, table, style, className, showXray }) => (
           table.id
         }/questions`}
         icon="all"
-        name={t`Questions about this table`}
+        name={t`Queries about this table`}
       />
       <SidebarItem
         key={`/auto/dashboard/table/${table.id}`}

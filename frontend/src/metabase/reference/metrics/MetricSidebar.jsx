@@ -30,7 +30,7 @@ const MetricSidebar = ({ metric, user, style, className }) => (
         key={`/reference/metrics/${metric.id}/questions`}
         href={`/reference/metrics/${metric.id}/questions`}
         icon="all"
-        name={t`Questions about ${metric.name}`}
+        name={t`Queries about ${metric.name}`}
       />
       <SidebarItem
         key={`/auto/dashboard/metric/${metric.id}`}

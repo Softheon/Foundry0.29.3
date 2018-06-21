@@ -1,6 +1,6 @@
 :root {
-  --admin-nav-bg-color: #8091ab;
-  --admin-nav-bg-color-tint: #9aa7bc;
+  --admin-nav-bg-color: #111111;
+  --admin-nav-bg-color-tint: #BDC3C7C;
   --admin-nav-item-text-color: rgba(255, 255, 255, 0.63);
   --admin-nav-item-text-active-color: #fff;
   --page-header-padding: 2.375rem;
@@ -276,6 +276,7 @@
 
 .SettingsInput {
   width: 400px;
+  margin-bottom: 5px !important;
 }
 
 .SettingsPassword {

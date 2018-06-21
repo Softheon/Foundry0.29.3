@@ -284,7 +284,7 @@ export default class Dashboard extends Component {
                     {t`This dashboard is looking empty.`}
                   </div>
                   <div className="text-normal text-grey-2">
-                    {t`Add a question to start making it useful!`}
+                    {t`Add a query to start making it useful!`}
                   </div>
                 </div>
               ) : (

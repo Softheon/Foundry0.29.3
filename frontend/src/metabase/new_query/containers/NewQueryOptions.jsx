@@ -149,7 +149,7 @@ export class NewQueryOptions extends Component {
                   title={
                     showCustomInsteadOfNewQuestionText
                       ? t`Custom`
-                      : t`New question`
+                      : t`New query`
                   }
                   description={t`Use the simple question builder to see trends, lists of things, or to create your own metrics.`}
                   width={180}

@@ -70,7 +70,7 @@ describe("The Reference Section", () => {
     });
 
     // database list
-    it("should not see saved questions in the database list", async () => {
+    it("should not see saved queries in the database list", async () => {
       let card = await CardApi.create(cardDef);
       const store = await createTestStore();
       store.pushPath("/reference/databases/");

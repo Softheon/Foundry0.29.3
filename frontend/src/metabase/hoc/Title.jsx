@@ -18,7 +18,7 @@ const updateDocumentTitle = _.debounce(() => {
       .map(component => component._documentTitle)
       .filter(title => title)
       .reverse()
-      .join(SEPARATOR);
+      .join(SEPARATOR).replace("Metabase", "Softheon");
   } else {
     // update with the top-most title
     for (let i = componentStack.length - 1; i >= 0; i--) {
@@ -28,7 +28,7 @@ const updateDocumentTitle = _.debounce(() => {
           title += SEPARATOR + BASE_NAME;
         }
         if (document.title !== title) {
-          document.title = title;
+          document.title = title.replace("Metabase", "Softheon");
         }
         break;
       }

@@ -34,16 +34,8 @@ export const CollectionEmptyState = () => (
       className="mb2 sm-mr2 sm-mb0 hide sm-show"
     />
     <div className="flex-full text-centered sm-text-left">
-      <h3>{t`Create collections for your saved questions`}</h3>
-      <div className="mt1">
-        {t`Collections help you organize your questions and allow you to decide who gets to see what.`}{" "}
-        <a
-          href="http://www.metabase.com/docs/latest/administration-guide/06-collections.html"
-          target="_blank"
-        >
-          {t`Learn more`}
-        </a>
-      </div>
+      <h3>{t`Create collections for your saved queries`}</h3>
+      
     </div>
     <Link to="/collections/create" className="mt2 sm-mt0">
       <Button primary>{t`Create a collection`}</Button>

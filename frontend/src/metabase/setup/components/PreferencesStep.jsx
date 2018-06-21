@@ -77,9 +77,7 @@ export default class PreferencesStep extends Component {
               <a
                 className="link"
                 href={
-                  "http://www.metabase.com/docs/" +
-                  tag +
-                  "/information-collection.html"
+                  ""
                 }
                 target="_blank"
               >{t`Here's a full list of everything we track and why.`}</a>
@@ -95,14 +93,14 @@ export default class PreferencesStep extends Component {
                   onChange={this.toggleTracking.bind(this)}
                   className="inline-block"
                 />
-                <span className="ml1">{t`Allow Metabase to anonymously collect usage events`}</span>
+                <span className="ml1">{t`Allow Softheon to anonymously collect usage events`}</span>
               </div>
             </div>
 
             {allowTracking ? (
               <div className="Form-field Form-offset">
                 <ul style={{ listStyle: "disc inside", lineHeight: "200%" }}>
-                  <li>{jt`Metabase ${(
+                  <li>{jt`Softheon ${(
                     <span style={{ fontWeight: "bold" }}>{t`never`}</span>
                   )} collects anything about your data or question results.`}</li>
                   <li>{t`All collection is completely anonymous.`}</li>

@@ -15,7 +15,9 @@ export default class SettingsSingleSignOnForm extends Component {
     (this.onCheckboxClicked = this.onCheckboxClicked.bind(this)),
       (this.saveChanges = this.saveChanges.bind(this)),
       (this.clientIDChanged = this.clientIDChanged.bind(this)),
-      (this.domainChanged = this.domainChanged.bind(this));
+      (this.domainChanged = this.domainChanged.bind(this)),
+      (this.identityUriChanged = this.identityUriChanged.bind(this)),
+      (this.apiSecretChanged = this.apiSecretChanged.bind(this))
   }
 
   static propTypes = {
@@ -28,7 +30,9 @@ export default class SettingsSingleSignOnForm extends Component {
       clientID = _.findWhere(elements, { key: "google-auth-client-id" }),
       domain = _.findWhere(elements, {
         key: "google-auth-auto-create-accounts-domain",
-      });
+      }),
+      identityUri = _.findWhere(elements, { key: "identity-server-uri" }),
+      apiSecret = _.findWhere(elements, { key: "api-secret" });
 
     this.setState({
       clientID: clientID,
@@ -36,6 +40,10 @@ export default class SettingsSingleSignOnForm extends Component {
       clientIDValue: clientID.value,
       domainValue: domain.value,
       recentlySaved: false,
+      identityUri: identityUri,
+      identityUriValue: identityUri.value,
+      apiSecret: apiSecret,
+      apiSecretValue: apiSecret.value
     });
   }
 
@@ -92,7 +100,7 @@ export default class SettingsSingleSignOnForm extends Component {
   }
 
   saveChanges() {
-    let { clientID, clientIDValue, domain, domainValue } = this.state;
+    let { clientID, clientIDValue, domain, domainValue,identityUri, identityUriValue, apiSecret, apiSecretValue } = this.state;
 
     if (this.clientIDChanged()) {
       this.props.updateSetting(clientID, clientIDValue);
@@ -120,7 +128,7 @@ export default class SettingsSingleSignOnForm extends Component {
         identityUri:{
           value: identityUriValue,
         },
-        recentlySaved:true;
+        recentlySaved:true,
       })
     }
 

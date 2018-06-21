@@ -9,7 +9,8 @@ import promise from "redux-promise";
 import logger from "redux-logger";
 
 import { DEBUG } from "metabase/lib/debug";
-
+import userManager from './auth/userManager';
+import createOidcMiddleware, { createUserManager, loadUser } from 'redux-oidc';
 /**
  * Provides the same functionality as redux-thunk and augments the dispatch method with
  * `dispatch.action(type, payload)` which creates an action that adheres to Flux Standard Action format.
@@ -109,6 +110,7 @@ export function getStore(reducers, history, intialState, enhancer = a => a) {
     promise,
     ...(DEBUG ? [logger] : []),
     ...(history ? [routerMiddleware(history)] : []),
+    createOidcMiddleware(userManager, () => true, false, '/auth/callback')
   ];
 
   return createStore(

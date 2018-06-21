@@ -22,6 +22,8 @@
                  [org.clojure/math.numeric-tower "0.0.4"]             ; math functions like `ceil`
                  [org.clojure/tools.logging "0.3.1"]                  ; logging framework
                  [org.clojure/tools.namespace "0.2.10"]
+                 [org.clojure/data.json "0.2.6"]
+                 [base64-clj "0.1.1"]
                  [amalloy/ring-buffer "1.2.1"
                   :exclusions [org.clojure/clojure
                                org.clojure/clojurescript]]            ; fixed length queue implementation, used in log buffering

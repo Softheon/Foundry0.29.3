@@ -90,8 +90,8 @@
   RECIPIENTS is a sequence of email addresses; MESSAGE-TYPE must be either `:text` or `:html` or `:attachments`.
 
      (email/send-message!
-       :subject      \"[Metabase] Password Reset Request\"
-       :recipients   [\"cam@metabase.com\"]
+       :subject      \"[Softheon] Password Reset Request\"
+       :recipients   [\"cam@softheon.com\"]
        :message-type :text
        :message      \"How are you today?\")
 

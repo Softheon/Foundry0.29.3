@@ -31,7 +31,7 @@ import * as metadataActions from "metabase/redux/metadata";
 
 const emptyStateData = table => {
   return {
-    message: t`Questions about this table will appear here as they're added`,
+    message: t`Queries about this table will appear here as they're added`,
     icon: "all",
     action: t`Ask a question`,
     link: getQuestionUrl({
@@ -68,7 +68,7 @@ export default class TableQuestions extends Component {
     return (
       <div style={style} className="full">
         <ReferenceHeader
-          name={t`Questions about ${this.props.table.display_name}`}
+          name={t`Queries about ${this.props.table.display_name}`}
           type="questions"
           headerIcon="table2"
         />

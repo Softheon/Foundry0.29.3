@@ -21,7 +21,7 @@ if (window.MetabaseLocalization) {
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { Oidcrovider} from 'redux-oidc';
+import { OidcProvider } from 'redux-oidc';
 
 import MetabaseAnalytics, {
   registerAnalyticsClickListener,

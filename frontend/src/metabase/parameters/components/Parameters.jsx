@@ -79,7 +79,7 @@ export default class Parameters extends Component {
       if (search !== window.location.search) {
         history.replaceState(
           null,
-          document.title,
+          document.title.replace("Metabase", "Softheon"),
           window.location.pathname + search + window.location.hash,
         );
       }

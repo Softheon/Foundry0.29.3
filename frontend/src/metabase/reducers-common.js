@@ -10,7 +10,7 @@ import metadata from "metabase/redux/metadata";
 import requests from "metabase/redux/requests";
 import settings from "metabase/redux/settings";
 import undo from "metabase/redux/undo";
-
+import openid from "metabase/redux/openid";
 /* user */
 import { currentUser } from "metabase/redux/user";
 
@@ -23,4 +23,5 @@ export default {
   requests,
   settings,
   undo,
+  openid
 };
