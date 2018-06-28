@@ -38,3 +38,15 @@
           :subname (str "//" host ":" port "/" db)
           :delimiters "`"}
          (dissoc opts :host :port :db)))
+
+(defn sqlserver
+  "Create a database specification for a mysql database. Opts should include keys
+  for :db, :user, and :password. You can also optionally set host and port."
+  [{:keys [host port db]
+    :or {host "localhost", port 1443, db ""}
+    :as opts}]
+  (merge {:classname "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+          :subprotocol "sqlserver"
+          :subname (str "//" host ":" port "/" db)
+          }
+         (dissoc opts :host :port :db)))

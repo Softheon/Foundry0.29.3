@@ -120,7 +120,8 @@
         ;; 2) Need to wrap the column names in quotes because Postgres automatically lowercases unquoted identifiers
         quote-char (case (config/config-kw :mb-db-type)
                      :postgres \"
-                     :mysql    \`)
+                     :mysql    \`
+                     :sqlserver \")
         cols       (for [k ks]
                      (str quote-char (name (case k
                                              :sizex :sizeX

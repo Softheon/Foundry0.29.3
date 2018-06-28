@@ -49,7 +49,8 @@
     (merge {:type     (case (keyword protocol)
                         :postgres   :postgres
                         :postgresql :postgres
-                        :mysql      :mysql)
+                        :mysql      :mysql
+                        :sqlserver  :sqlserver)
             :user     user
             :password pass
             :host     host
@@ -87,6 +88,12 @@
                           :port     (config/config-int :mb-db-port)
                           :dbname   (config/config-str :mb-db-dbname)
                           :user     (config/config-str :mb-db-user)
+                          :password (config/config-str :mb-db-pass)}
+               :sqlserver{:type     :sqlserver
+                          :host     (config/config-str :mb-db-host)
+                          :port     (config/config-str :mb-db-port)
+                          :dbname   (config/config-str :mb-db-dbname)
+                          :user     (config/config-str :mb-db-user)
                           :password (config/config-str :mb-db-pass)}))))
 
 (defn jdbc-details
@@ -99,7 +106,8 @@
    (case (:type db-details)
      :h2       (dbspec/h2       db-details)
      :mysql    (dbspec/mysql    (assoc db-details :db (:dbname db-details)))
-     :postgres (dbspec/postgres (assoc db-details :db (:dbname db-details))))))
+     :postgres (dbspec/postgres (assoc db-details :db (:dbname db-details)))
+     :sqlserver (dbspec/sqlserver (assoc db-details :db (:dbname db-details))))))
 
 
 ;;; +----------------------------------------------------------------------------------------------------------------+
@@ -305,7 +313,8 @@
   (db/set-default-quoting-style! (case (db-type)
                                    :postgres :ansi
                                    :h2       :h2
-                                   :mysql    :mysql))
+                                   :mysql    :mysql
+                                   :sqlserver :sqlserver))
   (db/set-default-db-connection! (connection-pool spec)))
 
 
