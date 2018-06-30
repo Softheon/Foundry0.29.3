@@ -174,7 +174,11 @@
     (wait-for-migration-lock-to-be-cleared liquibase)
     (log/info "Migration lock is cleared. Running migrations...")
     (doseq [line (migrations-lines liquibase)]
-      (jdbc/execute! conn [line]))))
+      (log/info line)
+      (if (= "GO" line)
+        (log/info "ignored GO")
+        (jdbc/execute! conn [line]))
+      )))
 
 (defn- force-migrate-up-if-needed!
   "Force migrating up. This does two things differently from `migrate-up-if-needed!`:

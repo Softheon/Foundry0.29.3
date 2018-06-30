@@ -47,8 +47,9 @@
   [ran-migrations migration-var]
   (let [migration-name (name (:name (meta migration-var)))]
     (when-not (contains? ran-migrations migration-name)
-      (log/info (format "Running data migration '%s'..." migration-name))
+      (log/info (str migration-name "Starting"))
       (@migration-var)
+      (log/info (str migration-name "Ending"))
       (db/insert! DataMigrations
         :id        migration-name
         :timestamp (u/new-sql-timestamp)))))
@@ -112,9 +113,11 @@
 ;; Populate the initial value for the `:admin-email` setting for anyone who hasn't done it yet
 (defmigration ^{:author "agilliland", :added "0.13.0"} set-admin-email
   (when-not (setting/get :admin-email)
+    (log/info "email query before")
     (when-let [email (db/select-one-field :email 'User
                        :is_superuser true
                        :is_active    true)]
+      (log/info "before (setting/set! :admin-email email))))")
       (setting/set! :admin-email email))))
 
 
@@ -312,7 +315,7 @@
   ;; migrate the most recent 100,000 entries. Make sure the DB doesn't get snippy by trying to insert too many records
   ;; at once. Divide the INSERT statements into chunks of 1,000
   (binding [query-execution/*validate-context* false]
-    (doseq [chunk (partition-all 1000 (db/select LegacyQueryExecution {:limit 100000, :order-by [[:id :desc]]}))]
+    (doseq [chunk (partition-all 1000 (db/select LegacyQueryExecution {:top 100000, :order-by [[:id :desc]]}))]
       (db/insert-many! QueryExecution
         (for [query-execution chunk]
           (LegacyQueryExecution->QueryExecution query-execution))))))

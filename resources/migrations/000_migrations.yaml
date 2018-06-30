@@ -1736,6 +1736,11 @@ databaseChangeLog:
                     nullable: false
         - sql:
             sql: update metabase_database set is_sample = true where name = 'Sample Dataset'
+        - modifySql:
+            dbms: mssql
+            replace:
+              replace: true
+              with: 1
   - changeSet:
       id: 18
       author: camsaul
@@ -2228,6 +2233,11 @@ databaseChangeLog:
                     nullable: false
         - sql:
             sql: update metabase_database set is_full_sync = true
+        - modifySql:
+            dbms: mssql 
+            replace:
+              replace: true
+              with: 1
   - changeSet:
       id: 27
       author: agilliland
@@ -3071,6 +3081,18 @@ databaseChangeLog:
         - dropForeignKeyConstraint:
             baseTableName: query_queryexecution
             constraintName: fk_queryexecution_ref_query_id
+        - dropIndex:
+            indexName: idx_queryexecution_query_id
+            tableName: query_queryexecution
+        - dropIndex:
+              indexName: idx_dashboard_organization_id
+              tableName: report_dashboard      
+        - dropIndex:
+              indexName: idx_database_organization_id
+              tableName: metabase_database 
+        - dropIndex:
+              indexName: idx_card_organization_id
+              tableName: report_card 
         - dropColumn:
             tableName: query_queryexecution
             columnName: query_id
@@ -3506,6 +3528,10 @@ databaseChangeLog:
       name: blob.type
       value: bytea
       dbms: postgresql
+  - property:
+      name: blob.type
+      value: varbinary(max)
+      dbms: mssql
   - changeSet:
       id: 52
       author: camsaul
@@ -3672,6 +3698,14 @@ databaseChangeLog:
                   name: result_metadata
                   type: text
                   remarks: 'Serialized JSON containing metadata about the result columns from running the query.'
+  - property:
+        name: onDeleteCascade
+        value: true
+        dbms: mysql,h2,postgresql
+  - property:
+      name: onDeleteCascade
+      value: false
+      dbms: mssql
   - changeSet:
       id: 58
       author: senior
@@ -3698,7 +3732,7 @@ databaseChangeLog:
                     initiallyDeferred: false
                     nullable: false
                     references: metabase_field(id)
-                    deleteCascade: true
+                    deleteCascade: ${onDeleteCascade}
               - column:
                   name: name
                   type: VARCHAR(254)
@@ -3744,6 +3778,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: field_id
+
   - changeSet:
       id: 59
       author: camsaul
@@ -3840,9 +3875,14 @@ databaseChangeLog:
       validCheckSum: '7:76d06b44a544105c2a613603b8bdf25f'
       changes:
         - sql:
-            sql: drop table if exists computation_job_result cascade
+            sql: drop table if exists computation_job_result 
         - sql:
-            sql: drop table if exists computation_job cascade
+            sql: drop table if exists computation_job 
+        - modifySql:
+            dbms: h2,mysql,postgresql
+            append:
+              value: cascade
+
 # NOTE Atte Keinänen 9/28/17: This was originally in changeset 65 as explained above
   - changeSet:
       id: 67
