@@ -278,7 +278,7 @@
                         :body {"Daily Sad Toucans" true}})]
   (tu/with-model-cleanup [Pulse]
     (et/with-fake-inbox
-      (data/with-db (data/get-or-create-database! defs/sad-mssqltoucan-incidents)
+      (data/with-db (data/get-or-create-database! defs/sad-toucan-incidents)
         (tt/with-temp* [Database  [{database-id :id}]
                         Table     [{table-id :id}    {:db_id database-id}]
                         Card      [{card-id :id}     {:dataset_query {:database database-id

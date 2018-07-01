@@ -9,7 +9,7 @@
 (def ^:private mock-results
   {:row_count 8
    :status    :completed
-   :data      {:rows [[:mssqltoucan      71]
+   :data      {:rows [[:toucan      71]
                       [:bald-eagle  92]
                       [:hummingbird 11]
                       [:owl         10]

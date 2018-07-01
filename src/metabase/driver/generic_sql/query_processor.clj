@@ -3,7 +3,7 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
-            [honeysql
+            [metabase.honeymssql
              [core :as hsql]
              [helpers :as h]]
             [metabase

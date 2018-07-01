@@ -2,7 +2,7 @@
   "Amazon Redshift Driver."
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as str]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase
              [config :as config]
              [driver :as driver]

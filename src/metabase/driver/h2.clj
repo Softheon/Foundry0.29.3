@@ -1,6 +1,6 @@
 (ns metabase.driver.h2
   (:require [clojure.string :as s]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase
              [db :as mdb]
              [driver :as driver]

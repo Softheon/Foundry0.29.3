@@ -24,20 +24,20 @@
 (defn add-sample-dataset!
   "Add the sample dataset as a Metabase DB if it doesn't already exist."
   []
-  (when-not (db/exists? Database :is_sample 1)
+  (when-not (db/exists? Database :is_sample true)
     (try
       (log/info "Loading sample dataset...")
       (sync/sync-database! (db/insert! Database
                              :name      sample-dataset-name
                              :details   (db-details)
                              :engine    :h2
-                             :is_sample 1))
+                             :is_sample true))
       (catch Throwable e
         (log/error (u/format-color 'red "Failed to load sample dataset: %s\n%s" (.getMessage e) (u/pprint-to-str (u/filtered-stacktrace e))))))))
 
 (defn update-sample-dataset-if-needed!
   "Update the path to the sample dataset DB if it exists in case the JAR has moved."
   []
-  (when-let [db (Database :is_sample 1)]
+  (when-let [db (Database :is_sample true)]
     (db/update! Database (:id db)
       :details (db-details))))

@@ -1,25 +1,25 @@
 (ns metabase.util.honeysql-extensions
   (:refer-clojure :exclude [+ - / * mod inc dec cast concat format])
   (:require [clojure.string :as s]
-            (honeysql [core :as hsql]
+            (metabase.honeymssql [core :as hsql]
                       [format :as hformat]
                       helpers))
-  (:import honeysql.format.ToSql))
+  (:import metabase.honeymssql.format.ToSql))
 
-(alter-meta! #'honeysql.core/format assoc :style/indent 1)
-(alter-meta! #'honeysql.core/call   assoc :style/indent 1)
+(alter-meta! #'metabase.honeymssql.core/format assoc :style/indent 1)
+(alter-meta! #'metabase.honeymssql.core/call   assoc :style/indent 1)
 
 ;; for some reason the metadata on these helper functions is wrong which causes Eastwood to fail, see
 ;; https://github.com/jkk/honeysql/issues/123
-(alter-meta! #'honeysql.helpers/merge-left-join assoc
+(alter-meta! #'metabase.honeymssql.helpers/merge-left-join assoc
              :arglists '([m & clauses])
              :style/indent 1)
 
 
 ;; Add an `:h2` quote style that uppercases the identifier
-(let [quote-fns     @(resolve 'honeysql.format/quote-fns)
+(let [quote-fns     @(resolve 'metabase.honeymssql.format/quote-fns)
       ansi-quote-fn (:ansi quote-fns)]
-  (intern 'honeysql.format 'quote-fns
+  (intern 'metabase.honeymssql.format 'quote-fns
           (assoc quote-fns :h2 (comp s/upper-case ansi-quote-fn))))
 
 
@@ -36,8 +36,8 @@
       (str \" s \")
       (str-insert s "\"" idx))))
 
-(let [quote-fns @(resolve 'honeysql.format/quote-fns)]
-  (intern 'honeysql.format 'quote-fns
+(let [quote-fns @(resolve 'metabase.honeymssql.format/quote-fns)]
+  (intern 'metabase.honeymssql.format 'quote-fns
           (assoc quote-fns :crate crate-column-identifier)))
 
 
@@ -57,7 +57,7 @@
 ;; with calculated columns with numeric literals -- some SQL databases can't recognize that a calculated field in a
 ;; SELECT clause and a GROUP BY clause is the same thing if the calculation involves parameters. Go ahead an use the
 ;; old behavior so we can keep our HoneySQL dependency up to date.
-(extend-protocol honeysql.format/ToSql
+(extend-protocol metabase.honeymssql.format/ToSql
   java.lang.Number
   (to-sql [x] (str x)))
 

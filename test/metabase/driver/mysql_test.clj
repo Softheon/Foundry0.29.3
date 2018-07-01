@@ -17,7 +17,7 @@
              [interface :refer [def-database-definition]]]
             [metabase.test.util :as tu]
             [metabase.util :as u]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase.mssqltoucan.db :as db]
             [metabase.mssqltoucan.util.test :as tt])
   (:import metabase.driver.mysql.MySQLDriver))

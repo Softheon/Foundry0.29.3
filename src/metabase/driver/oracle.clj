@@ -3,7 +3,7 @@
              [set :as set]
              [string :as str]]
             [clojure.java.jdbc :as jdbc]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase
              [config :as config]
              [driver :as driver]

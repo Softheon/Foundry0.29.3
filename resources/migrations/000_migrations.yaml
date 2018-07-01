@@ -1609,7 +1609,7 @@ databaseChangeLog:
                     nullable: true
               - column:
                   name: details
-                  type: TEXT
+                  type: varchar
                   constraints:
                     nullable: false
         - createIndex:
@@ -1636,7 +1636,7 @@ databaseChangeLog:
               replace: WITHOUT
               with: WITH
         - modifySql:
-            dbms: mysql,mssql
+            dbms: mysql
             replace:
               replace: details VARCHAR
               with: details TEXT

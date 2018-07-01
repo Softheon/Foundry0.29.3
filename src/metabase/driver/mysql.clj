@@ -7,7 +7,7 @@
             [clojure
              [set :as set]
              [string :as s]]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase
              [driver :as driver]
              [util :as u]]

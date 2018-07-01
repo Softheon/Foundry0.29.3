@@ -1,6 +1,6 @@
 (ns metabase.driver.crate.util
   (:refer-clojure :exclude [second])
-  (:require (honeysql [core :as hsql]
+  (:require (metabase.honeymssql [core :as hsql]
                       [format :as hformat])
             [metabase.driver.generic-sql.query-processor :as qp]
             [metabase.util :as u]

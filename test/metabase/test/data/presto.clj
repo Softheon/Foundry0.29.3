@@ -1,6 +1,6 @@
 (ns metabase.test.data.presto
   (:require [clojure.string :as str]
-            [honeysql
+            [metabase.honeymssql
              [core :as hsql]
              [helpers :as h]]
             [metabase.driver.generic-sql.util.unprepare :as unprepare]

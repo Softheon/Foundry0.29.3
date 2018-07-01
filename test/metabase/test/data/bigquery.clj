@@ -105,7 +105,7 @@
                                             (let [data (TableRow.)]
                                               (doseq [[k v] row-map
                                                       :let [v (cond
-                                                                (instance? honeysql.types.SqlCall v)
+                                                                (instance? metabase.honeymssql.types.SqlCall v)
                                                                 (timestamp-honeysql-form->GoogleDateTime v)
                                                                 :else v)]]
                                                 (.set data (name k) v))

@@ -77,7 +77,7 @@
   [session-id]
   (db/select-one [Session :created_at :user_id (db/qualify User :is_superuser)]
     (mdb/join [Session :user_id] [User :id])
-    (db/qualify User :is_active) 1
+    (db/qualify User :is_active) true
     (db/qualify Session :id) session-id))
 
 (defn- session-age-ms [session]

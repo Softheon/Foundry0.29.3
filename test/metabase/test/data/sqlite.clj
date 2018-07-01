@@ -1,5 +1,5 @@
 (ns metabase.test.data.sqlite
-  (:require [honeysql.core :as hsql]
+  (:require [metabase.honeymssql.core :as hsql]
             [metabase.test.data
              [generic-sql :as generic]
              [interface :as i]]

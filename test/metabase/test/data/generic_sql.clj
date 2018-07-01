@@ -2,7 +2,7 @@
   "Common functionality for various Generic SQL dataset drivers."
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as s]
-            [honeysql
+            [metabase.honeymssql
              [core :as hsql]
              [format :as hformat]
              [helpers :as h]]
@@ -66,7 +66,7 @@
  By default, this qualifies field names with their table name, but otherwise does no other specific
  qualification.")
 
-  ;; TODO - why can't we just use `honeysql.core/format` with the `:quoting` options set to the driver's `quote-style`?
+  ;; TODO - why can't we just use `metabase.honeymssql.core/format` with the `:quoting` options set to the driver's `quote-style`?
   (quote-name ^String [this, ^String nm]
     "*Optional*. Quote a name. Defaults to using double quotes.")
 

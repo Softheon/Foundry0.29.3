@@ -1,7 +1,7 @@
 (ns metabase.driver.generic-sql.util.unprepare
   "Utility functions for converting a prepared statement with `?` into a plain SQL query."
   (:require [clojure.string :as str]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase.util :as u]
             [metabase.util.honeysql-extensions :as hx])
   (:import java.sql.Time

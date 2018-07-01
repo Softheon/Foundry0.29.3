@@ -2,7 +2,7 @@
   "Tests for features/capabilities specific to PostgreSQL driver, such as support for Postgres UUID or enum types."
   (:require [clojure.java.jdbc :as jdbc]
             [expectations :refer :all]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase
              [driver :as driver]
              [query-processor :as qp]
@@ -322,7 +322,7 @@
   []
   (drop-if-exists-and-create-db! "enums_test")
   (jdbc/with-db-connection [conn (sql/connection-details->spec pg-driver (enums-test-db-details))]
-    (doseq [sql ["CREATE TYPE \"bird type\" AS ENUM ('mssqltoucan', 'pigeon', 'turkey');"
+    (doseq [sql ["CREATE TYPE \"bird type\" AS ENUM ('toucan', 'pigeon', 'turkey');"
                  "CREATE TYPE bird_status AS ENUM ('good bird', 'angry bird', 'delicious bird');"
                  (str "CREATE TABLE birds ("
                       "  name varchar PRIMARY KEY NOT NULL,"
@@ -330,7 +330,7 @@
                       "  status bird_status NOT NULL"
                       ");")
                  (str "INSERT INTO birds (\"name\", \"type\", status) VALUES"
-                      "  ('Rasta', 'mssqltoucan', 'good bird'),"
+                      "  ('Rasta', 'toucan', 'good bird'),"
                       "  ('Lucky', 'pigeon', 'angry bird'),"
                       "  ('Theodore', 'turkey', 'delicious bird');")]]
       (jdbc/execute! conn [sql]))))
@@ -379,20 +379,20 @@
 
 ;; check that values for enum types get wrapped in appropriate CAST() fn calls in `->honeysql`
 (expect-with-engine :postgres
-  {:name :cast, :args ["mssqltoucan" (keyword "bird type")]}
+  {:name :cast, :args ["toucan" (keyword "bird type")]}
   (sqlqp/->honeysql pg-driver (qpi/map->Value {:field {:database-type "bird type", :base-type :type/PostgresEnum}
-                                               :value "mssqltoucan"})))
+                                               :value "toucan"})))
 
 ;; End-to-end check: make sure everything works as expected when we run an actual query
 (expect-with-engine :postgres
-  {:rows        [["Rasta" "good bird" "mssqltoucan"]]
+  {:rows        [["Rasta" "good bird" "toucan"]]
    :native_form {:query  (str "SELECT \"public\".\"birds\".\"name\" AS \"name\","
                               " \"public\".\"birds\".\"status\" AS \"status\","
                               " \"public\".\"birds\".\"type\" AS \"type\" "
                               "FROM \"public\".\"birds\" "
                               "WHERE \"public\".\"birds\".\"type\" = CAST(? AS \"bird type\") "
                               "LIMIT 10")
-                 :params ["mssqltoucan"]}}
+                 :params ["toucan"]}}
   (do-with-enums-db
     (fn [db]
       (let [table-id           (db/select-one-id Table :db_id (u/get-id db), :name "birds")
@@ -401,7 +401,7 @@
               {:database (u/get-id db)
                :type     :query
                :query    {:source-table table-id
-                          :filter       [:= [:field-id (u/get-id bird-type-field-id)] "mssqltoucan"]
+                          :filter       [:= [:field-id (u/get-id bird-type-field-id)] "toucan"]
                           :limit        10}})
             :data
             (select-keys [:rows :native_form]))))))

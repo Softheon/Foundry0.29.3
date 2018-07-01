@@ -3,7 +3,7 @@
    used for classification. This fingerprint is saved as a column on the Field it belongs to."
   (:require [clojure.set :as set]
             [clojure.tools.logging :as log]
-            [honeysql.helpers :as h]
+            [metabase.honeymssql.helpers :as h]
             [metabase.models.field :refer [Field]]
             [metabase.sync
              [interface :as i]

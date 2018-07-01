@@ -253,19 +253,19 @@
 ;; make sure that if for some reason the cache gets out of sync it will reset so we can still set new settings values
 ;; (#4178)
 
-(setting/defsetting ^:private mssqltoucan-name
+(setting/defsetting ^:private toucan-name
   "Name for the Metabase Toucan mascot.")
 
 (expect
   "Banana Beak"
   (do
-    ;; clear out any existing values of `mssqltoucan-name`
-    (db/simple-delete! setting/Setting {:key "mssqltoucan-name"})
+    ;; clear out any existing values of `toucan-name`
+    (db/simple-delete! setting/Setting {:key "toucan-name"})
     ;; restore the cache
     ((resolve 'metabase.models.setting/restore-cache-if-needed!))
-    ;; now set a value for the `mssqltoucan-name` setting the wrong way
-    (db/insert! setting/Setting {:key "mssqltoucan-name", :value "Rasta"})
+    ;; now set a value for the `toucan-name` setting the wrong way
+    (db/insert! setting/Setting {:key "toucan-name", :value "Rasta"})
     ;; ok, now try to set the Setting the correct way
-    (mssqltoucan-name "Banana Beak")
+    (toucan-name "Banana Beak")
     ;; ok, make sure the setting was set
-    (mssqltoucan-name)))
+    (toucan-name)))

@@ -29,6 +29,6 @@
 ;;; DELETE /api/label/:id -- delete a label
 (expect
   nil
-  (tt/with-temp Label [{label-id :id} {:name "This will make the mssqltoucan very cross!"}]
+  (tt/with-temp Label [{label-id :id} {:name "This will make the toucan very cross!"}]
     ((user->client :rasta) :delete 204, (str "label/" label-id))
     (Label label-id)))

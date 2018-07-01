@@ -145,7 +145,7 @@
 
 ;;; Tests for slugify
 (expect "toucanfest_2017"               (slugify "ToucanFest 2017"))
-(expect "cam_s_awesome_toucan_emporium" (slugify "Cam's awesome mssqltoucan emporium"))
+(expect "cam_s_awesome_toucan_emporium" (slugify "Cam's awesome toucan emporium"))
 (expect "frequently_used_cards"         (slugify "Frequently-Used Cards"))
 ;; check that diactrics get removed
 (expect "cam_saul_s_toucannery"         (slugify "Cam Saül's Toucannery"))

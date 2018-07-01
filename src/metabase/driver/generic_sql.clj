@@ -6,7 +6,7 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.math.numeric-tower :as math]
             [clojure.tools.logging :as log]
-            [honeysql
+            [metabase.honeymssql
              [core :as hsql]
              [format :as hformat]]
             [metabase

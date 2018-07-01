@@ -2,10 +2,10 @@
   "The `defmodel` macro, used to define Toucan models, and
    the `IModel` protocol and default implementations, which implement Toucan model functionality."
   (:require [clojure.walk :refer [postwalk]]
-            [honeysql.format :as hformat]
+            [metabase.honeymssql.format :as hformat]
             [metabase.mssqltoucan.util :as u])
   (:import clojure.lang.IFn
-           honeysql.format.ToSql))
+           metabase.honeymssql.format.ToSql))
 
 ;;;                                                   Configuration
 ;;; ==================================================================================================================
@@ -370,7 +370,7 @@
    (apply (resolve 'metabase.mssqltoucan.db/select-one) model k v more)))
 
 (def ^:const ^{:arglists '([model])} ^Boolean model?
-  "Is model a valid metabase.mssqltoucan model?"
+  "Is model a valid toucan model?"
   ::model)
 
 ;; We use the same record type (e.g., `DatabaseInstance`) for both the "model" (e.g., `Database`) and objects fetched
@@ -501,7 +501,7 @@
          ~@(mapcat identity (merge-with (fn [this that] `(merge ~this ~that))
                               `{metabase.mssqltoucan.models/IModel         metabase.mssqltoucan.models/IModelDefaults
                                 metabase.mssqltoucan.models/ICreateFromMap {:map-> (fn [~'_ & args#] (apply ~map->instance args#))}
-                                honeysql.format/ToSql        {:to-sql (comp hformat/to-sql keyword :table)}}
+                                metabase.honeymssql.format/ToSql        {:to-sql (comp hformat/to-sql keyword :table)}}
                               (method-forms-map extend-forms))))
 
        (def ~(vary-meta model assoc

@@ -121,9 +121,9 @@
 
 (expect
   {:query  "SELECT * FROM bird_facts WHERE toucans_are_cool = TRUE AND bird_type = ?"
-   :params ["mssqltoucan"]}
+   :params ["toucan"]}
   (substitute "SELECT * FROM bird_facts WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = {{bird_type}}"
-    {:toucans_are_cool true, :bird_type "mssqltoucan"}))
+    {:toucans_are_cool true, :bird_type "toucan"}))
 
 (expect Exception
   (substitute "SELECT * FROM bird_facts WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = {{bird_type}}"
@@ -162,17 +162,17 @@
     {:toucans_are_cool_2 true}))
 
 (expect
-  {:query  "SELECT * FROM bird_facts WHERE toucans_are_cool = TRUE AND bird_type = 'mssqltoucan'"
+  {:query  "SELECT * FROM bird_facts WHERE toucans_are_cool = TRUE AND bird_type = 'toucan'"
    :params []}
-  (substitute "SELECT * FROM bird_facts [[WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = 'mssqltoucan']]"
+  (substitute "SELECT * FROM bird_facts [[WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = 'toucan']]"
     {:toucans_are_cool true}))
 
 ;; Two parameters in an optional
 (expect
   {:query  "SELECT * FROM bird_facts WHERE toucans_are_cool = TRUE AND bird_type = ?"
-   :params ["mssqltoucan"]}
+   :params ["toucan"]}
   (substitute "SELECT * FROM bird_facts [[WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = {{bird_type}}]]"
-    {:toucans_are_cool true, :bird_type "mssqltoucan"}))
+    {:toucans_are_cool true, :bird_type "toucan"}))
 
 (expect
   {:query  "SELECT * FROM bird_facts"
@@ -249,9 +249,9 @@
 
 (expect
   {:query  "SELECT * FROM toucanneries WHERE bird_type = ? AND num_toucans > 2 AND total_birds > 5"
-   :params ["mssqltoucan"]}
+   :params ["toucan"]}
   (substitute "SELECT * FROM toucanneries WHERE bird_type = {{bird_type}} [[AND num_toucans > {{num_toucans}}]] [[AND total_birds > {{total_birds}}]]"
-    {:bird_type "mssqltoucan", :num_toucans 2, :total_birds 5}))
+    {:bird_type "toucan", :num_toucans 2, :total_birds 5}))
 
 (expect
   Exception

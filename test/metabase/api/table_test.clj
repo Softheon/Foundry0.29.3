@@ -636,7 +636,7 @@
 ;; Ensure unix timestamps show date binning options, not numeric binning options
 (expect
   (var-get #'table-api/datetime-dimension-indexes)
-  (data/dataset sad-mssqltoucan-incidents
+  (data/dataset sad-toucan-incidents
     (let [response ((user->client :rasta) :get 200 (format "table/%d/query_metadata" (data/id :incidents)))]
       (dimension-options-for-field response "timestamp"))))
 

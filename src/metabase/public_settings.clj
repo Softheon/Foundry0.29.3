@@ -164,7 +164,7 @@
    :google_auth_client_id (setting/get :google-auth-client-id)
    :identity_server_uri   (setting/get :identity-server-uri)
    :api_secret            (setting/get :api-secret)
-   :has_sample_dataset    (db/exists? 'Database, :is_sample 1)
+   :has_sample_dataset    (db/exists? 'Database, :is_sample true)
    :hide_embed_branding   (metastore/hide-embed-branding?)
    :ldap_configured       ((resolve 'metabase.integrations.ldap/ldap-configured?))
    :available_locales     (available-locales-with-names)

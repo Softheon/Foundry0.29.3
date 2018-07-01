@@ -4,7 +4,7 @@
              [string :as s]]
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
-            [honeysql
+            [metabase.honeymssql
              [core :as hsql]
              [helpers :as h]]
             [metabase

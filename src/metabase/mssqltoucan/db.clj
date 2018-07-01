@@ -7,7 +7,7 @@
              [walk :as walk]]
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
-            [honeysql
+            [metabase.honeymssql
              [core :as hsql]
              [format :as hformat]
              [helpers :as h]]
@@ -185,7 +185,7 @@
   "The function that JDBC should use to quote identifiers for our database. This is passed as the `:entities` option
   to functions like `jdbc/insert!`."
   []
-  ((quoting-style) @(resolve 'honeysql.format/quote-fns))) ; have to call resolve because it's not public
+  ((quoting-style) @(resolve 'metabase.honeymssql.format/quote-fns))) ; have to call resolve because it's not public
 
 
 (def ^:private ^:dynamic *call-count*
@@ -251,18 +251,18 @@
   "convert limit cause to top cause"
   [honeysql-form]
   (if (contains? honeysql-form :limit)
-     (let[limitValue (:limit honeysql-form)
+    (let [limitValue (:limit honeysql-form)
           selectOldValue (:select honeysql-form)
-          sqlMap (-> honeysql-form 
+          sqlMap (-> honeysql-form
                      (#(dissoc %1 :select))
                      (#(dissoc %1 :limit))
                      (h/modifiers (keyword (str "TOP " limitValue))))]
-       (reduce (fn [new-sql-map value]
-                 (-> new-sql-map
-                     (h/merge-select value)))
-               sqlMap
-               selectOldValue))
-     honeysql-form))
+      (reduce (fn [new-sql-map value]
+                (-> new-sql-map
+                    (h/merge-select value)))
+              sqlMap
+              selectOldValue))
+    honeysql-form))
 
 (defn- boolean?
   "Return true if x is a Boolean"
@@ -273,12 +273,11 @@
   [honeysql-form]
   (reduce (fn [new-sql-map [key val]]
             (if (boolean? val)
-              (assoc new-sql-map key 
-                (case val
-                  true 1
-                  false 0))
-              (assoc new-sql-map key val))
-            )
+              (assoc new-sql-map key
+                     (case val
+                       true 1
+                       false 0))
+              (assoc new-sql-map key val)))
           {}
           honeysql-form))
 
@@ -286,7 +285,6 @@
   "Compile `honeysql-from` to mssql"
   [honeysql-form]
   (-> honeysql-form
-      (replace-boolean-with-number)
       (replace-limit-with-top)))
 
 (defn- honeysql->sql
@@ -308,9 +306,6 @@
       (when *call-count*
         (swap! *call-count* inc)))
     sql+args))
-
-
-
 
 (defn query
   "Compile `honeysql-from` and call `jdbc/query` against the application database. Options are passed along to

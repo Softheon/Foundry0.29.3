@@ -1,6 +1,6 @@
 (ns metabase.driver.sqlserver
   "Driver for SQLServer databases. Uses the official Microsoft JDBC driver under the hood (pre-0.25.0, used jTDS)."
-  (:require [honeysql.core :as hsql]
+  (:require [metabase.honeymssql.core :as hsql]
             [metabase
              [config :as config]
              [driver :as driver]

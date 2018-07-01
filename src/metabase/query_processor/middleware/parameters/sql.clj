@@ -5,7 +5,7 @@
    and is much better-organized and better-documented."
   (:require [clojure.string :as str]
             [clojure.tools.logging :as log]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [instaparse.core :as insta]
             [medley.core :as m]
             [metabase.driver :as driver]
@@ -18,7 +18,7 @@
             [schema.core :as s]
             [metabase.mssqltoucan.db :as db])
   (:import clojure.lang.Keyword
-           honeysql.types.SqlCall
+           metabase.honeymssql.types.SqlCall
            java.text.NumberFormat
            java.util.regex.Pattern
            metabase.models.field.FieldInstance))

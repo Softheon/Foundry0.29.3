@@ -1,6 +1,6 @@
 (ns metabase.driver.hive-like
   (:require [clojure.java.jdbc :as jdbc]
-            [honeysql
+            [metabase.honeymssql
              [core :as hsql]
              [format :as hformat]]
             [metabase.driver.generic-sql.util.unprepare :as unprepare]

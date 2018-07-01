@@ -5,7 +5,7 @@
              [set :as set :refer [rename-keys]]
              [string :as s]]
             [clojure.java.jdbc :as jdbc]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase
              [driver :as driver]
              [util :as u]]

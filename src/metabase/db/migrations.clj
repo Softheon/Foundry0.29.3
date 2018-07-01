@@ -96,7 +96,7 @@
 ;; Since Mongo did *not* support SSL, all existing Mongo DBs should actually have this key set to `false`.
 (defmigration ^{:author "camsaul", :added "0.13.0"} set-mongodb-databases-ssl-false
   (doseq [{:keys [id details]} (db/select [Database :id :details], :engine "mongo")]
-    (db/update! Database id, :details (assoc details :ssl 0))))
+    (db/update! Database id, :details (assoc details :ssl false))))
 
 
 ;; Set default values for :schema in existing tables now that we've added the column
@@ -115,13 +115,8 @@
   (when-not (setting/get :admin-email)
     (log/info "email query before")
     (when-let [email (db/select-one-field :email 'User
-<<<<<<< HEAD
-                       :is_superuser 1
-                       :is_active    1)]
-=======
                        :is_superuser true
                        :is_active    true)]
->>>>>>> ec1c6f1c950aa223aa703900ce319da1189d3e6c
       (log/info "before (setting/set! :admin-email email))))")
       (setting/set! :admin-email email))))
 
@@ -148,16 +143,16 @@
   (when-not (zero? (db/count Field :visibility_type "unset"))
     ;; start by marking all inactive fields as :retired
     (db/update-where! Field {:visibility_type "unset"
-                             :active          0}
+                             :active          false}
       :visibility_type "retired")
     ;; if field is active but preview_display = false then it becomes :details-only
     (db/update-where! Field {:visibility_type "unset"
-                             :active          1
-                             :preview_display 0}
+                             :active          true
+                             :preview_display false}
       :visibility_type "details-only")
     ;; everything else should end up as a :normal field
     (db/update-where! Field {:visibility_type "unset"
-                             :active          1}
+                             :active          true}
       :visibility_type "normal")))
 
 
@@ -408,7 +403,7 @@
                     (class e)
                     (.getMessage e)
                     (u/filtered-stacktrace e)))))
-   (db/select-reducible Card :archived 0)))
+   (db/select-reducible Card :archived false)))
 
 ;; Starting in version 0.29.0 we switched the way we decide which Fields should get FieldValues. Prior to 29, Fields
 ;; would be marked as special type Category if they should have FieldValues. In 29+, the Category special type no
@@ -421,5 +416,5 @@
 (defmigration ^{:author "camsaul", :added "0.29.0"} mark-category-fields-as-list
   (db/update-where! Field {:has_field_values nil
                            :special_type     (mdb/isa :type/Category)
-                           :active           1}
+                           :active           true}
     :has_field_values "list"))

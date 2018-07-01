@@ -1,7 +1,7 @@
 (ns metabase.driver.crate
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase
              [driver :as driver]
              [util :as u]]

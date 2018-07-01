@@ -24,7 +24,7 @@
   [value]
   (cond
     (instance? java.sql.Timestamp value)    (.getTime ^java.sql.Timestamp value)
-    (instance? honeysql.types.SqlRaw value) (+ (Integer/parseInt (s/trim (s/replace (:s value) #"current_timestamp \+" "")))
+    (instance? metabase.honeymssql.types.SqlRaw value) (+ (Integer/parseInt (s/trim (s/replace (:s value) #"current_timestamp \+" "")))
                                                (System/currentTimeMillis))
     :else                                   value))
 

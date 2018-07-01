@@ -8,7 +8,7 @@
              [string :as str]
              [walk :as walk]]
             [clojure.tools.logging :as log]
-            [honeysql
+            [metabase.honeymssql
              [core :as hsql]
              [helpers :as h]]
             [metabase

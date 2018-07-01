@@ -1,7 +1,7 @@
 (ns metabase.query-processor.middleware.permissions
   "Middleware for checking that the current user has permissions to run the current query."
   (:require [clojure.tools.logging :as log]
-            [honeysql.core :as hsql]
+            [metabase.honeymssql.core :as hsql]
             [metabase.api.common :refer [*current-user-id* *current-user-permissions-set*]]
             [metabase.models.permissions :as perms]
             [metabase.util :as u]

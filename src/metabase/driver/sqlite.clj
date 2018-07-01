@@ -3,7 +3,7 @@
              [coerce :as tcoerce]
              [format :as tformat]]
             [clojure.string :as str]
-            [honeysql
+            [metabase.honeymssql
              [core :as hsql]
              [format :as hformat]]
             [metabase
