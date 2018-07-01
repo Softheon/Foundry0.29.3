@@ -11,7 +11,7 @@
              [dashboard :refer [Dashboard]]
              [table :as table]]
             [metabase.query-processor.util :as qputil]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:const activity-feed-topics
   "The `Set` of event topics which are subscribed to for use in the Metabase activity feed."

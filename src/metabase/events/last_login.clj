@@ -5,7 +5,7 @@
              [events :as events]
              [util :as u]]
             [metabase.models.user :refer [User]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:const last-login-topics
   "The `Set` of event topics which are subscribed to for use in last login tracking."

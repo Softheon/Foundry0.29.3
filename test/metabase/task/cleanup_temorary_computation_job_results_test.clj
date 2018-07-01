@@ -7,8 +7,8 @@
              [computation-job :refer [ComputationJob]]
              [computation-job-result :refer [ComputationJobResult]]]
             [metabase.task.cleanup-temporary-computation-job-results :as task]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; check that cleanup-temporary-results deletes :temporary ComputationJobResult objects
 (expect

@@ -9,7 +9,7 @@
              [metric :refer [Metric]]
              [pulse :refer [Pulse]]
              [segment :refer [Segment]]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]))
 

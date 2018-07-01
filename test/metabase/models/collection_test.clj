@@ -4,8 +4,8 @@
              [card :refer [Card]]
              [collection :refer [Collection]]]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; test that we can create a new Collection with valid inputs
 (expect

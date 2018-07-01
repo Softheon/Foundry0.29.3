@@ -10,7 +10,7 @@
              [database :as database]]
             [metabase.query-processor.middleware.fetch-source-query :as fetch-source-query]
             [metabase.test.data :as data]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (def ^:private ^{:arglists '([query])} fetch-source-query (fetch-source-query/fetch-source-query identity))
 

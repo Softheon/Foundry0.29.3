@@ -24,7 +24,7 @@
             [metabase.util.urls :as urls]
             [puppetlabs.i18n.core :refer [tru trs]]
             [throttle.core :as throttle]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defsetting metabot-enabled
   (tru "Enable MetaBot, which lets you search for and view your saved questions directly via Slack.")

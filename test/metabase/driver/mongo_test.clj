@@ -16,7 +16,7 @@
             [metabase.test.data
              [datasets :as datasets]
              [interface :as i]]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import metabase.driver.mongo.MongoDriver
            org.bson.types.ObjectId
            org.joda.time.DateTime))

@@ -23,8 +23,8 @@
              [datasets :as datasets]
              [dataset-definitions :as defs]
              [users :refer [create-users-if-needed! user->client]]]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (defn- rows+cols
   "Return the `:rows` and relevant parts of `:cols` from the RESULTS.

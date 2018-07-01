@@ -15,7 +15,7 @@
             [metabase.test.async :refer [while-with-timeout]]
             [ring.mock.request :as mock]
             [ring.util.response :as resp]
-            [toucan.db :as db]
+            [metabase.mssqltoucan.db :as db]
             [clojure.string :as string]))
 
 ;;  ===========================  TEST wrap-session-id middleware  ===========================

@@ -18,7 +18,7 @@
             [stencil
              [core :as stencil]
              [loader :as stencil-loader]]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import [java.io File FileOutputStream]
            java.util.Arrays))
 

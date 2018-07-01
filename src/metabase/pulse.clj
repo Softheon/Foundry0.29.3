@@ -18,7 +18,7 @@
             [metabase.util.urls :as urls]
             [puppetlabs.i18n.core :refer [tru]]
             [schema.core :as s]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import java.util.TimeZone
            metabase.models.card.CardInstance))
 

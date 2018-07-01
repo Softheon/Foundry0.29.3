@@ -33,8 +33,8 @@
             [metabase.test.data
              [datasets :refer [*driver*]]
              [dataset-definitions :as defs]]
-            [toucan.db :as db]
-            [toucan.util.test :as test])
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as test])
   (:import java.util.TimeZone
            org.joda.time.DateTimeZone
            [org.quartz CronTrigger JobDetail JobKey Scheduler Trigger]))

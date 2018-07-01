@@ -9,8 +9,8 @@
             [metabase.query-processor.middleware.results-metadata :as results-metadata]
             [metabase.test.data :as data]
             [metabase.test.data.users :as users]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (defn- native-query [sql]
   {:database (data/id)

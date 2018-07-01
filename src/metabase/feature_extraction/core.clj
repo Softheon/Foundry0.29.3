@@ -22,7 +22,7 @@
             [metabase.query-processor :as qp]
             [metabase.util :as u]
             [redux.core :as redux]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]]))
 

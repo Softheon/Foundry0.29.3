@@ -6,7 +6,7 @@
             [metabase
              [db :as mdb]
              [util :as u]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]])
   (:import metabase.query_processor.interface.FieldPlaceholder))

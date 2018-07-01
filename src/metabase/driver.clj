@@ -27,7 +27,7 @@
             [puppetlabs.i18n.core :refer [tru]]
             [schema.core :as s]
             [puppetlabs.i18n.core :refer [trs tru]]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import clojure.lang.Keyword
            java.text.SimpleDateFormat
            metabase.models.database.DatabaseInstance

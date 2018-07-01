@@ -1,6 +1,6 @@
 (ns metabase.models.session
   (:require [metabase.util :as u]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]))
 

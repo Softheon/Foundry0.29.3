@@ -3,7 +3,7 @@
             [metabase.models.setting :as setting :refer [defsetting Setting]]
             [metabase.test.util :refer :all]
             [puppetlabs.i18n.core :refer [tru]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 ;; ## TEST SETTINGS DEFINITIONS
 ;; TODO! These don't get loaded by `lein ring server` unless this file is touched
@@ -253,19 +253,19 @@
 ;; make sure that if for some reason the cache gets out of sync it will reset so we can still set new settings values
 ;; (#4178)
 
-(setting/defsetting ^:private toucan-name
+(setting/defsetting ^:private mssqltoucan-name
   "Name for the Metabase Toucan mascot.")
 
 (expect
   "Banana Beak"
   (do
-    ;; clear out any existing values of `toucan-name`
-    (db/simple-delete! setting/Setting {:key "toucan-name"})
+    ;; clear out any existing values of `mssqltoucan-name`
+    (db/simple-delete! setting/Setting {:key "mssqltoucan-name"})
     ;; restore the cache
     ((resolve 'metabase.models.setting/restore-cache-if-needed!))
-    ;; now set a value for the `toucan-name` setting the wrong way
-    (db/insert! setting/Setting {:key "toucan-name", :value "Rasta"})
+    ;; now set a value for the `mssqltoucan-name` setting the wrong way
+    (db/insert! setting/Setting {:key "mssqltoucan-name", :value "Rasta"})
     ;; ok, now try to set the Setting the correct way
-    (toucan-name "Banana Beak")
+    (mssqltoucan-name "Banana Beak")
     ;; ok, make sure the setting was set
-    (toucan-name)))
+    (mssqltoucan-name)))

@@ -17,7 +17,7 @@
             [metabase.util :as u]
             [metabase.util.schema :as su]
             [schema.core :as s]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (s/defn ^:private type-specific-fingerprint :- (s/maybe i/TypeSpecificFingerprint)
   "Return type-specific fingerprint info for FIELD AND. a FieldSample of Values if it has an elligible base type"

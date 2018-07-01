@@ -7,7 +7,7 @@
              [table :refer [Table]]]
             [metabase.test.data :as data]
             [metabase.util :as u]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;;; ------------------------------------------------------------ valid-object-path? ------------------------------------------------------------
 

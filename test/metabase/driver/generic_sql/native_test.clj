@@ -4,7 +4,7 @@
             [metabase.models.database :refer [Database]]
             [metabase.query-processor :as qp]
             [metabase.test.data :refer :all]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:private col-defaults
   {:remapped_from nil, :remapped_to nil})

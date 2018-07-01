@@ -2,7 +2,7 @@
   (:require [metabase.util :as u]
             [puppetlabs.i18n.core :refer [tru]]
             [schema.core :as s]
-            [toucan.models :as models]))
+            [metabase.mssqltoucan.models :as models]))
 
 (models/defmodel QueryExecution :query_execution)
 

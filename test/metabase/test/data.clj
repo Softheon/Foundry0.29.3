@@ -25,7 +25,7 @@
              h2
              [interface :as i]]
             [schema.core :as s]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import [metabase.test.data.interface DatabaseDefinition TableDefinition]))
 
 (declare get-or-create-database!)
@@ -304,7 +304,7 @@
   Like `with-temp-db`, but takes an unquoted symbol naming a `DatabaseDefinition` rather than the dbef itself.
   DATASET is optionally namespace-qualified; if not, `metabase.test.data.dataset-definitions` is assumed.
 
-     (dataset sad-toucan-incidents
+     (dataset sad-mssqltoucan-incidents
        ...)"
   {:style/indent 1}
   [dataset & body]
@@ -312,12 +312,12 @@
      ~@body))
 
 (defn- delete-model-instance!
-  "Allows deleting a row by the model instance toucan returns when it's inserted"
+  "Allows deleting a row by the model instance mssqltoucan returns when it's inserted"
   [{:keys [id] :as instance}]
   (db/delete! (-> instance name symbol) :id id))
 
 (defn call-with-data
-  "Takes a thunk `DATA-LOAD-FN` that returns a seq of toucan model instances that will be deleted after `BODY-FN`
+  "Takes a thunk `DATA-LOAD-FN` that returns a seq of mssqltoucan model instances that will be deleted after `BODY-FN`
   finishes"
   [data-load-fn body-fn]
   (let [result-instances (data-load-fn)]

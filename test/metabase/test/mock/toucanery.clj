@@ -16,7 +16,7 @@
                               :database-type "BIGINT"
                               :base-type     :type/BigInteger
                               :special-type  :type/UNIXTimestampMilliseconds}
-                             {:name          "toucan"
+                             {:name          "mssqltoucan"
                               :database-type "OBJECT"
                               :base-type     :type/Dictionary
                               :nested-fields #{{:name          "name"
@@ -144,7 +144,7 @@
                                   :parent_id     true
                                   :special_type  :type/Name})
                           (merge mock-util/field-defaults
-                                 {:name          "toucan"
+                                 {:name          "mssqltoucan"
                                   :display_name  "Toucan"
                                   :database_type "OBJECT"
                                   :base_type     :type/Dictionary})

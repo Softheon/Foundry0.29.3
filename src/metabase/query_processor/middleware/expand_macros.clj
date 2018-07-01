@@ -16,7 +16,7 @@
              [interface :as i]
              [util :as qputil]]
             [metabase.util :as u]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 ;;; +----------------------------------------------------------------------------------------------------------------+
 ;;; |                                                    UTIL FNS                                                    |

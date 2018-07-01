@@ -4,7 +4,7 @@
              [annotate :as annotate]
              [interface :as qpi]]
             [metabase.util :as u]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; make sure when using a source query the right metadata comes back so we are able to do drill-through properly
 (expect

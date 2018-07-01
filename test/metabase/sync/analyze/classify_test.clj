@@ -6,7 +6,7 @@
             [metabase.sync.analyze.classify :as classify]
             [metabase.sync.interface :as i]
             [metabase.util :as u]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; Check that only the right Fields get classified
 (expect

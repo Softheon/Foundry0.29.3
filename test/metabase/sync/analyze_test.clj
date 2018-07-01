@@ -10,8 +10,8 @@
              [sync-metadata :as sync-metadata]]
             [metabase.test.data :as data]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (def ^:private fake-analysis-completion-date
   (u/->Timestamp "2017-08-01"))

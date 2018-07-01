@@ -8,7 +8,7 @@
              [triggers :as triggers]]
             [clojurewerkz.quartzite.schedule.daily-interval :as interval]
             [metabase.task :as task]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:private temporary-result-lifetime (t/days 3))
 

@@ -11,7 +11,7 @@
             [metabase.models.setting :as setting]
             [metabase.util :as u]
             [puppetlabs.i18n.core :refer [trs tru]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]))
 

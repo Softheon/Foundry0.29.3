@@ -1,7 +1,7 @@
 (ns metabase.query-processor.middleware.source-table
   (:require [metabase.models.table :refer [Table]]
             [metabase.query-processor.util :as qputil]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defn- resolve-source-table
   [{{source-table-id :source-table} :query :as expanded-query-dict}]

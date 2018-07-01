@@ -2,7 +2,7 @@
   (:require [metabase.db :as mdb]
             [metabase.query-processor.util :as qputil]
             [metabase.util.honeysql-extensions :as hx]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]))
 

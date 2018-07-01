@@ -10,7 +10,7 @@
             [metabase.test.data :as data]
             [metabase.test.data.users :as test-users]
             [metabase.test.util :as tu]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (defmacro with-rasta
   "Execute body with rasta as the current user."

@@ -21,8 +21,8 @@
             [metabase.test.data
              [dataset-definitions :as defs]
              [users :as users]]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (def ^:private card-name "Test card")
 

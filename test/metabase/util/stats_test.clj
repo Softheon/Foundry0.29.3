@@ -7,9 +7,9 @@
              [pulse-card :refer [PulseCard]]]
             [metabase.test.util :as tu]
             [metabase.util.stats :as stats-util :refer :all]
-            [toucan.db :as db]
+            [metabase.mssqltoucan.db :as db]
             [metabase.util :as u]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (expect "0" (#'stats-util/bin-micro-number 0))
 (expect "1" (#'stats-util/bin-micro-number 1))

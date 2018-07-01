@@ -4,7 +4,7 @@
             [metabase.models.user :refer [User]]
             [metabase.util :as u]
             [puppetlabs.i18n.core :refer [tru]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]
              [models :as models]]))

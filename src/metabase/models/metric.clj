@@ -8,7 +8,7 @@
              [interface :as i]
              [revision :as revision]]
             [metabase.util.query :as q]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]
              [models :as models]]))

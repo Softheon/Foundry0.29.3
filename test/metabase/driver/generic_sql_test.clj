@@ -7,7 +7,7 @@
              [table :as table :refer [Table]]]
             [metabase.test.data :refer :all]
             [metabase.test.data.datasets :as datasets]
-            [toucan.db :as db]
+            [metabase.mssqltoucan.db :as db]
             [metabase.test.data :as data])
   (:import metabase.driver.h2.H2Driver))
 

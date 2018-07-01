@@ -3,7 +3,7 @@
   (:require [metabase.models.interface :as i]
             [metabase.util :as u]
             [puppetlabs.i18n.core :refer [tru]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]))
 

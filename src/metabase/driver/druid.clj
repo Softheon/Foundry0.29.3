@@ -12,7 +12,7 @@
              [field :as field]
              [table :as table]]
             [metabase.util.ssh :as ssh]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 ;;; ### Request helper fns
 

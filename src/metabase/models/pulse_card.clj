@@ -1,4 +1,4 @@
 (ns metabase.models.pulse-card
-  (:require [toucan.models :as models]))
+  (:require [metabase.mssqltoucan.models :as models]))
 
 (models/defmodel PulseCard :pulse_card)

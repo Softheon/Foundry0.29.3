@@ -21,7 +21,7 @@
              [interface :as i]
              [util :as qputil]]
             [schema.core :as s]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]])
   (:import java.util.TimeZone

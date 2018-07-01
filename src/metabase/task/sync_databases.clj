@@ -16,7 +16,7 @@
              [sync-metadata :as sync-metadata]]
             [metabase.util.cron :as cron-util]
             [schema.core :as s]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import metabase.models.database.DatabaseInstance
            [org.quartz CronTrigger DisallowConcurrentExecution JobDetail JobKey TriggerKey]))
 

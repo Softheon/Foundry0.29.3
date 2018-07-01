@@ -7,7 +7,7 @@
              [encryption :as encryption]]
             [schema.core :as s]
             [taoensso.nippy :as nippy]
-            [toucan
+            [metabase.mssqltoucan
              [models :as models]
              [util :as toucan-util]])
   (:import java.sql.Blob))

@@ -19,7 +19,7 @@
             [metabase.query-processor :as qp]
             [metabase.query-processor.interface :as qpi]
             [metabase.models.revision.diff :refer [build-sentence]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]
              [models :as models]]))

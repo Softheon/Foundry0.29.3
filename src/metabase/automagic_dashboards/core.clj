@@ -33,7 +33,7 @@
             [puppetlabs.i18n.core :as i18n :refer [tru trs]]
             [ring.util.codec :as codec]
             [schema.core :as s]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:private public-endpoint "/auto/dashboard/")
 

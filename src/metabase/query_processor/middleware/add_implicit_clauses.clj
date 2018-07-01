@@ -7,7 +7,7 @@
              [sort :as sort]
              [util :as qputil]]
             [metabase.query-processor.middleware.resolve :as resolve]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]]))
 

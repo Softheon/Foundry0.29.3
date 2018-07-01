@@ -14,7 +14,7 @@
             [metabase.models.setting :as setting :refer [defsetting]]
             [metabase.util.infer-spaces :refer [infer-spaces]]
             [puppetlabs.i18n.core :refer [tru]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:private ^:const acronyms
   #{"id" "url" "ip" "uid" "uuid" "guid"})

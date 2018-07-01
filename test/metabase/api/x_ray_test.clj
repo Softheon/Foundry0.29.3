@@ -12,7 +12,7 @@
             [metabase.test.async :refer :all]
             [metabase.test.data :refer :all]
             [metabase.test.data.users :refer :all]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (defn- async-call
   [method endpoint & args]

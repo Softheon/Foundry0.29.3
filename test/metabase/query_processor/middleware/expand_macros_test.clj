@@ -14,7 +14,7 @@
              [expand-macros :as expand-macros :refer :all]]
             [metabase.test.data :as data]
             [metabase.test.data.datasets :as datasets]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; no Segment or Metric should yield exact same query
 (expect

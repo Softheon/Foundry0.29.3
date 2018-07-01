@@ -10,8 +10,8 @@
             [metabase.query-processor.interface :as qpi]
             [metabase.test.data.users :as users]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;;; +----------------------------------------------------------------------------------------------------------------+
 ;;; |                                             QUERY "TRANSFORMATION"                                             |

@@ -18,8 +18,8 @@
             [metabase.test.util :as tu]
             [metabase.util :as u]
             [honeysql.core :as hsql]
-            [toucan.db :as db]
-            [toucan.util.test :as tt])
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt])
   (:import metabase.driver.mysql.MySQLDriver))
 
 ;; MySQL allows 0000-00-00 dates, but JDBC does not; make sure that MySQL is converting them to NULL when returning

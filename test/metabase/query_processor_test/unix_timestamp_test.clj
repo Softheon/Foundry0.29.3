@@ -9,7 +9,7 @@
              [datasets :as datasets :refer [*driver* *engine*]]
              [interface :as i]]))
 
-;; There were 10 "sad toucan incidents" on 2015-06-02 in UTC
+;; There were 10 "sad mssqltoucan incidents" on 2015-06-02 in UTC
 (expect-with-non-timeseries-dbs
   10
 
@@ -19,7 +19,7 @@
   ;; seems to be pretty rare, but explicitly specifying UTC will make
   ;; the issue go away
   (tu/with-temporary-setting-values [report-timezone "UTC"]
-    (count (rows (data/dataset sad-toucan-incidents
+    (count (rows (data/dataset sad-mssqltoucan-incidents
                    (data/run-query incidents
                      (ql/filter (ql/and (ql/> $timestamp "2015-06-01")
                                         (ql/< $timestamp "2015-06-03")))
@@ -76,7 +76,7 @@
      ["2015-06-10T00:00:00.000Z" 9]])
 
   (tu/with-temporary-setting-values [report-timezone "America/Los_Angeles"]
-    (->> (data/dataset sad-toucan-incidents
+    (->> (data/dataset sad-mssqltoucan-incidents
            (data/run-query incidents
              (ql/aggregation (ql/count))
              (ql/breakout $timestamp)

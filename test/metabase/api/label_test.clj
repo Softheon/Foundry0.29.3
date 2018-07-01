@@ -4,8 +4,8 @@
             [metabase.models.label :refer [Label]]
             [metabase.test.data.users :refer [user->client]]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;;; GET /api/label -- list all labels
 (tt/expect-with-temp [Label [{label-1-id :id} {:name "Toucan-Approved"}]
@@ -29,6 +29,6 @@
 ;;; DELETE /api/label/:id -- delete a label
 (expect
   nil
-  (tt/with-temp Label [{label-id :id} {:name "This will make the toucan very cross!"}]
+  (tt/with-temp Label [{label-id :id} {:name "This will make the mssqltoucan very cross!"}]
     ((user->client :rasta) :delete 204, (str "label/" label-id))
     (Label label-id)))

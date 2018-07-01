@@ -2,7 +2,7 @@
   "The ViewLog is used to log an event where a given User views a given object such as a Table or Card (Question)."
   (:require [metabase.models.interface :as i]
             [metabase.util :as u]
-            [toucan.models :as models]))
+            [metabase.mssqltoucan.models :as models]))
 
 (models/defmodel ViewLog :view_log)
 

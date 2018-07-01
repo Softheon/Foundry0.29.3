@@ -7,7 +7,7 @@
              [computation-job :refer [ComputationJob]]
              [computation-job-result :refer [ComputationJobResult]]]
             [metabase.util :as u]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defonce ^:private running-jobs (atom {}))
 

@@ -10,7 +10,7 @@
             [metabase.util :as u]
             [metabase.util.schema :as su]
             [schema.core :as s]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defn- check-self-or-superuser
   "Check that USER-ID is *current-user-id*` or that `*current-user*` is a superuser, or throw a 403."

@@ -15,10 +15,10 @@
             [metabase.test.data.users :refer [user->client]]
             [metabase.timeseries-query-processor-test.util :as tqpt]
             [ring.util.codec :as codec]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; Helper Fns
 

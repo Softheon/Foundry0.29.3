@@ -20,7 +20,7 @@
             [puppetlabs.i18n.core :refer [tru]]
             [ring.util.codec :as codec]
             [schema.core :as s]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]]))
 

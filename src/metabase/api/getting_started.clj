@@ -6,7 +6,7 @@
              [interface :as mi]
              [setting :refer [defsetting]]]
             [puppetlabs.i18n.core :refer [tru]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defsetting getting-started-things-to-know
   (tru "''Some things to know'' text field for the Getting Started guide."))

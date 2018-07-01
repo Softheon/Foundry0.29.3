@@ -10,8 +10,8 @@
              [table :refer [Table]]]
             [metabase.test.data :as data]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (defn- temp-segment []
   {:definition {:database (data/id)

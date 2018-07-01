@@ -15,8 +15,8 @@
              [util :as tu]]
             [metabase.test.data.users :refer :all]
             [metabase.test.integrations.ldap :refer [expect-with-ldap-server]]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; ## POST /api/session
 ;; Test that we can login

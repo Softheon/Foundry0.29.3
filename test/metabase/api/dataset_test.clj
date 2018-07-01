@@ -21,7 +21,7 @@
              [datasets :refer [expect-with-engine]]
              [dataset-definitions :as defs]
              [users :refer :all]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defn user-details [user]
   (tu/match-$ user

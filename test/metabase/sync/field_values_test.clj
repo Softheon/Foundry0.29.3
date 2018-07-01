@@ -15,8 +15,8 @@
             [metabase.test
              [data :as data]
              [util :as tu]]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;;; --------------------------------------------------- Helper Fns ---------------------------------------------------
 

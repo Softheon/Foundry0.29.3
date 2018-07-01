@@ -20,7 +20,7 @@
              [interface :as i]
              [sort :as sort]
              [util :as qputil]]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import [metabase.query_processor.interface Expression ExpressionRef]))
 
 ;;; ## Field Resolution

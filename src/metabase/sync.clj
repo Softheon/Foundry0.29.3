@@ -14,6 +14,7 @@
              [interface :as i]
              [sync-metadata :as sync-metadata]]
             [schema.core :as s]
+            [clojure.tools.logging :as log]
             [metabase.sync.util :as sync-util]))
 
 (s/defn sync-database!
@@ -25,10 +26,13 @@
   [database :- i/DatabaseInstance]
   (sync-util/sync-operation :sync database (format "Sync %s" (sync-util/name-for-logging database))
     ;; First make sure Tables, Fields, and FK information is up-to-date
+    (log/info "First make sure Tables, Fields, and FK information is up-to-date")
     (sync-metadata/sync-db-metadata! database)
+    (log/info " ;; Next, run the 'analysis' step where we do things like scan values of fields and update special types accordingly")
     ;; Next, run the 'analysis' step where we do things like scan values of fields and update special types accordingly
     (analyze/analyze-db! database)
     ;; Finally, update cached FieldValues
+    (log/info "Finally, update cached FieldValues")
     (field-values/update-field-values! database)))
 
 

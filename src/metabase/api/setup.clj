@@ -17,7 +17,7 @@
             [metabase.util.schema :as su]
             [puppetlabs.i18n.core :refer [tru]]
             [schema.core :as s]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:private SetupToken
   "Schema for a string that matches the instance setup token."

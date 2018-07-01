@@ -24,8 +24,8 @@
              [util :as tu]]
             [metabase.test.data.users :as test-users]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt])
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt])
   (:import java.util.UUID))
 
 ;; 3 users:

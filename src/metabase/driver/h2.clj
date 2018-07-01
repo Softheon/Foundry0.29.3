@@ -10,7 +10,7 @@
             [metabase.models.database :refer [Database]]
             [metabase.util.honeysql-extensions :as hx]
             [puppetlabs.i18n.core :refer [tru]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:private ^:const column->base-type
   {:ARRAY                       :type/*

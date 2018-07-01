@@ -10,8 +10,8 @@
              [table :refer [Table]]]
             [metabase.test.data :as data]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (defn- do-with-mocked-field-values-updating
   "Run F the function responsible for updating FieldValues bound to a mock function that instead just records the names

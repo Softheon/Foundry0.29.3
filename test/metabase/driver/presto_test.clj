@@ -13,7 +13,7 @@
             [metabase.test.data
              [dataset-definitions :as defs]
              [datasets :as datasets :refer [expect-with-engine]]]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import metabase.driver.presto.PrestoDriver))
 
 ;;; HELPERS

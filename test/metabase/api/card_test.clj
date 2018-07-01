@@ -29,8 +29,8 @@
              [data :as data :refer :all]
              [util :as tu :refer [match-$ random-name]]]
             [metabase.test.data.users :refer :all]
-            [toucan.db :as db]
-            [toucan.util.test :as tt])
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt])
   (:import java.io.ByteArrayInputStream
            java.util.UUID))
 

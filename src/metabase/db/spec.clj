@@ -47,6 +47,9 @@
     :as opts}]
   (merge {:classname "com.microsoft.sqlserver.jdbc.SQLServerDriver"
           :subprotocol "sqlserver"
-          :subname (str "//" host ":" port "/" db)
+          :subname (str "//" host ":" port ";databaseName=" db ";")
           }
          (dissoc opts :host :port :db)))
+
+
+

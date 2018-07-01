@@ -20,7 +20,7 @@
             [metabase.util.schema :as su]
             [metabase.util.urls :as urls]
             [schema.core :as s]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import java.io.ByteArrayInputStream
            java.util.TimeZone))
 

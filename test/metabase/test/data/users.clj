@@ -7,7 +7,7 @@
              [util :as u]]
             [metabase.core.initialization-status :as init-status]
             [metabase.models.user :refer [User]]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import clojure.lang.ExceptionInfo))
 
 ;;; ------------------------------------------------ User Definitions ------------------------------------------------

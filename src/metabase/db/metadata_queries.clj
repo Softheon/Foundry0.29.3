@@ -9,7 +9,7 @@
             [metabase.query-processor.middleware.expand :as ql]
             [metabase.util.schema :as su]
             [schema.core :as s]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defn- qp-query [db-id query]
   {:pre [(integer? db-id)]}

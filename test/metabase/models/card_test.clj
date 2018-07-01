@@ -15,8 +15,8 @@
              [util :as tu]]
             [metabase.test.data.users :refer :all]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (defn- create-dash! [dash-name]
   ((user->client :rasta) :post 200 "dashboard" {:name dash-name}))

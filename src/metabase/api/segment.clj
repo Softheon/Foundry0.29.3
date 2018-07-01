@@ -9,7 +9,7 @@
              [table :refer [Table]]]
             [metabase.related :as related]
             [metabase.util.schema :as su]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]]))
 

@@ -14,7 +14,7 @@
              #_[table-row-count :as table-row-count]]
             [metabase.util :as u]
             [schema.core :as s]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 ;; How does analysis decide which Fields should get analyzed?
 ;;

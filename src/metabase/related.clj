@@ -17,7 +17,7 @@
              [table :refer [Table]]]
             [metabase.query-processor.util :as qp.util]
             [schema.core :as s]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:private ^Long max-best-matches        3)
 (def ^:private ^Long max-serendipity-matches 2)

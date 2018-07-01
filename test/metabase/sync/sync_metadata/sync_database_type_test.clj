@@ -10,8 +10,8 @@
              [table :refer [Table]]]
             [metabase.test.data :as data]
             metabase.test.util ; to make sure defaults for with-temp are registered
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; make sure that if a driver reports back a different database-type the Field gets updated accordingly
 (expect

@@ -17,7 +17,7 @@
             [metabase.test.data
              [dataset-definitions :as defs]
              [datasets :as datasets]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 ;;; single column
 (qp-expect-with-all-engines

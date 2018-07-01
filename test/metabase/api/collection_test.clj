@@ -16,8 +16,8 @@
             [metabase.test.data.users :refer [user->client user->id]]
             [metabase.test.util :as tu]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; check that we can get a basic list of collections
 (tt/expect-with-temp [Collection [collection]]

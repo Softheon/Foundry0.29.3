@@ -4,7 +4,7 @@
             [metabase.util.schema :as su]
             [puppetlabs.i18n.core :refer [trs]]
             [schema.core :as s]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]))
 

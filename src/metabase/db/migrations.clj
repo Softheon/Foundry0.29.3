@@ -31,7 +31,7 @@
              [table :as table :refer [Table]]
              [user :refer [User]]]
             [metabase.query-processor.util :as qputil]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]))
 
@@ -47,8 +47,9 @@
   [ran-migrations migration-var]
   (let [migration-name (name (:name (meta migration-var)))]
     (when-not (contains? ran-migrations migration-name)
-      (log/info (format "Running data migration '%s'..." migration-name))
+      (log/info (str migration-name "Starting"))
       (@migration-var)
+      (log/info (str migration-name "Ending"))
       (db/insert! DataMigrations
         :id        migration-name
         :timestamp (u/new-sql-timestamp)))))
@@ -95,7 +96,7 @@
 ;; Since Mongo did *not* support SSL, all existing Mongo DBs should actually have this key set to `false`.
 (defmigration ^{:author "camsaul", :added "0.13.0"} set-mongodb-databases-ssl-false
   (doseq [{:keys [id details]} (db/select [Database :id :details], :engine "mongo")]
-    (db/update! Database id, :details (assoc details :ssl false))))
+    (db/update! Database id, :details (assoc details :ssl 0))))
 
 
 ;; Set default values for :schema in existing tables now that we've added the column
@@ -112,9 +113,11 @@
 ;; Populate the initial value for the `:admin-email` setting for anyone who hasn't done it yet
 (defmigration ^{:author "agilliland", :added "0.13.0"} set-admin-email
   (when-not (setting/get :admin-email)
+    (log/info "email query before")
     (when-let [email (db/select-one-field :email 'User
-                       :is_superuser true
-                       :is_active    true)]
+                       :is_superuser 1
+                       :is_active    1)]
+      (log/info "before (setting/set! :admin-email email))))")
       (setting/set! :admin-email email))))
 
 
@@ -140,16 +143,16 @@
   (when-not (zero? (db/count Field :visibility_type "unset"))
     ;; start by marking all inactive fields as :retired
     (db/update-where! Field {:visibility_type "unset"
-                             :active          false}
+                             :active          0}
       :visibility_type "retired")
     ;; if field is active but preview_display = false then it becomes :details-only
     (db/update-where! Field {:visibility_type "unset"
-                             :active          true
-                             :preview_display false}
+                             :active          1
+                             :preview_display 0}
       :visibility_type "details-only")
     ;; everything else should end up as a :normal field
     (db/update-where! Field {:visibility_type "unset"
-                             :active          true}
+                             :active          1}
       :visibility_type "normal")))
 
 
@@ -312,7 +315,7 @@
   ;; migrate the most recent 100,000 entries. Make sure the DB doesn't get snippy by trying to insert too many records
   ;; at once. Divide the INSERT statements into chunks of 1,000
   (binding [query-execution/*validate-context* false]
-    (doseq [chunk (partition-all 1000 (db/select LegacyQueryExecution {:limit 100000, :order-by [[:id :desc]]}))]
+    (doseq [chunk (partition-all 1000 (db/select LegacyQueryExecution {:top 100000, :order-by [[:id :desc]]}))]
       (db/insert-many! QueryExecution
         (for [query-execution chunk]
           (LegacyQueryExecution->QueryExecution query-execution))))))
@@ -400,7 +403,7 @@
                     (class e)
                     (.getMessage e)
                     (u/filtered-stacktrace e)))))
-   (db/select-reducible Card :archived false)))
+   (db/select-reducible Card :archived 0)))
 
 ;; Starting in version 0.29.0 we switched the way we decide which Fields should get FieldValues. Prior to 29, Fields
 ;; would be marked as special type Category if they should have FieldValues. In 29+, the Category special type no
@@ -413,5 +416,5 @@
 (defmigration ^{:author "camsaul", :added "0.29.0"} mark-category-fields-as-list
   (db/update-where! Field {:has_field_values nil
                            :special_type     (mdb/isa :type/Category)
-                           :active           true}
+                           :active           1}
     :has_field_values "list"))

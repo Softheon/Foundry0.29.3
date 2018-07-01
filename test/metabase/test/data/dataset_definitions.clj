@@ -11,7 +11,7 @@
 (di/def-database-definition-edn test-data)
 
 ;; Times when the Toucan cried
-(di/def-database-definition-edn sad-toucan-incidents)
+(di/def-database-definition-edn sad-mssqltoucan-incidents)
 
 ;; Places, times, and circumstances where Tupac was sighted
 (di/def-database-definition-edn tupac-sightings)

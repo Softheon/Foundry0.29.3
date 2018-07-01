@@ -22,10 +22,10 @@
             [puppetlabs.i18n.core :refer [trs tru]]
             [schema.core :as s]
             [throttle.core :as throttle]
-            [toucan.db :as db]
+            [metabase.mssqltoucan.db :as db]
             [clojure.string :as str]
             [buddy.sign.jwt :as jwt]
-            [toucan.db :as db]
+            [metabase.mssqltoucan.db :as db]
             [base64-clj.core :as base64]))
 
 (defn- create-session!

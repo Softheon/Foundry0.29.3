@@ -5,7 +5,7 @@
              [format :as hformat]]
             [metabase.driver.generic-sql.util.unprepare :as unprepare]
             [metabase.util.honeysql-extensions :as hx]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import java.util.Date))
 
 (def column->base-type

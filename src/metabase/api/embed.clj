@@ -33,7 +33,7 @@
              [embed :as eu]
              [schema :as su]]
             [schema.core :as s]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 ;;; ------------------------------------------------- Param Checking -------------------------------------------------
 

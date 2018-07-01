@@ -11,7 +11,7 @@
             [metabase.test.data
              [datasets :as datasets]
              [generic-sql :as generic-sql]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 ;;; ------------------------------------------ basic parser tests ------------------------------------------
 
@@ -121,9 +121,9 @@
 
 (expect
   {:query  "SELECT * FROM bird_facts WHERE toucans_are_cool = TRUE AND bird_type = ?"
-   :params ["toucan"]}
+   :params ["mssqltoucan"]}
   (substitute "SELECT * FROM bird_facts WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = {{bird_type}}"
-    {:toucans_are_cool true, :bird_type "toucan"}))
+    {:toucans_are_cool true, :bird_type "mssqltoucan"}))
 
 (expect Exception
   (substitute "SELECT * FROM bird_facts WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = {{bird_type}}"
@@ -162,17 +162,17 @@
     {:toucans_are_cool_2 true}))
 
 (expect
-  {:query  "SELECT * FROM bird_facts WHERE toucans_are_cool = TRUE AND bird_type = 'toucan'"
+  {:query  "SELECT * FROM bird_facts WHERE toucans_are_cool = TRUE AND bird_type = 'mssqltoucan'"
    :params []}
-  (substitute "SELECT * FROM bird_facts [[WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = 'toucan']]"
+  (substitute "SELECT * FROM bird_facts [[WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = 'mssqltoucan']]"
     {:toucans_are_cool true}))
 
 ;; Two parameters in an optional
 (expect
   {:query  "SELECT * FROM bird_facts WHERE toucans_are_cool = TRUE AND bird_type = ?"
-   :params ["toucan"]}
+   :params ["mssqltoucan"]}
   (substitute "SELECT * FROM bird_facts [[WHERE toucans_are_cool = {{toucans_are_cool}} AND bird_type = {{bird_type}}]]"
-    {:toucans_are_cool true, :bird_type "toucan"}))
+    {:toucans_are_cool true, :bird_type "mssqltoucan"}))
 
 (expect
   {:query  "SELECT * FROM bird_facts"
@@ -249,9 +249,9 @@
 
 (expect
   {:query  "SELECT * FROM toucanneries WHERE bird_type = ? AND num_toucans > 2 AND total_birds > 5"
-   :params ["toucan"]}
+   :params ["mssqltoucan"]}
   (substitute "SELECT * FROM toucanneries WHERE bird_type = {{bird_type}} [[AND num_toucans > {{num_toucans}}]] [[AND total_birds > {{total_birds}}]]"
-    {:bird_type "toucan", :num_toucans 2, :total_birds 5}))
+    {:bird_type "mssqltoucan", :num_toucans 2, :total_birds 5}))
 
 (expect
   Exception

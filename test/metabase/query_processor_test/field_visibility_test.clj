@@ -8,7 +8,7 @@
             [metabase.test
              [data :as data]
              [util :as tu]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 ;;; ---------------------------------------------- :details-only fields ----------------------------------------------
 

@@ -11,8 +11,8 @@
              [user :as user :refer [User]]]
             [metabase.test.data.users :as test-users :refer [user->id]]
             [metabase.test.util :as tu]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;;; Tests for permissions-set
 

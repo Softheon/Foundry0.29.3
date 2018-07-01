@@ -7,7 +7,7 @@
              [util :as qputil]]
             [metabase.util :as u]
             [puppetlabs.i18n.core :refer [trs]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defn- trim-query
   "Native queries can have trailing SQL comments. This works when executed directly, but when we use the query in a

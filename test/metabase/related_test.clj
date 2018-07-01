@@ -8,7 +8,7 @@
             [metabase.related :as r :refer :all]
             [metabase.test.data :as data]
             [metabase.test.data.users :as users]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (expect
   #{[:field-id 1] [:metric 1] [:field-id 2] [:segment 1]}

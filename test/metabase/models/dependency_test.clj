@@ -3,10 +3,10 @@
             [metabase.models.dependency :refer :all]
             [metabase.test.data :refer :all]
             [metabase.util :as u]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (models/defmodel Mock :mock)
 

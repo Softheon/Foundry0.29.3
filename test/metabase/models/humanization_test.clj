@@ -5,8 +5,8 @@
              [humanization :as humanization :refer :all]
              [table :refer [Table]]]
             [metabase.test.util :as tu]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;;; :advanced humanization
 (expect nil                           (humanization/name->human-readable-name :advanced nil))

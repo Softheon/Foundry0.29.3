@@ -13,7 +13,7 @@
             [metabase.test.data
              [dataset-definitions :as defs]
              [users :as users]]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (tt/expect-with-temp [Card                 [{card-id :id}  (assoc (checkins-query {:breakout [["datetime-field" (data/id :checkins :date) "hour"]]})
                                                              :name "My Question Name")]

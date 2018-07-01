@@ -11,8 +11,8 @@
              [data :refer :all]
              [util :as tu :refer [match-$ random-name]]]
             [metabase.test.data.users :refer :all]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; ## /api/user/* AUTHENTICATION Tests
 ;; We assume that all endpoints for a given context are enforced by the same middleware, so we don't run the same
@@ -204,11 +204,11 @@
 
 ;; Check that a non-superuser CANNOT update someone else's user details
 (expect "You don't have permissions to do that."
-  ((user->client :rasta) :put 403 (str "user/" (user->id :trashbird)) {:email "toucan@metabase.com"}))
+  ((user->client :rasta) :put 403 (str "user/" (user->id :trashbird)) {:email "mssqltoucan@metabase.com"}))
 
 ;; We should get a 404 when trying to access a disabled account
 (expect "Not found."
-  ((user->client :crowberto) :put 404 (str "user/" (user->id :trashbird)) {:email "toucan@metabase.com"}))
+  ((user->client :crowberto) :put 404 (str "user/" (user->id :trashbird)) {:email "mssqltoucan@metabase.com"}))
 
 
 ;; ## PUT /api/user/:id/password

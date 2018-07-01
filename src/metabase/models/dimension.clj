@@ -1,5 +1,5 @@
 (ns metabase.models.dimension
-  (:require [toucan.models :as models]
+  (:require [metabase.mssqltoucan.models :as models]
             [metabase.util :as u]))
 
 (def dimension-types

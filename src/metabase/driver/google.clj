@@ -5,7 +5,7 @@
              [config :as config]
              [util :as u]]
             [metabase.models.database :refer [Database]]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import [com.google.api.client.googleapis.auth.oauth2 GoogleAuthorizationCodeFlow
             GoogleAuthorizationCodeFlow$Builder GoogleCredential GoogleCredential$Builder GoogleTokenResponse]
            com.google.api.client.googleapis.javanet.GoogleNetHttpTransport

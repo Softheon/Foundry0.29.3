@@ -2,7 +2,7 @@
   (:require [metabase.api.common :as api]
             [metabase.models.interface :as i]
             [metabase.util :as u]
-            [toucan.models :as models]))
+            [metabase.mssqltoucan.models :as models]))
 
 (models/defmodel ComputationJob :computation_job)
 

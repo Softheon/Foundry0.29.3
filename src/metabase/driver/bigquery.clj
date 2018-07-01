@@ -27,7 +27,7 @@
              [annotate :as annotate]
              [util :as qputil]]
             [metabase.util.honeysql-extensions :as hx]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
            [com.google.api.client.http HttpRequestInitializer HttpRequest]
            [com.google.api.services.bigquery Bigquery Bigquery$Builder BigqueryScopes]

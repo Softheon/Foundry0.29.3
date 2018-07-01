@@ -26,7 +26,7 @@
    we're left with a database that can't be connected to until the hanging connection gets killed at some indeterminate point in the future.
    In other cases, JDBC will attempt to reuse connections to the same database, which fail once it it's in SINGLE_USER mode.
 
-   To prevent our tests from failing for silly reasons, we'll instead generate database names like `sad-toucan-incidents_100`. We'll pick
+   To prevent our tests from failing for silly reasons, we'll instead generate database names like `sad-mssqltoucan-incidents_100`. We'll pick
    a random number here."
   (atom (rand-int 10000)))
 

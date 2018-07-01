@@ -6,7 +6,7 @@
             [metabase.models.permissions :as perms]
             [metabase.util :as u]
             [metabase.util.honeysql-extensions :as hx]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]]))
 

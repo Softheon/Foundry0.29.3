@@ -1,7 +1,7 @@
 (ns metabase.models.dependency
   (:require [clojure.set :as set]
             [metabase.util :as u]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]))
 

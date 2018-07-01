@@ -12,7 +12,7 @@
             [metabase.models.table :refer [Table]]
             [metabase.query-processor.interface :as qpi]
             [metabase.sync.interface :as i]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 ;;; +----------------------------------------------------------------------------------------------------------------+
 ;;; |                                          SYNC OPERATION "MIDDLEWARE"                                           |

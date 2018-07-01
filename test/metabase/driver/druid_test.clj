@@ -19,7 +19,7 @@
              [util :as tu]]
             [metabase.test.data.datasets :as datasets :refer [expect-with-engine]]
             [metabase.timeseries-query-processor-test.util :as tqpt]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;;; table-rows-sample
 (datasets/expect-with-engine :druid

@@ -11,8 +11,8 @@
              [permissions-group :as group]
              [revision :refer [Revision]]]
             [metabase.test.data.users :as test-users]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; the Card used in the tests below is one Crowberto (an admin) should be allowed to read/write based on data permissions,
 ;; but not Rasta (all-users)

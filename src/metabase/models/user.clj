@@ -9,7 +9,7 @@
             [metabase.models
              [permissions-group :as group]
              [permissions-group-membership :as perm-membership :refer [PermissionsGroupMembership]]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]])
   (:import java.util.UUID))

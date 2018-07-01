@@ -4,12 +4,12 @@
             [metabase.models.query-cache :refer [QueryCache]]
             [metabase.query-processor.middleware.cache :as cache]
             [metabase.test.util :as tu]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^:private mock-results
   {:row_count 8
    :status    :completed
-   :data      {:rows [[:toucan      71]
+   :data      {:rows [[:mssqltoucan      71]
                       [:bald-eagle  92]
                       [:hummingbird 11]
                       [:owl         10]

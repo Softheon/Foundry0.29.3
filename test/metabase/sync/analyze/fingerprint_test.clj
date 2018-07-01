@@ -10,8 +10,8 @@
             [metabase.test.data :as data]
             [metabase.test.util]
             [metabase.util :as u]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (defn- fingerprint [field]
   (let [[[_ sample]] (sample/sample-fields (field/table field) [field])]

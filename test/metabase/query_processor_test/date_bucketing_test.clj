@@ -58,10 +58,10 @@
   [engine]
   (contains? #{:oracle :redshift} engine))
 
-(defn- sad-toucan-incidents-with-bucketing
-  "Returns 10 sad toucan incidents grouped by `UNIT`"
+(defn- sad-mssqltoucan-incidents-with-bucketing
+  "Returns 10 sad mssqltoucan incidents grouped by `UNIT`"
   ([unit]
-   (->> (data/with-db (data/get-or-create-database! defs/sad-toucan-incidents)
+   (->> (data/with-db (data/get-or-create-database! defs/sad-mssqltoucan-incidents)
           (data/run-query incidents
             (ql/aggregation (ql/count))
             (ql/breakout (ql/datetime-field $timestamp unit))
@@ -69,7 +69,7 @@
         rows (format-rows-by [->long-if-number int])))
   ([unit tz]
    (tu/with-temporary-setting-values [report-timezone (.getID tz)]
-     (sad-toucan-incidents-with-bucketing unit))))
+     (sad-mssqltoucan-incidents-with-bucketing unit))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -115,8 +115,8 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^:private sad-toucan-dates
-  "This is the first 10 sad toucan dates when converted from millis
+(def ^:private sad-mssqltoucan-dates
+  "This is the first 10 sad mssqltoucan dates when converted from millis
   since epoch in the UTC timezone. The timezone is left off of the
   timezone string so that we can emulate how certain conversions work
   in the code today. As an example, the UTC dates in Oracle are
@@ -132,54 +132,54 @@
    "2015-06-02T08:20:00.000"
    "2015-06-02T11:11:00.000"])
 
-(defn- sad-toucan-result
-  "Creates a sad toucan resultset using the given `SOURCE-FORMATTER`
+(defn- sad-mssqltoucan-result
+  "Creates a sad mssqltoucan resultset using the given `SOURCE-FORMATTER`
   and `RESULT-FORMATTER`. Pairs the dates with the record counts."
   [source-formatter result-formatter]
   (mapv vector
-        (adjust-date source-formatter result-formatter sad-toucan-dates)
+        (adjust-date source-formatter result-formatter sad-mssqltoucan-dates)
         (repeat 1)))
 
-;; Bucket sad toucan events by their default bucketing, which is the full datetime value
+;; Bucket sad mssqltoucan events by their default bucketing, which is the full datetime value
 (expect-with-non-timeseries-dbs
   (cond
     ;; Timezone is omitted by these databases
     (contains? #{:sqlite :crate} *engine*)
-    (sad-toucan-result (source-date-formatter utc-tz) result-date-formatter-without-tz)
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) result-date-formatter-without-tz)
 
     ;; There's a bug here where we are reading in the UTC time as pacific, so we're 7 hours off
     (oracle-or-redshift? *engine*)
-    (sad-toucan-result (source-date-formatter pacific-tz) (result-date-formatter pacific-tz))
+    (sad-mssqltoucan-result (source-date-formatter pacific-tz) (result-date-formatter pacific-tz))
 
     ;; When the reporting timezone is applied, the same datetime value is returned, but set in the pacific timezone
     (supports-report-timezone? *engine*)
-    (sad-toucan-result (source-date-formatter utc-tz) (result-date-formatter pacific-tz))
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) (result-date-formatter pacific-tz))
 
     ;; Databases that don't support report timezone will always return the time using the JVM's timezone setting
     ;; Our tests force UTC time, so this should always be UTC
     :else
-    (sad-toucan-result (source-date-formatter utc-tz) (result-date-formatter utc-tz)))
-  (sad-toucan-incidents-with-bucketing :default pacific-tz))
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) (result-date-formatter utc-tz)))
+  (sad-mssqltoucan-incidents-with-bucketing :default pacific-tz))
 
-;; Buckets sad toucan events like above, but uses the eastern timezone as the report timezone
+;; Buckets sad mssqltoucan events like above, but uses the eastern timezone as the report timezone
 (expect-with-non-timeseries-dbs
   (cond
     ;; These databases are always in UTC so aren't impacted by changes in report-timezone
     (contains? #{:sqlite :crate} *engine*)
-    (sad-toucan-result (source-date-formatter utc-tz) result-date-formatter-without-tz)
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) result-date-formatter-without-tz)
 
     (oracle-or-redshift? *engine*)
-    (sad-toucan-result (source-date-formatter eastern-tz) (result-date-formatter eastern-tz))
+    (sad-mssqltoucan-result (source-date-formatter eastern-tz) (result-date-formatter eastern-tz))
 
     ;; The time instant is the same as UTC (or pacific) but should be offset by the eastern timezone
     (supports-report-timezone? *engine*)
-    (sad-toucan-result (source-date-formatter utc-tz) (result-date-formatter eastern-tz))
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) (result-date-formatter eastern-tz))
 
     ;; The change in report timezone has no affect on this group
     :else
-    (sad-toucan-result (source-date-formatter utc-tz) (result-date-formatter utc-tz)))
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) (result-date-formatter utc-tz)))
 
-  (sad-toucan-incidents-with-bucketing :default eastern-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :default eastern-tz))
 
 ;; Changes the JVM timezone from UTC to Pacific, this test isn't run
 ;; on H2 as the database stores it's timezones in the JVM timezone
@@ -192,20 +192,20 @@
 (expect-with-non-timeseries-dbs-except #{:h2 :sqlserver :redshift :sparksql :mongo}
   (cond
     (contains? #{:sqlite :crate} *engine*)
-    (sad-toucan-result (source-date-formatter utc-tz) result-date-formatter-without-tz)
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) result-date-formatter-without-tz)
 
     (oracle-or-redshift? *engine*)
-    (sad-toucan-result (source-date-formatter eastern-tz) (result-date-formatter eastern-tz))
+    (sad-mssqltoucan-result (source-date-formatter eastern-tz) (result-date-formatter eastern-tz))
 
     ;; The JVM timezone should have no impact on a database that uses a report timezone
     (supports-report-timezone? *engine*)
-    (sad-toucan-result (source-date-formatter utc-tz) (result-date-formatter eastern-tz))
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) (result-date-formatter eastern-tz))
 
     :else
-    (sad-toucan-result (source-date-formatter utc-tz) (result-date-formatter pacific-tz)))
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) (result-date-formatter pacific-tz)))
 
   (tu/with-jvm-tz pacific-tz
-    (sad-toucan-incidents-with-bucketing :default eastern-tz)))
+    (sad-mssqltoucan-incidents-with-bucketing :default eastern-tz)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -218,17 +218,17 @@
 (expect-with-non-timeseries-dbs
   (cond
     (contains? #{:sqlite :crate} *engine*)
-    (sad-toucan-result (source-date-formatter utc-tz) result-date-formatter-without-tz)
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) result-date-formatter-without-tz)
 
     (oracle-or-redshift? *engine*)
-    (sad-toucan-result (source-date-formatter pacific-tz) (result-date-formatter pacific-tz))
+    (sad-mssqltoucan-result (source-date-formatter pacific-tz) (result-date-formatter pacific-tz))
 
     (supports-report-timezone? *engine*)
-    (sad-toucan-result (source-date-formatter utc-tz) (result-date-formatter pacific-tz))
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) (result-date-formatter pacific-tz))
 
     :else
-    (sad-toucan-result (source-date-formatter utc-tz) (result-date-formatter utc-tz)))
-  (sad-toucan-incidents-with-bucketing :minute pacific-tz))
+    (sad-mssqltoucan-result (source-date-formatter utc-tz) (result-date-formatter utc-tz)))
+  (sad-mssqltoucan-incidents-with-bucketing :minute pacific-tz))
 
 ;; Grouping by minute of hour is not affected by timezones
 (expect-with-non-timeseries-dbs
@@ -242,7 +242,7 @@
    [7 1]
    [8 1]
    [9 1]]
-  (sad-toucan-incidents-with-bucketing :minute-of-hour pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :minute-of-hour pacific-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -250,8 +250,8 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^:private sad-toucan-dates-grouped-by-hour
-  "This is the first 10 groupings of sad toucan dates at the same hour
+(def ^:private sad-mssqltoucan-dates-grouped-by-hour
+  "This is the first 10 groupings of sad mssqltoucan dates at the same hour
   when converted from millis since epoch in the UTC timezone. The
   timezone is left off of the timezone string so that we can emulate
   how certain conversions are broken in the code today. As an example,
@@ -269,11 +269,11 @@
    "2015-06-02T13:00:00.000"])
 
 (defn- results-by-hour
-  "Creates a sad toucan resultset using the given `SOURCE-FORMATTER`
+  "Creates a sad mssqltoucan resultset using the given `SOURCE-FORMATTER`
   and `RESULT-FORMATTER`. Pairs the dates with the the record counts"
   [source-formatter result-formatter]
   (mapv vector
-        (adjust-date source-formatter result-formatter sad-toucan-dates-grouped-by-hour)
+        (adjust-date source-formatter result-formatter sad-mssqltoucan-dates-grouped-by-hour)
         [1 1 1 1 2 1 1 1 1 1]))
 
 ;; For this test, the results are the same for each database, but the
@@ -295,7 +295,7 @@
     :else
     (results-by-hour (source-date-formatter utc-tz) (result-date-formatter utc-tz)))
 
-  (sad-toucan-incidents-with-bucketing :hour pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :hour pacific-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -312,12 +312,12 @@
            (supports-report-timezone? *engine*))
     [[0 8] [1 9] [2 7] [3 10] [4 10] [5 9] [6 6] [7 5] [8 7] [9 7]]
     [[0 13] [1 8] [2 4] [3 7] [4 5] [5 13] [6 10] [7 8] [8 9] [9 7]])
-  (sad-toucan-incidents-with-bucketing :hour-of-day pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :hour-of-day pacific-tz))
 
 ;; With all databases in UTC, the results should be the same for all DBs
 (expect-with-non-timeseries-dbs
   [[0 13] [1 8] [2 4] [3 7] [4 5] [5 13] [6 10] [7 8] [8 9] [9 7]]
-  (sad-toucan-incidents-with-bucketing :hour-of-day utc-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :hour-of-day utc-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -333,9 +333,9 @@
                (/ (.getOffset tz date) 1000))))
 
 (defn- find-events-in-range
-  "Find the number of sad toucan events between `START-DATE-STR` and `END-DATE-STR`"
+  "Find the number of sad mssqltoucan events between `START-DATE-STR` and `END-DATE-STR`"
   [start-date-str end-date-str]
-  (-> (data/with-db (data/get-or-create-database! defs/sad-toucan-incidents)
+  (-> (data/with-db (data/get-or-create-database! defs/sad-mssqltoucan-incidents)
         (data/run-query incidents
           (ql/aggregation (ql/count))
           (ql/breakout (ql/datetime-field $timestamp :day))
@@ -376,7 +376,7 @@
   (map #(new-events-after-tz-shift (str "2015-06-" %) pacific-tz)
        ["01" "02" "03" "04" "05" "06" "07" "08" "09" "10"]))
 
-(def ^:private sad-toucan-events-grouped-by-day
+(def ^:private sad-mssqltoucan-events-grouped-by-day
   ["2015-06-01"
    "2015-06-02"
    "2015-06-03"
@@ -389,12 +389,12 @@
    "2015-06-10"])
 
 (defn- results-by-day
-  "Creates a sad toucan resultset using the given `SOURCE-FORMATTER`
+  "Creates a sad mssqltoucan resultset using the given `SOURCE-FORMATTER`
   and `RESULT-FORMATTER`. Pairs the dates with the record counts
   supplied in `COUNTS`"
   [source-formatter result-formatter counts]
   (mapv vector
-        (adjust-date source-formatter result-formatter sad-toucan-events-grouped-by-day)
+        (adjust-date source-formatter result-formatter sad-mssqltoucan-events-grouped-by-day)
         counts))
 
 (expect-with-non-timeseries-dbs
@@ -406,7 +406,7 @@
                     (result-date-formatter utc-tz)
                     [6 10 4 9 9 8 8 9 7 9]))
 
-  (sad-toucan-incidents-with-bucketing :day utc-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :day utc-tz))
 
 (expect-with-non-timeseries-dbs
   (cond
@@ -430,7 +430,7 @@
                     (result-date-formatter utc-tz)
                     [6 10 4 9 9 8 8 9 7 9]))
 
-  (sad-toucan-incidents-with-bucketing :day pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :day pacific-tz))
 
 ;; This test provides a validation of how many events are gained or
 ;; lost when the timezone is shifted to eastern, similar to the test
@@ -463,7 +463,7 @@
                      (result-date-formatter utc-tz)
                      [6 10 4 9 9 8 8 9 7 9]))
 
-  (sad-toucan-incidents-with-bucketing :day eastern-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :day eastern-tz))
 
 ;; This tests out the JVM timezone's impact on the results. For
 ;; databases supporting a report timezone, this should have no affect
@@ -500,7 +500,7 @@
                     [6 10 4 9 9 8 8 9 7 9]))
 
   (tu/with-jvm-tz pacific-tz
-    (sad-toucan-incidents-with-bucketing :day pacific-tz)))
+    (sad-mssqltoucan-incidents-with-bucketing :day pacific-tz)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -513,11 +513,11 @@
            (supports-report-timezone? *engine*))
     [[1 29] [2 36] [3 33] [4 29] [5 13] [6 38] [7 22]]
     [[1 28] [2 38] [3 29] [4 27] [5 24] [6 30] [7 24]])
-  (sad-toucan-incidents-with-bucketing :day-of-week pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :day-of-week pacific-tz))
 
 (expect-with-non-timeseries-dbs
   [[1 28] [2 38] [3 29] [4 27] [5 24] [6 30] [7 24]]
-  (sad-toucan-incidents-with-bucketing :day-of-week utc-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :day-of-week utc-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -530,11 +530,11 @@
            (supports-report-timezone? *engine*))
     [[1 8] [2 9] [3 9] [4 4] [5 11] [6 8] [7 6] [8 10] [9 6] [10 10]]
     [[1 6] [2 10] [3 4] [4 9] [5  9] [6 8] [7 8] [8  9] [9 7] [10  9]])
-  (sad-toucan-incidents-with-bucketing :day-of-month pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :day-of-month pacific-tz))
 
 (expect-with-non-timeseries-dbs
   [[1 6] [2 10] [3 4] [4 9] [5  9] [6 8] [7 8] [8  9] [9 7] [10  9]]
-  (sad-toucan-incidents-with-bucketing :day-of-month utc-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :day-of-month utc-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -547,11 +547,11 @@
            (supports-report-timezone? *engine*))
     [[152 8] [153 9] [154 9] [155 4] [156 11] [157 8] [158 6] [159 10] [160 6] [161 10]]
     [[152 6] [153 10] [154 4] [155 9] [156  9] [157  8] [158 8] [159  9] [160 7] [161  9]])
-  (sad-toucan-incidents-with-bucketing :day-of-year pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :day-of-year pacific-tz))
 
 (expect-with-non-timeseries-dbs
   [[152 6] [153 10] [154 4] [155 9] [156  9] [157  8] [158 8] [159  9] [160 7] [161  9]]
-  (sad-toucan-incidents-with-bucketing :day-of-year utc-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :day-of-year utc-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -560,7 +560,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- results-by-week
-  "Creates a sad toucan resultset using the given `SOURCE-FORMATTER`
+  "Creates a sad mssqltoucan resultset using the given `SOURCE-FORMATTER`
   and `RESULT-FORMATTER`. Pairs the dates with the record counts
   supplied in `COUNTS`"
   [source-formatter result-formatter counts]
@@ -581,10 +581,10 @@
                      (result-date-formatter utc-tz)
                      [46 47 40 60 7]))
 
-  (sad-toucan-incidents-with-bucketing :week utc-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :week utc-tz))
 
 (defn- new-weekly-events-after-tz-shift
-  "Finds the change in sad toucan events if the timezone is shifted to `TZ`"
+  "Finds the change in sad mssqltoucan events if the timezone is shifted to `TZ`"
   [date-str tz]
   (let [date-obj (tformat/parse (tformat/formatters :date) date-str)
         next-week (time/plus date-obj (time/days 7))
@@ -606,7 +606,7 @@
   (map #(new-weekly-events-after-tz-shift % pacific-tz)
        ["2015-05-31" "2015-06-07" "2015-06-14" "2015-06-21" "2015-06-28"]))
 
-;; Sad toucan incidents by week. Databases in UTC that don't support
+;; Sad mssqltoucan incidents by week. Databases in UTC that don't support
 ;; report timezones will be the same as the UTC test above. Databases
 ;; that support report timezone will have different counts as the week
 ;; starts and ends 7 hours earlier
@@ -632,7 +632,7 @@
                      (result-date-formatter utc-tz)
                      [46 47 40 60 7]))
 
-  (sad-toucan-incidents-with-bucketing :week pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :week pacific-tz))
 
 ;; Similar to above this test finds the difference in event counts for
 ;; each week if we were in the eastern timezone
@@ -666,7 +666,7 @@
                      (result-date-formatter utc-tz)
                      [46 47 40 60 7]))
 
-  (sad-toucan-incidents-with-bucketing :week eastern-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :week eastern-tz))
 
 ;; Setting the JVM timezone will change how the datetime results are
 ;; displayed but don't impact the calculation of the begin/end of the
@@ -696,7 +696,7 @@
                      (result-date-formatter pacific-tz)
                      [46 47 40 60 7]))
   (tu/with-jvm-tz pacific-tz
-    (sad-toucan-incidents-with-bucketing :week pacific-tz)))
+    (sad-mssqltoucan-incidents-with-bucketing :week pacific-tz)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -717,7 +717,7 @@
 
     :else
     [[23 46] [24 47] [25 40] [26 60] [27 7]])
-  (sad-toucan-incidents-with-bucketing :week-of-year pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :week-of-year pacific-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -725,7 +725,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; All of the sad toucan events in the test data fit in June. The
+;; All of the sad mssqltoucan events in the test data fit in June. The
 ;; results are the same on all databases and the only difference is
 ;; how the beginning of hte month is represented, since we always
 ;; return times with our dates
@@ -740,7 +740,7 @@
       :else
       "2015-06-01T00:00:00.000Z")
     200]]
-  (sad-toucan-incidents-with-bucketing :month pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :month pacific-tz))
 
 (expect-with-non-timeseries-dbs
   [[(cond
@@ -753,7 +753,7 @@
       :else
       "2015-06-01T00:00:00.000Z")
     200]]
-  (sad-toucan-incidents-with-bucketing :month eastern-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :month eastern-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -763,7 +763,7 @@
 
 (expect-with-non-timeseries-dbs
   [[6 200]]
-  (sad-toucan-incidents-with-bucketing :month-of-year pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :month-of-year pacific-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -781,7 +781,7 @@
           :else
           "2015-04-01T00:00:00.000Z")
     200]]
-  (sad-toucan-incidents-with-bucketing :quarter pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :quarter pacific-tz))
 
 (expect-with-non-timeseries-dbs
   [[(cond (contains? #{:sqlite :crate} *engine*)
@@ -793,7 +793,7 @@
           :else
           "2015-04-01T00:00:00.000Z")
     200]]
-  (sad-toucan-incidents-with-bucketing :quarter eastern-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :quarter eastern-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -803,7 +803,7 @@
 
 (expect-with-non-timeseries-dbs
   [[2 200]]
-  (sad-toucan-incidents-with-bucketing :quarter-of-year pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :quarter-of-year pacific-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -813,7 +813,7 @@
 
 (expect-with-non-timeseries-dbs
   [[2015 200]]
-  (sad-toucan-incidents-with-bucketing :year pacific-tz))
+  (sad-mssqltoucan-incidents-with-bucketing :year pacific-tz))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

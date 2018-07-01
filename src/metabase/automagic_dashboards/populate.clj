@@ -7,7 +7,7 @@
             [metabase.models.card :as card]
             [metabase.query-processor.util :as qp.util]
             [puppetlabs.i18n.core :as i18n :refer [trs]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (def ^Long ^:const grid-width
   "Total grid width."

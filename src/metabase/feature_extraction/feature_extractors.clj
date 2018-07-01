@@ -17,7 +17,7 @@
              [util :as u]]
             [net.cgrand.xforms :as x]
             [redux.core :as redux]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus))
 
 (defn rollup

@@ -26,10 +26,10 @@
              [datasets :as datasets]
              [users :refer [user->client]]]
             [metabase.timeseries-query-processor-test.util :as tqpt]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :as hydrate]]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; ## /api/org/* AUTHENTICATION Tests
 ;; We assume that all endpoints for a given context are enforced by the same middleware, so we don't run the same
@@ -636,7 +636,7 @@
 ;; Ensure unix timestamps show date binning options, not numeric binning options
 (expect
   (var-get #'table-api/datetime-dimension-indexes)
-  (data/dataset sad-toucan-incidents
+  (data/dataset sad-mssqltoucan-incidents
     (let [response ((user->client :rasta) :get 200 (format "table/%d/query_metadata" (data/id :incidents)))]
       (dimension-options-for-field response "timestamp"))))
 

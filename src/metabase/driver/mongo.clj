@@ -23,7 +23,7 @@
              [db :as mdb]
              [query :as mq]]
             [schema.core :as s]
-            [toucan.db :as db])
+            [metabase.mssqltoucan.db :as db])
   (:import com.mongodb.DB))
 
 ;;; ## MongoDriver

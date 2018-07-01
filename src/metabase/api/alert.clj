@@ -16,7 +16,7 @@
              [pulse :as pulse :refer [Pulse]]]
             [metabase.util.schema :as su]
             [schema.core :as s]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defn- add-read-only-flag [alerts]
   (for [alert alerts

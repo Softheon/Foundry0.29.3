@@ -5,7 +5,7 @@
              [field :refer [Field]]
              [params :as params]]
             [metabase.query-processor.middleware.parameters.dates :as date-params]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (defn- parse-param-value-for-type
   "Convert PARAM-VALUE to a type appropriate for PARAM-TYPE.

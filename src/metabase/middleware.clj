@@ -17,7 +17,7 @@
              [user :as user :refer [User]]]
             monger.json
             [puppetlabs.i18n.core :refer [tru]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]])
   (:import com.fasterxml.jackson.core.JsonGenerator
@@ -77,7 +77,7 @@
   [session-id]
   (db/select-one [Session :created_at :user_id (db/qualify User :is_superuser)]
     (mdb/join [Session :user_id] [User :id])
-    (db/qualify User :is_active) true
+    (db/qualify User :is_active) 1
     (db/qualify Session :id) session-id))
 
 (defn- session-age-ms [session]

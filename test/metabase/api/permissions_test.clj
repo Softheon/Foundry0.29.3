@@ -4,7 +4,7 @@
             [metabase.models.permissions-group :as group :refer [PermissionsGroup]]
             [metabase.test.data.users :as test-users]
             [metabase.util :as u]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; GET /permissions/group
 ;; Should *not* include inactive users in the counts.

@@ -4,7 +4,7 @@
             [metabase.query-processor.middleware.add-dimension-projections :refer :all :as add-dim-projections]
             [metabase.query-processor.interface :as i]
             [metabase.test.util :as tu]
-            [toucan.db :as db]
+            [metabase.mssqltoucan.db :as db]
             [metabase.query-processor.middleware.expand :as ql]))
 
 (def ^:private col-defaults

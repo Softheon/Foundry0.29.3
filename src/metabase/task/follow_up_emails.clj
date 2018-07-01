@@ -18,7 +18,7 @@
              [setting :as setting]
              [user :as user :refer [User]]
              [view-log :refer [ViewLog]]]
-            [toucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]))
 
 (declare send-follow-up-email! send-abandonment-email!)
 

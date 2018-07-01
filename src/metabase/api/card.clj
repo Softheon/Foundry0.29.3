@@ -40,7 +40,7 @@
             [metabase.util.schema :as su]
             [ring.util.codec :as codec]
             [schema.core :as s]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]])
   (:import java.util.UUID))

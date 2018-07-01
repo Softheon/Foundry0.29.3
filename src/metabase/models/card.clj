@@ -24,7 +24,7 @@
             [metabase.query-processor.util :as qputil]
             [metabase.util.query :as q]
             [puppetlabs.i18n.core :refer [tru]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [models :as models]]))
 

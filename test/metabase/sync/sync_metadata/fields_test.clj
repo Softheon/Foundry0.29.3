@@ -15,10 +15,10 @@
              [field :refer [Field]]
              [table :refer [Table]]]
             [metabase.test.data.interface :as tdi]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (defn- with-test-db-before-and-after-dropping-a-column
   "Testing function that performs the following steps:

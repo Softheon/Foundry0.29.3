@@ -20,10 +20,10 @@
             [metabase.test.data
              [datasets :as datasets]
              [users :refer :all]]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :as hydrate]]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.util.test :as tt]))
 
 ;; HELPER FNS
 

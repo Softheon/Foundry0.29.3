@@ -15,8 +15,8 @@
              [data :as data]
              [util :as tu]]
             [metabase.test.mock.util :as mock-util]
-            [toucan.db :as db]
-            [toucan.util.test :as tt]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.mssqltoucan.util.test :as tt]))
 
 (def ^:private ^:const sync-test-tables
   {"movie"  {:name   "movie"

@@ -30,7 +30,7 @@
              [schema :as su]]
             [puppetlabs.i18n.core :refer [trs tru]]
             [schema.core :as s]
-            [toucan
+            [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]]))
 
