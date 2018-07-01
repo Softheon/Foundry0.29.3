@@ -115,8 +115,13 @@
   (when-not (setting/get :admin-email)
     (log/info "email query before")
     (when-let [email (db/select-one-field :email 'User
+<<<<<<< HEAD
                        :is_superuser 1
                        :is_active    1)]
+=======
+                       :is_superuser true
+                       :is_active    true)]
+>>>>>>> ec1c6f1c950aa223aa703900ce319da1189d3e6c
       (log/info "before (setting/set! :admin-email email))))")
       (setting/set! :admin-email email))))
 
