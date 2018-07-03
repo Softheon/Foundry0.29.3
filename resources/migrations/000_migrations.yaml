@@ -25,7 +25,7 @@ databaseChangeLog:
               type: varchar(254)
           - column:
               name: description
-              type: text
+              type: varchar(max)
           - column:
               name: logo_url
               type: varchar(254)
@@ -216,7 +216,7 @@ databaseChangeLog:
               type: varchar(254)
           - column:
               name: description
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 deferrable: false
@@ -228,7 +228,7 @@ databaseChangeLog:
               type: int
           - column:
               name: details
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
@@ -270,7 +270,7 @@ databaseChangeLog:
               type: int
           - column:
               name: description
-              type: text
+              type: varchar(max)
           - column:
               name: entity_name
               type: varchar(254)
@@ -337,7 +337,7 @@ databaseChangeLog:
               type: boolean
           - column:
               name: description
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
@@ -445,10 +445,10 @@ databaseChangeLog:
               type: DATETIME
           - column:
               name: values
-              type: text
+              type: varchar(max)
           - column:
               name: human_readable_values
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 deferrable: false
@@ -502,7 +502,7 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: filter_clause
-              type: text
+              type: varchar(max)
           tableName: metabase_tablesegment
       - createIndex:
           columns:
@@ -543,7 +543,7 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: details
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
@@ -609,12 +609,12 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: json_query
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
               name: raw_query
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
@@ -637,7 +637,7 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: error
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
@@ -652,7 +652,7 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: result_data
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 deferrable: false
@@ -666,7 +666,7 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: additional_info
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 deferrable: false
@@ -715,7 +715,7 @@ databaseChangeLog:
               type: varchar(254)
           - column:
               name: description
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
@@ -730,12 +730,12 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: dataset_query
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
               name: visualization_settings
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 deferrable: false
@@ -847,7 +847,7 @@ databaseChangeLog:
               type: varchar(254)
           - column:
               name: description
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
@@ -1020,7 +1020,7 @@ databaseChangeLog:
               type: varchar(254)
           - column:
               name: description
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
@@ -1040,10 +1040,10 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: dataset_query
-              type: text
+              type: varchar(max)
           - column:
               name: email_addresses
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 deferrable: false
@@ -1066,7 +1066,7 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: schedule
-              type: text
+              type: varchar(max)
           tableName: report_emailreport
       - createIndex:
           columns:
@@ -1137,7 +1137,7 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: details
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
@@ -1158,12 +1158,12 @@ databaseChangeLog:
               constraints:
                 nullable: false
               name: error
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 nullable: false
               name: sent_email
-              type: text
+              type: varchar(max)
           - column:
               constraints:
                 deferrable: false
@@ -1486,7 +1486,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: object
-                  type: varchar
+                  type: varchar(max)
                   constraints:
                     nullable: false
               - column:
@@ -1609,7 +1609,7 @@ databaseChangeLog:
                     nullable: true
               - column:
                   name: details
-                  type: varchar
+                  type: varchar(max)
                   constraints:
                     nullable: false
         - createIndex:
@@ -1897,7 +1897,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: details
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: false
               - column:
@@ -2009,7 +2009,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: description
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: true
               - column:
@@ -2020,7 +2020,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: definition
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: false
               - column:
@@ -2059,7 +2059,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: message
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: true
   - changeSet:
@@ -2177,7 +2177,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: description
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: true
               - column:
@@ -2188,7 +2188,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: definition
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: false
               - column:
@@ -2480,7 +2480,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: details
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: false
               - column:
@@ -2553,7 +2553,7 @@ databaseChangeLog:
                     initiallyDeferred: false
               - column:
                   name: details
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: false
               - column:
@@ -2645,7 +2645,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: parameters
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: true
                     deferrable: false
@@ -2660,7 +2660,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: parameter_mappings
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: true
                     deferrable: false
@@ -2709,81 +2709,81 @@ databaseChangeLog:
             columns:
               - column:
                   name: points_of_interest
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: metabase_table
             columns:
               - column:
                   name: points_of_interest
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: metabase_field
             columns:
               - column:
                   name: points_of_interest
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: report_dashboard
             columns:
               - column:
                   name: points_of_interest
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: metric
             columns:
               - column:
                   name: points_of_interest
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: segment
             columns:
               - column:
                   name: points_of_interest
-                  type: text
+                  type: varchar(max)
         ######################################## Add "caveats" metadata column to various models ########################################
         - addColumn:
             tableName: metabase_database
             columns:
               - column:
                   name: caveats
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: metabase_table
             columns:
               - column:
                   name: caveats
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: metabase_field
             columns:
               - column:
                   name: caveats
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: report_dashboard
             columns:
               - column:
                   name: caveats
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: metric
             columns:
               - column:
                   name: caveats
-                  type: text
+                  type: varchar(max)
         - addColumn:
             tableName: segment
             columns:
               - column:
                   name: caveats
-                  type: text
+                  type: varchar(max)
         ######################################## Add "how_is_this_calculated" to metric ########################################
         - addColumn:
             tableName: metric
             columns:
               - column:
                   name: how_is_this_calculated
-                  type: text
+                  type: varchar(max)
         ######################################## Add "most important dashboard" (0 or 1 dashboards) ########################################
         - addColumn:
             tableName: report_dashboard
@@ -3149,13 +3149,13 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: before
-                  type: text
+                  type: varchar(max)
                   remarks: 'Serialized JSON of the permissions before the changes.'
                   constraints:
                     nullable: false
               - column:
                   name: after
-                  type: text
+                  type: varchar(max)
                   remarks: 'Serialized JSON of the permissions after the changes.'
                   constraints:
                     nullable: false
@@ -3175,7 +3175,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: remark
-                  type: text
+                  type: varchar(max)
                   remarks: 'Optional remarks explaining why these changes were made.'
   - changeSet:
       id: 44
@@ -3199,7 +3199,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: visualization_settings
-                  type: text
+                  type: varchar(max)
         - addNotNullConstraint:
             tableName: report_dashboardcard
             columnName: visualization_settings
@@ -3245,7 +3245,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: name
-                  type: text
+                  type: varchar(max)
                   remarks: 'The unique, user-facing name of this Collection.'
                   constraints:
                     nullable: false
@@ -3258,7 +3258,7 @@ databaseChangeLog:
                     unique: true
               - column:
                   name: description
-                  type: text
+                  type: varchar(max)
                   remarks: 'Optional description for this Collection.'
               - column:
                   name: color
@@ -3313,13 +3313,13 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: before
-                  type: text
+                  type: varchar(max)
                   remarks: 'Serialized JSON of the collections graph before the changes.'
                   constraints:
                     nullable: false
               - column:
                   name: after
-                  type: text
+                  type: varchar(max)
                   remarks: 'Serialized JSON of the collections graph after the changes.'
                   constraints:
                     nullable: false
@@ -3339,7 +3339,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: remark
-                  type: text
+                  type: varchar(max)
                   remarks: 'Optional remarks explaining why these changes were made.'
   - changeSet:
       id: 49
@@ -3354,7 +3354,7 @@ databaseChangeLog:
                   type: char(36)
                   remarks: 'Unique UUID used to in publically-accessible links to this Card.'
                   constraints:
-                    unique: true
+                    unique: false
               - column:
                   name: made_public_by_id
                   type: int
@@ -3368,6 +3368,12 @@ databaseChangeLog:
             columns:
               column:
                 name: public_uuid
+              column:
+                name: id
+        - addUniqueConstraint:
+            tableName: report_card
+            columnNames: id, public_uuid
+            constraintName: UniqueReportCardSharedLinkUUID
         ######################################## Dashboard public_uuid & indices ########################################
         - addColumn:
             tableName: report_dashboard
@@ -3377,7 +3383,7 @@ databaseChangeLog:
                   type: char(36)
                   remarks: 'Unique UUID used to in publically-accessible links to this Dashboard.'
                   constraints:
-                    unique: true
+                    unique: false
               - column:
                   name: made_public_by_id
                   type: int
@@ -3391,6 +3397,13 @@ databaseChangeLog:
             columns:
               column:
                 name: public_uuid
+              column:
+                name: id    
+        - addUniqueConstraint:
+            tableName: report_dashboard
+            columnNames: id, public_uuid
+            constraintName: UniquerReportDashboardSharedLinkUUID
+        
         ######################################## make query_queryexecution.executor_id nullable ########################################
         - dropNotNullConstraint:
             tableName: query_queryexecution
@@ -3413,7 +3426,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: embedding_params
-                  type: text
+                  type: varchar(max)
                   remarks: 'Serialized JSON containing information about required parameters that must be supplied when embedding this Card.'
           ######################################## new Card columns ########################################
         - addColumn:
@@ -3428,7 +3441,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: embedding_params
-                  type: text
+                  type: varchar(max)
                   remarks: 'Serialized JSON containing information about required parameters that must be supplied when embedding this Dashboard.'
   - changeSet:
       id: 51
@@ -3481,7 +3494,7 @@ databaseChangeLog:
                   remarks: 'Short string specifying how this query was executed, e.g. in a Dashboard or Pulse.'
               - column:
                   name: error
-                  type: text
+                  type: varchar(max)
                   remarks: 'Error message returned by failed query, if any.'
               # The following columns are foreign keys, but we don't keep FK constraints on them for a few reasons:
               # - We don't want to keep indexes on these columns since they wouldn't be generally useful and for size and performance reasons
@@ -3696,7 +3709,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: result_metadata
-                  type: text
+                  type: varchar(max)
                   remarks: 'Serialized JSON containing metadata about the result columns from running the query.'
   - property:
         name: onDeleteCascade
@@ -3789,7 +3802,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: fingerprint
-                  type: text
+                  type: varchar(max)
                   remarks: 'Serialized JSON containing non-identifying information about this Field, such as min, max, and percent JSON. Used for classification.'
   - changeSet:
       id: 60
@@ -3965,7 +3978,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: payload
-                  type: text
+                  type: varchar(max)
                   constraints:
                     nullable: false
   - changeSet:
@@ -3978,7 +3991,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: context
-                  type: text
+                  type: varchar(max)
               - column:
                   name: ended_at
                   type: DATETIME
@@ -4072,7 +4085,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: options
-                  type: text
+                  type: varchar(max)
                   remarks: 'Serialized JSON containing various options like QB behavior.'
   - changeSet:
       id: 74
@@ -4084,7 +4097,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: has_field_values
-                  type: text
+                  type: varchar(max)
                   remarks: 'Whether we have FieldValues ("list"), should ad-hoc search ("search"), disable entirely ("none"), or infer dynamically (null)"'
   - changeSet:
       id: 75
@@ -4095,5 +4108,5 @@ databaseChangeLog:
             tableName: report_card
             columns:
               name: read_permissions
-              type: text
+              type: varchar(max)
               remarks: 'Permissions required to view this Card and run its query.'

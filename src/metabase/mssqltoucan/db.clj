@@ -231,7 +231,7 @@
         (recur (s/replace sql (re-pattern (format "\\s+%s\\s+" k)) (format "\n%s " k))
                more)))))
 
-(def ^:dynamic ^:private *debug-print-queries* true)
+(def ^:dynamic ^:private *debug-print-queries* false)
 
 (defn -do-with-debug-print-queries
   "Execute `f` with debug query logging enabled. Don't use this directly; prefer the `debug-print-queries` macro form
@@ -556,10 +556,13 @@
     (:id insert-result)
     ;; :generated_key is returned by MySQL
     (:generated_key insert-result)
+    ;; :generated_keys is returned by MSSQL
+    (:generated_keys insert-result)
     ;; scope_identity() returned by older versions of H2
     ((keyword "scope_identity()") insert-result)
     ;; last_insert_rowid() returned by SQLite3
-    ((keyword "last_insert_rowid()") insert-result)))
+    ((keyword "last_insert_rowid()") insert-result)
+   ))
 
 (defn simple-insert-many!
   "Do a simple JDBC `insert!` of multiple objects into the database.

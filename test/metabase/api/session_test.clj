@@ -216,7 +216,7 @@
 (expect
   clojure.lang.ExceptionInfo
   (tu/with-temporary-setting-values [google-auth-auto-create-accounts-domain "sf-toucannery.com"]
-    (#'session-api/google-auth-create-new-user! "Rasta" "Toucan" "rasta@metabase.com")))
+    (#'session-api/softheon-auth-create-new-user! "Rasta" "Toucan" "rasta@metabase.com")))
 
 ;; should totally work if the email domains match up
 (expect
@@ -224,7 +224,7 @@
   (et/with-fake-inbox
     (tu/with-temporary-setting-values [google-auth-auto-create-accounts-domain "sf-toucannery.com"
                                        admin-email                             "rasta@toucans.com"]
-      (select-keys (u/prog1 (#'session-api/google-auth-create-new-user! "Rasta" "Toucan" "rasta@sf-toucannery.com")
+      (select-keys (u/prog1 (#'session-api/softheon-auth-create-new-user! "Rasta" "Toucan" "rasta@sf-toucannery.com")
                      (db/delete! User :id (:id <>))) ; make sure we clean up after ourselves !
                    [:first_name :last_name :email]))))
 
@@ -240,7 +240,7 @@
 (expect
   (tt/with-temp User [user {:email "cam@sf-toucannery.com"}]
     (tu/with-temporary-setting-values [google-auth-auto-create-accounts-domain "metabase.com"]
-      (is-session? (#'session-api/google-auth-fetch-or-create-user! "Cam" "Saül" "cam@sf-toucannery.com")))))
+      (is-session? (#'session-api/softheon-auth-fetch-or-create-user! "Cam" "Saül" "cam@sf-toucannery.com")))))
 
 ;; test that a user that doesn't exist with a *different* domain than the auto-create accounts domain gets an
 ;; exception
@@ -248,7 +248,7 @@
   clojure.lang.ExceptionInfo
   (tu/with-temporary-setting-values [google-auth-auto-create-accounts-domain nil
                                      admin-email                             "rasta@toucans.com"]
-    (#'session-api/google-auth-fetch-or-create-user! "Rasta" "Can" "rasta@sf-toucannery.com")))
+    (#'session-api/softheon-auth-fetch-or-create-user! "Rasta" "Can" "rasta@sf-toucannery.com")))
 
 ;; test that a user that doesn't exist with the *same* domain as the auto-create accounts domain means a new user gets
 ;; created
@@ -256,7 +256,7 @@
   (et/with-fake-inbox
     (tu/with-temporary-setting-values [google-auth-auto-create-accounts-domain "sf-toucannery.com"
                                        admin-email                             "rasta@toucans.com"]
-      (u/prog1 (is-session? (#'session-api/google-auth-fetch-or-create-user! "Rasta" "Toucan" "rasta@sf-toucannery.com"))
+      (u/prog1 (is-session? (#'session-api/softheon-auth-fetch-or-create-user! "Rasta" "Toucan" "rasta@sf-toucannery.com"))
         (db/delete! User :email "rasta@sf-toucannery.com"))))) ; clean up after ourselves
 
 
