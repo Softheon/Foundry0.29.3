@@ -68,7 +68,7 @@
 
 (s/defn ^:private insert-fields-if-needed! :- (s/maybe [s/Int])
   [table :- i/TableInstance, new-fields :- [i/TableMetadataField], parent-id :- ParentID]
-  (when (seq new-fields)
+  (map (fn [x] (int x)) (when (seq new-fields)
     (db/insert-many! Field
       (for [{:keys [database-type base-type], field-name :name :as field} new-fields]
         {:table_id      (u/get-id table)
@@ -77,7 +77,7 @@
          :database_type database-type
          :base_type     base-type
          :special_type  (special-type field)
-         :parent_id     parent-id}))))
+         :parent_id     parent-id})))))
 
 (s/defn ^:private ->metabase-fields! :- [i/FieldInstance]
   "Return an active Metabase Field instance that matches NEW-FIELD-METADATA. This object will be created or

@@ -385,7 +385,7 @@
 (defn- cache-metrics
   "Metrics based on use of the QueryCache."
   []
-  (let [{:keys [length count]} (db/select-one [QueryCache [:%avg.%length.results :length] [:%count.* :count]])]
+  (let [{:keys [length count]} (db/select-one [QueryCache [:%avg.%len.results :length] [:%count.* :count]])]
     {:average_entry_size (int (or length 0))
      :num_queries_cached (bin-small-number count)}))
 
