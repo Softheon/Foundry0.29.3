@@ -17,6 +17,7 @@
   (:require [clojure.java.jdbc :as jdbc]
             [colorize.core :as color]
             [medley.core :as m]
+            [clojure.tools.logging :as log]
             [metabase
              [config :as config]
              [db :as mdb]
@@ -141,6 +142,9 @@
           (throw e)))))
   (println-ok))
 
+(defn- identity-property? 
+  [target-db-conn table-name]
+  (not (empty? (jdbc/query target-db-conn [(format "select is_identity from sys.identity_columns where OBJECT_NAME(object_id) = '%s'" table-name)]))))
 
 (defn- load-data! [target-db-conn h2-connection-string-or-nil]
   (jdbc/with-db-connection [h2-conn (h2-details h2-connection-string-or-nil)]
@@ -148,7 +152,13 @@
             :let  [rows (for [row (jdbc/query h2-conn [(str "SELECT * FROM " (name (:table e)))])]
                           (m/map-vals u/jdbc-clob->str row))]
             :when (seq rows)]
-      (insert-entity! target-db-conn e rows))))
+          (let [table-name (name (:table e))
+                has-identity-property (identity-property? target-db-conn table-name)]
+                (when has-identity-property
+                  (jdbc/db-do-commands target-db-conn [(format "SET IDENTITY_INSERT %s ON" table-name)]))
+                (insert-entity! target-db-conn e rows)
+                (when has-identity-property
+                  (jdbc/db-do-commands target-db-conn [(format "SET IDENTITY_INSERT %s OFF" table-name)]))))))
 
 
 ;;; ---------------------------------------- Enabling / Disabling Constraints ----------------------------------------
@@ -170,16 +180,35 @@
 (defn- disable-db-constraints:mysql! [target-db-conn]
   (jdbc/execute! target-db-conn ["SET FOREIGN_KEY_CHECKS=0"]))
 
+(defn- disable-sqlserver-constraints
+  [target-db-conn table id]
+  (jdbc/execute! target-db-conn [(format "ALTER TABLE \"%s\" NOCHECK CONSTRAINT ALL" table)])
+  (when (not (nil? id))
+    (jdbc/execute! target-db-conn [(format "SET IDENTITY_INSERT \"%s\" ON" table)])))
+  
+(defn- disable-db-constraints:sqlserver! [target-db-conn]
+  (doseq [{constraint :constraint_name, table :table_name} (jdbc/query 
+                                                            target-db-conn
+                                                            [(str "SELECT * "
+                                                                  "FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS "
+                                                                  "WHERE CONSTRAINT_TYPE = 'FOREIGN KEY'")])]
+  (jdbc/execute! target-db-conn [(format "ALTER TABLE \"%s\" NOCHECK CONSTRAINT \"%s\"" table constraint)])))
+
 ;; For MySQL we need to reënable FK checks when we're done
 (defn- reënable-db-constraints:mysql! [target-db-conn]
   (jdbc/execute! target-db-conn ["SET FOREIGN_KEY_CHECKS=1"]))
 
+(defn- reenable-db-constraints:sqlserver! [target-db-conn]
+  (doseq [e entities
+          :let [table (name (:table e))]]
+    (jdbc/execute! target-db-conn [(format "ALTER TABLE \"%s\" CHECK CHECK CONSTRAINT ALL" table)])))
 
 (defn- disable-db-constraints! [target-db-conn]
   (println (u/format-color 'blue "Temporarily disabling DB constraints..."))
   ((case (mdb/db-type)
       :postgres disable-db-constraints:postgres!
-      :mysql    disable-db-constraints:mysql!) target-db-conn)
+      :mysql    disable-db-constraints:mysql!
+      :sqlserver disable-db-constraints:sqlserver!) target-db-conn)
   (println-ok))
 
 (defn- reënable-db-constraints-if-needed! [target-db-conn]
