@@ -130,7 +130,7 @@ export default class PasswordResetApp extends Component {
             <div className="Grid-cell flex layout-centered text-brand">
               <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} />
             </div>
-            {!resetSuccess ? 
+            {!resetSuccess ? (
               <div className="Grid-cell">
                 <form
                   className="ForgotForm Login-wrapper bg-white Form-new bordered rounded shadowed"
@@ -201,7 +201,7 @@ export default class PasswordResetApp extends Component {
                   </div>
                 </form>
               </div>
-             : 
+                     ) : (
               <div className="Grid-cell">
                 <div className="SuccessGroup bg-white bordered rounded shadowed">
                   <div className="SuccessMark">
@@ -223,7 +223,7 @@ export default class PasswordResetApp extends Component {
                   </p>
                 </div>
               </div>
-            }
+                     )}
           </div>
           <AuthScene />
         </div>
