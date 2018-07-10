@@ -48,7 +48,7 @@ export default class ForgotPasswordApp extends Component {
       <div className="full-height bg-white flex flex-column flex-full md-layout-centered">
         <div className="Login-wrapper wrapper Grid Grid--full md-Grid--1of2">
           <div className="Grid-cell flex layout-centered text-brand">
-            <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} /> 
+            <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png"/>
           </div>
           {!emailConfigured ? (
             <div className="Grid-cell">
