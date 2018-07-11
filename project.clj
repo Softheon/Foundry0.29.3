@@ -103,6 +103,7 @@
                  [ring/ring-core "1.6.0"]
                  [ring/ring-jetty-adapter "1.6.0"]                    ; Ring adapter using Jetty webserver (used to run a Ring server for unit tests)
                  [ring/ring-json "0.4.0"]                             ; Ring middleware for reading/writing JSON automatically
+                 [ring/ring-session-timeout "0.2.0"]                  ; Ring middlewarethat provides idle and absolute tiimeouts for sessions
                  [stencil "0.5.0"]                                    ; Mustache templates for Clojure
                  ;[toucan "1.1.4"                                      ; Model layer, hydration, and DB utilities
                  ; :exclusions [honeysql]]

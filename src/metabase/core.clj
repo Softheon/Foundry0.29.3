@@ -25,6 +25,7 @@
             [metabase.util.i18n :refer [set-locale]]
             [puppetlabs.i18n.core :refer [locale-negotiator]]
             [ring.adapter.jetty :as ring-jetty]
+            [ring.middleware.session-timeout :as ring-timeout]
             [ring.middleware
              [cookies :refer [wrap-cookies]]
              [gzip :refer [wrap-gzip]]
@@ -102,6 +103,7 @@
       mb-middleware/maybe-set-site-url   ; set the value of `site-url` if it hasn't been set yet
       locale-negotiator                  ; Binds *locale* for i18n
       wrap-cookies                       ; Parses cookies in the request map and assocs as :cookies
+      (ring-timeout/wrap-idle-session-timeout {:timeout 300, :timeout-response {:status 401, :body "Unauthenticated"}})
       wrap-session                       ; reads in current HTTP session and sets :session/key
       wrap-gzip))                        ; GZIP response if client can handle it
 
