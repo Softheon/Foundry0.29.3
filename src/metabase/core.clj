@@ -76,6 +76,9 @@
 (def ^:private jetty-instance
   (atom nil))
 
+(def ^:private idle-time
+  (num 900))
+
 (defn- jetty-stats []
   (when-let [^Server jetty-server @jetty-instance]
     (let [^QueuedThreadPool pool (.getThreadPool jetty-server)]
@@ -103,7 +106,7 @@
       mb-middleware/maybe-set-site-url   ; set the value of `site-url` if it hasn't been set yet
       locale-negotiator                  ; Binds *locale* for i18n
       wrap-cookies                       ; Parses cookies in the request map and assocs as :cookies
-      (ring-timeout/wrap-idle-session-timeout {:timeout 300, :timeout-response {:status 401, :body "Unauthenticated"}})
+      (ring-timeout/wrap-idle-session-timeout {:timeout idle-time, :timeout-response {:status 401, :body "Unauthenticated"}})
       wrap-session                       ; reads in current HTTP session and sets :session/key
       wrap-gzip))                        ; GZIP response if client can handle it
 
