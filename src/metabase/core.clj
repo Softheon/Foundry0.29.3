@@ -5,6 +5,11 @@
             [clojure.pprint :as pprint]
             [clojure.tools.logging :as log]
             [medley.core :as m]
+            [metabase.api.common :as api]
+            [metabase.util
+              [schema :as su]]
+            [metabase.models
+             [session :refer [Session]]]
             [metabase
              [config :as config]
              [db :as mdb]
@@ -79,6 +84,33 @@
 (def ^:private idle-time
   (num 900))
 
+(defn check-exists?
+  "Check that object with ID (or other key/values) exists in the DB"
+  ([entity id]
+   (check-exists? entity :id id))
+  ([entity k v & more]
+   (db/exists? entity k v more)))
+
+(defn- delete-timeout-session
+  "Remove session id"
+  [session_id]
+  {session_id su/NonBlankString}
+  (log/info "session id")
+  (log/info (identity session_id))
+  (if (and session_id (check-exists? Session session_id))
+      (db/delete! Session :id session_id)))
+
+(def ^:private ^:const ^String metabase-session-header "x-metabase-session")
+(def ^:private ^:const ^String metabase-session-cookie "metabase.SESSION_ID")
+
+(defn-  wrap-idle-session-timeout-redirect
+  "Set idle Timeout"
+  [{:keys [cookies headers] :as request}]
+  (if-let [session-id (or (get-in cookies [metabase-session-cookie :value])
+                        (headers metabase-session-header))]
+    (delete-timeout-session session-id))
+  api/generic-204-no-content)
+
 (defn- jetty-stats []
   (when-let [^Server jetty-server @jetty-instance]
     (let [^QueuedThreadPool pool (.getThreadPool jetty-server)]
@@ -106,7 +138,7 @@
       mb-middleware/maybe-set-site-url   ; set the value of `site-url` if it hasn't been set yet
       locale-negotiator                  ; Binds *locale* for i18n
       wrap-cookies                       ; Parses cookies in the request map and assocs as :cookies
-      (ring-timeout/wrap-idle-session-timeout {:timeout idle-time, :timeout-response {:status 401, :body "Unauthenticated"}})
+      (ring-timeout/wrap-idle-session-timeout {:timeout idle-time, :timeout-handler wrap-idle-session-timeout-redirect})
       wrap-session                       ; reads in current HTTP session and sets :session/key
       wrap-gzip))                        ; GZIP response if client can handle it
 
