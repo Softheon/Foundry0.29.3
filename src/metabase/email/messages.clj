@@ -62,6 +62,7 @@
                                :invitorEmail (:email invitor)
                                :company      company
                                :joinUrl      join-url
+                               :loginEmail (:email invited)
                                :today        (u/format-date "MMM'&nbsp;'dd,'&nbsp;'yyyy")
                                :logoHeader   true}
                               (random-quote-context)))]
