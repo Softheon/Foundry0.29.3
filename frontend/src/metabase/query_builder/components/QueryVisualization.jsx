@@ -144,10 +144,10 @@ export default class QueryVisualization extends Component {
           <div className="ShownRowCount">
             {result.data.rows_truncated != null
               ? jt`Showing first ${(
-                  <strong>{formatNumber(result.row_count)} out  of {formatNumber(result.data.rows.length)}</strong>
+                  <strong>{formatNumber(result.row_count)}</strong>
                 )} ${inflect(t`row`, result.data.rows.length)}`
               : jt`Showing ${(
-                  <strong>{formatNumber(result.row_count)} out  of {formatNumber(result.data.rows.length)}</strong>
+                  <strong>{formatNumber(result.row_count)}</strong>
                 )} ${inflect(t`row`, result.data.rows.length)}`}
           </div>
         ),
