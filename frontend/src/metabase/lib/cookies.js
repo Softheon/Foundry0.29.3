@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 
 export const METABASE_SESSION_COOKIE = "metabase.SESSION_ID";
 export const METABASE_SEEN_ALERT_SPLASH_COOKIE = "metabase.SEEN_ALERT_SPLASH";
-
+export const BNES_METABASE_SESSION_COOKIE = "BNES_metabase.SESSION_ID";
 // Handles management of Metabase cookie work
 let MetabaseCookies = {
   // set the session cookie.  if sessionId is null, clears the cookie
@@ -19,11 +19,13 @@ let MetabaseCookies = {
       if (sessionId) {
         // set a session cookie
         Cookies.set(METABASE_SESSION_COOKIE, sessionId, options);
+        Cookies.remove(BNES_METABASE_SESSION_COOKIE);
       } else {
         sessionId = Cookies.get(METABASE_SESSION_COOKIE);
 
         // delete the current session cookie and Google Auth creds
         Cookies.remove(METABASE_SESSION_COOKIE);
+        Cookies.remove(BNES_METABASE_SESSION_COOKIE);
         clearGoogleAuthCredentials();
 
         return sessionId;
