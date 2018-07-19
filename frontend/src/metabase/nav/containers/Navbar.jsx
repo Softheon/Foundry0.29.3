@@ -160,7 +160,6 @@ export default class Navbar extends Component {
               icon="all"
             />
           </li>
-          {/*
           <li className="md-pl1 hide xs-show">
             <MainNavLink
               to="/pulse"
@@ -169,7 +168,6 @@ export default class Navbar extends Component {
               icon="pulse"
             />
           </li>
-          */}
           <li className="md-pl1 hide xs-show">
             <MainNavLink
               to="/reference/guide"
