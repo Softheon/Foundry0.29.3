@@ -564,6 +564,13 @@
     ((keyword "last_insert_rowid()") insert-result)
    ))
 
+  (defn set-identity-insert
+    "Set IDENTITY_INSERT `ON/OFF` on sql server"
+    [model enable]
+    (if enable
+      (jdbc/db-do-commands (connection) [(format "SET IDENTITY_INSERT %s ON" (name (:table model)))])
+      (jdbc/db-do-commands (connection) [(format "SET IDENTITY_INSERT %s OFF" (name (:table model)))])))
+
 (defn simple-insert-many!
   "Do a simple JDBC `insert!` of multiple objects into the database.
   Normally you should use `insert-many!` instead, which calls the model's `pre-insert` method on the `row-maps`;

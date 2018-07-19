@@ -479,13 +479,13 @@
    This doesn't do anything if `*current-user-id*` is unset (e.g. for testing or REPL usage)."
   [current-revision old new]
   (when *current-user-id*
-    (jdbc/db-do-commands (db/connection) [(format "SET IDENTITY_INSERT %s ON" "permissions_revision")])
+    (db/set-identity-insert PermissionsRevision true)
     (db/insert! PermissionsRevision
       :id     (inc current-revision) ; manually specify ID here so if one was somehow inserted in the meantime in the fraction of a second
       :before  old                   ; since we called `check-revision-numbers` the PK constraint will fail and the transaction will abort
       :after   new
       :user_id *current-user-id*)
-    (jdbc/db-do-commands (db/connection) [(format "SET IDENTITY_INSERT %s OFF" "permissions_revision")])))
+    (db/set-identity-insert PermissionsRevision false)))
 
 (defn log-permissions-changes
   "Log changes to the permissions graph."

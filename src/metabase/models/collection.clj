@@ -2,6 +2,7 @@
   (:require [clojure
              [data :as data]
              [string :as str]]
+            [clojure.java.jdbc :as jdbc]
             [metabase.api.common :refer [*current-user-id*]]
             [metabase.models
              [collection-revision :as collection-revision :refer [CollectionRevision]]
@@ -166,11 +167,13 @@
   (when *current-user-id*
     ;; manually specify ID here so if one was somehow inserted in the meantime in the fraction of a second since we
     ;; called `check-revision-numbers` the PK constraint will fail and the transaction will abort
+    (db/set-identity-insert CollectionRevision true)
     (db/insert! CollectionRevision
       :id     (inc current-revision)
       :before  old
       :after   new
-      :user_id *current-user-id*)))
+      :user_id *current-user-id*)
+    (db/set-identity-insert CollectionRevision false)))
 
 (s/defn update-graph!
   "Update the collections permissions graph. This works just like the function of the same name in
