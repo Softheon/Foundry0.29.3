@@ -12,6 +12,7 @@ import RecentViews from "../components/RecentViews";
 import Smile from "../components/Smile";
 import NewUserOnboardingModal from "../components/NewUserOnboardingModal";
 import NextStep from "../components/NextStep";
+import FeedbackSidebar from "metabase/components/FeedbackSidebar.jsx";
 
 import * as homepageActions from "../actions";
 import { getActivity, getRecentViews, getUser } from "../selectors";
@@ -92,6 +93,7 @@ export default class HomepageApp extends Component {
             </div>
           </div>
         </div>
+        <FeedbackSidebar/>
       </div>
     );
   }
