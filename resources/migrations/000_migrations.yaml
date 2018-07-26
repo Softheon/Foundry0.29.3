@@ -4110,3 +4110,49 @@ databaseChangeLog:
               name: read_permissions
               type: varchar(max)
               remarks: 'Permissions required to view this Card and run its query.'
+  - changeSet:
+      id: 76
+      author: hxia
+      changes:
+        - createTable:
+            tableName: pulse_revision
+            remarks: 'Used to keep track of changes made to pulse.'
+            columns:
+             - column:
+                 name: id
+                 type: int
+                 autoIncrement: true
+                 constraints:
+                    primaryKey: true
+                    nullable: false
+             - column:
+                name: before
+                type: varchar(max)
+                remarks: 'Serialized JSON of the pulse graph before the changes.'
+                constraints:
+                    nullable: false
+             - column:
+                name: after
+                type: varchar(max)
+                remarks: 'Serialzied JSON of the pulse graph afther the changes.'
+                constraints:
+                    nullable: false
+             - column:
+                name: user_id
+                type: int
+                remarks: 'The ID of the admin who made this set of changes.'
+                constraints:
+                    nullable: false 
+                    references: core_user(id)
+                    foreignKeyName: fk_pulse_revision_user_id
+             - column:
+                name: created_at
+                type: datetime
+                remarks: 'The timestamp of when these changes were make.'
+                constraints:
+                    nullable: false 
+             - column:
+                name: remark
+                type: varchar(max)
+                remarks: 'Optinal remarks explaining why these changes were made.'
+
