@@ -122,7 +122,9 @@
   ^String [collection-or-id]
   (str "/collection/" (u/get-id collection-or-id) "/"))
 
-
+(defn pulse-readwrite-path
+  "Return the permissions path for `readwreite` access for pulse"
+  (string "/pulse/"))
 ;;; ---------------------------------------- Permissions Checking Fns ----------------------------------------
 
 (defn is-permissions-for-object?
@@ -272,10 +274,10 @@
              (set-has-partial-permissions? permissions-set path) :some
              :else                                               :none)))
 
-(defn- table->native-readwrite-path [table] (native-readwrite-path (:db_id table)))
-(defn- table->schema-object-path    [table] (object-path (:db_id table) (:schema table)))
-(defn- table->table-object-path     [table] (object-path (:db_id table) (:schema table) (:id table)))
-(defn- table->all-schemas-path      [table] (all-schemas-path (:db_id table)))
+(defn- table->native-readwrite-path "Return Path /db/:database-id/native/"                  [table] (native-readwrite-path (:db_id table)))
+(defn- table->schema-object-path    "Return Path /db/:database-id/schema/:schema-name/"     [table] (object-path (:db_id table) (:schema table)))
+(defn- table->table-object-path     "Return Path /db/:database-id/schema/table/:table-id/"  [table] (object-path (:db_id table) (:schema table) (:id table)))
+(defn- table->all-schemas-path      "Return Path /db/:database-id/schema/"                 [table] (all-schemas-path (:db_id table)))
 
 
 (s/defn ^:private schema-graph :- SchemaPermissionsGraph [permissions-set tables]
@@ -412,6 +414,15 @@
   [group-or-id collection-or-id]
   (grant-permissions! (u/get-id group-or-id) (collection-read-path collection-or-id)))
 
+(defn revoke-pulse-permissions!
+  "Remove all access for GROUP-OR-ID to pulse feature"
+  [group-or-id]
+  (delete-related-permissions! group-or-id (pulse-readwrite-path)))
+
+(defn grant-pulse-readwrite-permissons!
+  "Grant full access to a Pulse, which means a use can view pulse menu item"
+  [group-or-id pulse-identifier]
+  (grant-permissions! (u/get-id group-or-id) (pulse-readwrite-path)))
 
 ;;; ---------------------------------------- Graph Updating Fns ----------------------------------------
 
@@ -490,7 +501,7 @@
 (defn log-permissions-changes
   "Log changes to the permissions graph."
   [old new]
-  (log/debug (format "Changing permissions: 🔏\nFROM:\n%s\nTO:\n%s\n"
+  (log/info (format "Changing permissions: 🔏\nFROM:\n%s\nTO:\n%s\n"
                      (u/pprint-to-str 'magenta old)
                      (u/pprint-to-str 'blue new))))
 

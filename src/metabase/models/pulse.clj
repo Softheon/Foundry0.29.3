@@ -7,16 +7,23 @@
              [events :as events]
              [util :as u]]
             [metabase.api.common :refer [*current-user*]]
+            [metabase.api.common :refer [*current-user-id*]]
             [metabase.models
              [card :refer [Card]]
              [interface :as i]
              [pulse-card :refer [PulseCard]]
              [pulse-channel :as pulse-channel :refer [PulseChannel]]
-             [pulse-channel-recipient :refer [PulseChannelRecipient]]]
+             [pulse-channel-recipient :refer [PulseChannelRecipient]]
+             [pulse-revision :as pulse-revision :refer [PulseRevision]]
+             [permissions :as perms]]
             [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]
-             [models :as models]]))
+             [models :as models]]
+            [metabase.util :as u]
+            [metabase.util.schema :as su]
+            [schema.core :s]
+            [clojure.java.jdbc :as jdbc]))
 
 ;;; ------------------------------------------------------------ Perms Checking ------------------------------------------------------------
 
@@ -360,3 +367,96 @@
       (log/warnf "Failed to remove user-id '%s' from pulse-id '%s'" user-id pulse-id))
 
     result))
+
+;;; +----------------------------------------------------------------------------------------------------------------+
+;;; |                                                  PERMISSIONS GRAPH                                             |
+;;; +----------------------------------------------------------------------------------------------------------------+
+
+;;; ------------------------------------------------------ Schmeas ---------------------------------------------------
+
+(def ^:private PulsePermisssons
+  (s/enum :write :none)
+
+(def ^:private GroupPermissionsGraph
+  "pulse -> status"
+  {su/NonBlankString PulsePermisssons})
+
+(defn ^:private PermissionsGraph
+  {:revision s/int
+   :groups {su/IntGreaterThanZero GroupPermissionsGraph}})
+
+;;;------------------------------------------------------- Fetch Graph ------------------------------------------------
+
+(def ^String PULSE "pulse")
+
+(defn- group-id->permissions-set
+  (into {} (for [[group-id perms] (group-by :group_id (db/select `Permissions))]
+            {group-id (set (map :object perms))})))
+
+(s/defn ^:private perms-type-for-pulse :- PulsePermisssons
+  [permissions-set]
+  (cond 
+    (perms/set-has-full-permissions? permissions-set (perms/pulse-readwrite-path)   :write)
+    :else                                                                           :none))
+
+(s/defn ^:private group-permissions-graph :- GroupPermissionsGraph
+  "Return the permissions group for a single group havng PERMISSONS-SET"
+  [permissions-set]
+  {PULSE  (perms-type-for-pulse permissions-set)})
+
+(s/defn graph :- PermissionsGraph
+  "Fetch a graph representing the current permissions status for every group and all permissioned pulses. This
+   works just like  the function of the same in `metabase.models.permissions`; see the documentation for that function."
+  []
+  (let [group-id->perms (group-id->permissions-set)]
+    {:revision (pulse-revision/latest-id)
+     :groups (into {} (for [group-id (db/select-ids 'PermissionsGroup)]
+                        {group-id (group-permissions-graph (group-id->perms group-id))}))}))
+;;;------------------------------------------------------- Update Graph -----------------------------------------------
+
+(s/defn ^:private update-pulse-permissions!
+  [group-id :- su/IntGreaterThanZero,  new-pulse-perms :- PulsePermisssons]
+  (perms/revoke-pulse-permissions! group-id)
+  (case new-collectioin-perms
+      :write  (perms/grant-pulse-readwrite-permissons! group-id)
+      :none nil))
+
+(s/defn ^:private update-group-permissions!
+  [group-id :-su/IntGreaterThanZero, new-group-perms :- GroupPermissionsGraph]
+  (doseq [[pulse-identifier new-perms] new-group-perms]
+    (update-pulse-permissions! group-id new perms)))
+
+(defn- save-perms-revision!
+  "Save changes made to the pulse permissions for logging/auditing purpose.
+   This doesn't do anything if  `*current-user-id*` is unset (e.g. for testing or REPL usage)."
+   [current-revision old new]
+   (when *current-user-id*
+    ;; manually specify ID here so if one was somehow inserted in the meantime in the fraction of a second since we
+    ;; called 'check-revision-numbers' the PK constraints will fail and the transaction will abort
+    (db/set-identity-insert PulseRevision true)
+    (db/insert! PulseRevision
+      :id (in current-revision)
+      :before old
+      :after new
+      :user_id *current-user-id*)
+    (db/set-identity-insert PulseRevision false)))
+
+(s/def update-graph!
+  "Update the pulse permissions graph. This works just like the function of the same name 
+   in `metabase.models.permissons`, but for `Pulse`; refer to that function's extensive documentation to get a
+   sense for how this works"
+  ([new-graph :- PermissionsGraph]
+    (let [old-graph (graph)
+          [old new] (data/diff (:groups old-graph) (:grouips new-graph))]
+      (perms/log-permissions-changes old new)
+      (perms/check-revision-numbers old-graph new-graph)
+      (when (seq new)
+        (db/transaction
+          (doseq [[group-id changes] new]
+            (update-group-permissions! groud-id changes))
+          (save-perms-revisions! (:revision old-graph) old new)))))
+
+  ;; The following arity is provided soley for conveience for test/REPL usage
+  ([ks new-value]
+    {:pre [(sequential? ks)]}
+    (update-graph! (assoc-in (graph) (cons :groups ks) new-value))))
