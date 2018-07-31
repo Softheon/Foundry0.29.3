@@ -2,6 +2,7 @@
   "/api/pulse endpoints."
   (:require [compojure.core :refer [DELETE GET POST PUT]]
             [hiccup.core :refer [html]]
+            [clojure.tools.logging :as log]
             [metabase
              [driver :as driver]
              [email :as email]
@@ -155,5 +156,51 @@
   (check-card-read-permissions cards)
   (p/send-pulse! body)
   {:ok true})
+
+;;;-------------------------------------------------- GRAPH ENDPPOINTS ----------------------------------------------------------------------
+
+(defn- ->int
+  [id]
+  (Integer/parseInt (name id)))
+
+(defn- dejsonify-permissions 
+  [permissionsSet]
+  (into {} (for [[feature-name perms] permissionsSet]
+              {(name feature-name) (keyword perms)})))
+
+(defn- dejsonify-groups
+  [groups]
+  (into {} (for [[group-id permissionSet] groups]
+            {(->int group-id) (dejsonify-permissions permissionSet)})))
+
+(defn- dejsonify-graph
+  "Fix the types in the graph when it comes in from the API, e.g. converting things like `\"none\"` to `:none` and
+  parsing object keys as intergers."
+  [graph]
+  (update graph :groups dejsonify-groups))
+
+(api/defendpoint GET "/graph"
+  "Fetch agraph of all pulse permissions."
+  []
+  (api/check-superuser)
+  (pulse/graph))
+ 
+ 
+(api/defendpoint PUT "/graph"
+  "Do a batch update of Pulse Permissions by passing in a modified graph."
+  [:as {body :body}]
+  {body su/Map}
+  (api/check-superuser)
+  (pulse/update-graph! (dejsonify-graph body))
+  (pulse/graph))
+
+  (def testPulseData
+    (identity {:revision 1, :groups {1 {"pulse" :write}, 2 {"pulse" :write}, 3 {"pulse" :none}, 1053 {"pulse" :none}}}))
+  (api/defendpoint GET "/update/graph"
+    "Do a batch update of Pulse Permissions by passing in a modified graph."
+    []
+    (api/check-superuser)
+    (pulse/update-graph! testPulseData)
+    (pulse/graph))
 
 (api/define-routes)

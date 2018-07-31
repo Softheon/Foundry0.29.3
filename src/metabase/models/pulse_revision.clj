@@ -1,6 +1,6 @@
-(ns metabase.models.collection-revisioin
+(ns metabase.models.pulse-revision
   (:require [metabase.util :as u]
-            [puppelabs.il8n.core : refer [thru]]
+            [puppetlabs.i18n.core :refer [tru]]
             [metabase.mssqltoucan
               [db :as db]
               [models :as models]]))
@@ -10,7 +10,7 @@
 (defn- pre-insert [revision]
   (assoc revision :created_at (u/new-sql-timestamp)))
 
-(ustrict-extend (class PulseRevision)
+(u/strict-extend (class PulseRevision)
   models/IModel
   (merge models/IModelDefaults
     {:types           (constantly {:before  :json

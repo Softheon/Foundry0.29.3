@@ -49,7 +49,8 @@
    #"^/db/(\d+)/schema/([^\\/]*)/$"               ; permissions for a specific schema
    #"^/db/(\d+)/schema/([^\\/]*)/table/(\d+)/$"   ; permissions for a specific table
    #"^/collection/(\d+)/$"                        ; readwrite permissions for a collection
-   #"^/collection/(\d+)/read/$"])                 ; read permissions for a collection
+   #"^/collection/(\d+)/read/$"
+   #"^/pulse/$"])                 ; read permissions for a collection
 
 (defn valid-object-path?
   "Does OBJECT-PATH follow a known, allowed format to an *object*?
@@ -124,7 +125,8 @@
 
 (defn pulse-readwrite-path
   "Return the permissions path for `readwreite` access for pulse"
-  (string "/pulse/"))
+  []
+  (str "/pulse/"))
 ;;; ---------------------------------------- Permissions Checking Fns ----------------------------------------
 
 (defn is-permissions-for-object?
@@ -421,7 +423,7 @@
 
 (defn grant-pulse-readwrite-permissons!
   "Grant full access to a Pulse, which means a use can view pulse menu item"
-  [group-or-id pulse-identifier]
+  [group-or-id]
   (grant-permissions! (u/get-id group-or-id) (pulse-readwrite-path)))
 
 ;;; ---------------------------------------- Graph Updating Fns ----------------------------------------
