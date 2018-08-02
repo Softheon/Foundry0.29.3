@@ -286,6 +286,20 @@ const OPTION_COLLECTION_READ = {
   tooltip: t`Can view questions in this collection`,
 };
 
+const OPTION_PULSE_ALL = {
+  ...OPTION_GREEN,
+  value: "write",
+  title: t`Grant unrestricted access`,
+  tooltip: t`Unrestricted access`,
+}
+
+const OPTION_PULSE_NONE = {
+  ...OPTION_RED,
+  value: "none",
+  title: t`Revoke access`,
+  tooltip: t`No access`,
+};
+
 export const getTablesPermissionsGrid = createSelector(
   getMetadata,
   getGroups,
@@ -733,6 +747,63 @@ export const getCollectionsPermissionsGrid = createSelector(
     };
   },
 );
+const getPulsePermission = (permissions, groupId, {entityId}) =>
+  getIn(permissions, [groupId, entityId]);
+export const getPulsePermissionsGrid = createSelector(
+  getGroups,
+  getPermissions,
+  (groups: Array<Group>, permissions: GroupsPermissions) =>{
+    if(!groups || !permissions){
+      return null;
+    }
+    const defaultGroup = _.find(groups, isDefaultGroup);
+    return {
+      type: "",
+      icon: "collections",
+      groups,
+      permissions: {
+        access:{
+          options(groudId, entityId) {
+            return [
+              OPTION_PULSE_ALL,
+              OPTION_PULSE_NONE,
+            ];
+          },
+          getter(groupId, entityId){
+            getPulsePermission(permissions, groupId, entityId);
+          },
+          update(groupId, {name}, value){
+            return assocIn(permissions, [groupId, name], value);
+          },
+          confirm(groupId, entityId, value){
+            return [
+              getPermissionWarningModal(
+                getPulsePermission,
+                null,
+                defaultGroup,
+                permissions,
+                groupId,
+                entityId,
+                value,
+              ),
+            ];
+          },
+         warning(groupId, entityId){
+           return getPermissionWarning(
+             getPulsePermission,
+             null,
+             defaultGroup,
+             permissions,
+             groupId,
+             entityId,
+           );
+         },
+        },
+      },
+      entities: [{id:{name: "pulse"}, name: "pulse"}]
+    };
+  },
+);
 
 export const getDiff = createSelector(
   getMetadata,
@@ -746,3 +817,4 @@ export const getDiff = createSelector(
     originalPermissions: GroupsPermissions,
   ) => diffPermissions(permissions, originalPermissions, groups, metadata),
 );
+

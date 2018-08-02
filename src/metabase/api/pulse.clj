@@ -195,7 +195,7 @@
   (pulse/graph))
 
   (def testPulseData
-    (identity {:revision 1, :groups {1 {"pulse" :write}, 2 {"pulse" :write}, 3 {"pulse" :none}, 1053 {"pulse" :none}}}))
+    (identity {:revision 2, :groups {1 {"pulse" :write}, 2 {"pulse" :write}, 3 {"pulse" :none}, 1053 {"pulse" :none}}}))
   (api/defendpoint GET "/update/graph"
     "Do a batch update of Pulse Permissions by passing in a modified graph."
     []

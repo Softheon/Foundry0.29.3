@@ -35,6 +35,7 @@ import CollectionEdit from "metabase/questions/containers/CollectionEdit.jsx";
 import CollectionCreate from "metabase/questions/containers/CollectionCreate.jsx";
 import SearchResults from "metabase/questions/containers/SearchResults.jsx";
 import CollectionPermissions from "metabase/admin/permissions/containers/CollectionsPermissionsApp.jsx";
+import PulsePermissions from "metabase/admin/permissions/containers/PulsePermissionsApp.jsx";
 import EntityList from "metabase/questions/containers/EntityList.jsx";
 
 import PulseEditApp from "metabase/pulse/containers/PulseEditApp.jsx";
@@ -364,6 +365,7 @@ export const getRoutes = store => (
         {/* PULSE */}
         <Route path="/pulse" title={t`Pulses`}>
           <IndexRoute component={PulseListApp} />
+          <Route path="permissions" component={PulsePermissions} />
           <Route path="create" component={PulseEditApp} />
           <Route path=":pulseId" component={PulseEditApp} />
         </Route>
