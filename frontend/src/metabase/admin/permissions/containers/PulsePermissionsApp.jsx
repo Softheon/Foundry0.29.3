@@ -18,9 +18,9 @@ import { goBack, push } from "react-router-redux";
 const mapStateToProps = (state, props) => {
   return {
     grid: getPulsePermissionsGrid(state, props),
-    isdirty: getIsDirty(state, props),
+    isDirty: getIsDirty(state, props),
     saveError: getSaveError(state, props),
-    diff: getDiff(state, props)
+    diff: getDiff(state, props),
   };
 };
 

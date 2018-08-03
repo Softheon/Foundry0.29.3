@@ -82,7 +82,7 @@ export const getIsDirty = createSelector(
   getPermissions,
   getOriginalPermissions,
   (permissions, originalPermissions) =>
-    JSON.stringify(permissions) !== JSON.stringify(originalPermissions),
+   JSON.stringify(permissions) !== JSON.stringify(originalPermissions),
 );
 
 export const getSaveError = state => state.admin.permissions.saveError;
@@ -691,7 +691,7 @@ export const getCollectionsPermissionsGrid = createSelector(
     }
 
     const defaultGroup = _.find(groups, isDefaultGroup);
-
+    
     return {
       type: "collection",
       icon: "collection",
@@ -747,8 +747,8 @@ export const getCollectionsPermissionsGrid = createSelector(
     };
   },
 );
-const getPulsePermission = (permissions, groupId, {entityId}) =>
-  getIn(permissions, [groupId, entityId]);
+const getPulsePermission = (permissions, groupId, {featureId}) =>
+  getIn(permissions, [groupId, featureId]);
 export const getPulsePermissionsGrid = createSelector(
   getGroups,
   getPermissions,
@@ -758,8 +758,8 @@ export const getPulsePermissionsGrid = createSelector(
     }
     const defaultGroup = _.find(groups, isDefaultGroup);
     return {
-      type: "",
-      icon: "collections",
+      type: '',
+      icon: "collection",
       groups,
       permissions: {
         access:{
@@ -770,10 +770,10 @@ export const getPulsePermissionsGrid = createSelector(
             ];
           },
           getter(groupId, entityId){
-            getPulsePermission(permissions, groupId, entityId);
+            return getPulsePermission(permissions, groupId, entityId);
           },
-          update(groupId, {name}, value){
-            return assocIn(permissions, [groupId, name], value);
+          updater(groupId, {featureId}, value){
+            return assocIn(permissions, [groupId, featureId], value);
           },
           confirm(groupId, entityId, value){
             return [
@@ -800,7 +800,7 @@ export const getPulsePermissionsGrid = createSelector(
          },
         },
       },
-      entities: [{id:{name: "pulse"}, name: "pulse"}]
+      entities: [{id:{featureId: "pulse"}, name: "Pulse"}]
     };
   },
 );

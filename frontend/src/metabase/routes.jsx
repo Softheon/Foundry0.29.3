@@ -365,7 +365,7 @@ export const getRoutes = store => (
         {/* PULSE */}
         <Route path="/pulse" title={t`Pulses`}>
           <IndexRoute component={PulseListApp} />
-          <Route path="permissions" component={PulsePermissions} />
+          <Route path="permissions" component={PulsePermissions} /> 
           <Route path="create" component={PulseEditApp} />
           <Route path=":pulseId" component={PulseEditApp} />
         </Route>
