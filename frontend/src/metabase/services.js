@@ -230,6 +230,7 @@ export const PulseApi = {
   preview_card: GET("/api/pulse/preview_card_info/:id"),
   graph: GET("api/pulse/graph"),
   updateGraph: PUT("api/pulse/graph"),
+  pulses_permission: GET("api/pulse/user/permission"),
 };
 
 export const AlertApi = {

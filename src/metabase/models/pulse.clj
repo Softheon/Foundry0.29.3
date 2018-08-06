@@ -161,6 +161,25 @@
         hydrate-pulse
         remove-alert-fields)))
 
+(def ^:private ^:const valid-pulse-permissioin-path-patterns
+  [#"^/$"           ; root permisson
+   #"^/pulse/$"])   ; pulse permission
+
+(defn has-pulse-permission?
+  [object-path]
+  (boolean (some (u/rpartial re-matches object-path) valid-pulse-permissioin-path-patterns)))
+   
+(defn user-has-pulse-permisson? 
+  "Fetch user's pulse permisson"
+  [current-user-permissions-set]
+  {:access (boolean (loop [[current & remaining] (into [] current-user-permissions-set)]
+                     (if (empty? remaining)
+                        false
+                        (if (has-pulse-permission? current)
+                          true
+                          (recur remaining))
+                        )))})
+
 (defn- query-as [model query]
   (db/do-post-select model (db/query query)))
 

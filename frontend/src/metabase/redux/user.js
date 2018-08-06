@@ -8,7 +8,7 @@ import {
 
 import { CLOSE_QB_NEWB_MODAL } from "metabase/query_builder/actions";
 import { LOGOUT } from "metabase/auth/auth";
-
+import { fetchPulsesPermission } from "metabase/pulse/actions";
 import { UserApi } from "metabase/services";
 
 export const REFRESH_CURRENT_USER = "metabase/user/REFRESH_CURRENT_USER";
@@ -27,6 +27,9 @@ export const loadCurrentUser = createThunkAction(
     if (!getState().currentUser) {
       await dispatch(refreshCurrentUser());
     }
+    
+      await dispatch(fetchPulsesPermission());
+    
   },
 );
 

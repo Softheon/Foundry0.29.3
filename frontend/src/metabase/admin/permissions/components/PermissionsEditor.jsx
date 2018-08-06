@@ -33,7 +33,6 @@ const PermissionsEditor = ({
       action={onSave}
       content={<PermissionsConfirm diff={diff} />}
       triggerClasses={cx({ disabled: !isDirty })}
-      test={console.log("saveButton is dirty" + isDirty)}
       key="save"
     >
       <Button primary small={!modal}>{t`Save Changes`}</Button>

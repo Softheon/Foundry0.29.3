@@ -53,6 +53,10 @@
   (check-card-read-permissions cards)
   (api/check-500 (pulse/create-pulse! name api/*current-user-id* (map pulse/create-card-ref cards) channels skip_if_empty)))
 
+(api/defendpoint GET "/user/permission"
+  "Check if the current user has pulse permisson"
+  []
+  (pulse/user-has-pulse-permisson? @api/*current-user-permissions-set*))
 
 (api/defendpoint GET "/:id"
   "Fetch `Pulse` with ID."
@@ -82,9 +86,9 @@
   "Delete a `Pulse`."
   [id]
   (api/let-404 [pulse (Pulse id)]
-    (api/write-check Pulse id)
-    (db/delete! Pulse :id id)
-    (events/publish-event! :pulse-delete (assoc pulse :actor_id api/*current-user-id*)))
+               (api/write-check Pulse id)
+               (db/delete! Pulse :id id)
+               (events/publish-event! :pulse-delete (assoc pulse :actor_id api/*current-user-id*)))
   api/generic-204-no-content)
 
 
@@ -163,15 +167,15 @@
   [id]
   (Integer/parseInt (name id)))
 
-(defn- dejsonify-permissions 
+(defn- dejsonify-permissions
   [permissionsSet]
   (into {} (for [[feature-name perms] permissionsSet]
-              {(name feature-name) (keyword perms)})))
+             {(name feature-name) (keyword perms)})))
 
 (defn- dejsonify-groups
   [groups]
   (into {} (for [[group-id permissionSet] groups]
-            {(->int group-id) (dejsonify-permissions permissionSet)})))
+             {(->int group-id) (dejsonify-permissions permissionSet)})))
 
 (defn- dejsonify-graph
   "Fix the types in the graph when it comes in from the API, e.g. converting things like `\"none\"` to `:none` and
@@ -184,8 +188,8 @@
   []
   (api/check-superuser)
   (pulse/graph))
- 
- 
+
+
 (api/defendpoint PUT "/graph"
   "Do a batch update of Pulse Permissions by passing in a modified graph."
   [:as {body :body}]
@@ -194,13 +198,5 @@
   (pulse/update-graph! (dejsonify-graph body))
   (pulse/graph))
 
-  (def testPulseData
-    (identity {:revision 2, :groups {1 {"pulse" :write}, 2 {"pulse" :write}, 3 {"pulse" :none}, 1053 {"pulse" :none}}}))
-  (api/defendpoint GET "/update/graph"
-    "Do a batch update of Pulse Permissions by passing in a modified graph."
-    []
-    (api/check-superuser)
-    (pulse/update-graph! testPulseData)
-    (pulse/graph))
 
 (api/define-routes)

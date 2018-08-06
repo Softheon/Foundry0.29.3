@@ -50,7 +50,7 @@
    #"^/db/(\d+)/schema/([^\\/]*)/table/(\d+)/$"   ; permissions for a specific table
    #"^/collection/(\d+)/$"                        ; readwrite permissions for a collection
    #"^/collection/(\d+)/read/$"
-   #"^/pulse/$"])                 ; read permissions for a collection
+   #"^/pulse/$"])                                 ; read permissions for a collection
 
 (defn valid-object-path?
   "Does OBJECT-PATH follow a known, allowed format to an *object*?

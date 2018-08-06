@@ -15,6 +15,7 @@ import {
   FETCH_USERS,
   FETCH_PULSE_FORM_INPUT,
   FETCH_PULSE_CARD_PREVIEW,
+  FETCH_PULSES_PERMISSION,
 } from "./actions";
 
 export const pulses = handleActions(
@@ -99,6 +100,18 @@ export const cardPreviews = handleActions(
     [FETCH_PULSE_CARD_PREVIEW]: {
       next: (state, { payload }) => ({ ...state, [payload.id]: payload }),
     },
+  },
+  {},
+);
+
+export const permission = handleActions(
+  {
+    [FETCH_PULSES_PERMISSION]: {
+      next: (state, { payload }) => {
+        console.log("pulse permission is ");
+        console.log(payload);
+        return payload;
+      }},
   },
   {},
 );

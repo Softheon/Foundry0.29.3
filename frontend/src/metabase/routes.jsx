@@ -9,6 +9,7 @@ import { UserAuthWrapper } from "redux-auth-wrapper";
 import { t } from "c-3po";
 
 import { loadCurrentUser } from "metabase/redux/user";
+import { fetchPulsesPermission } from "metabase/pulse/actions";
 import MetabaseSettings from "metabase/lib/settings";
 
 import App from "metabase/App.jsx";
@@ -48,7 +49,7 @@ import UserSettingsApp from "metabase/user/containers/UserSettingsApp.jsx";
 // new question
 import {
   NewQuestionStart,
-  NewQuestionMetricSearch,
+  NewQuestionMetricSearch
 } from "metabase/new_query/router_wrappers";
 
 // admin containers
@@ -96,7 +97,7 @@ import SegmentXRay from "metabase/xray/containers/SegmentXRay.jsx";
 import CardXRay from "metabase/xray/containers/CardXRay.jsx";
 import {
   SharedTypeComparisonXRay,
-  TwoTypesComparisonXRay,
+  TwoTypesComparisonXRay
 } from "metabase/xray/containers/TableLikeComparison";
 
 import getAdminPermissionsRoutes from "metabase/admin/permissions/routes.jsx";
@@ -116,7 +117,7 @@ const MetabaseIsSetup = UserAuthWrapper({
   authSelector: state => ({ hasSetupToken: MetabaseSettings.hasSetupToken() }), // HACK
   wrapperDisplayName: "MetabaseIsSetup",
   allowRedirectBack: false,
-  redirectAction: routerActions.replace,
+  redirectAction: routerActions.replace
 });
 
 const UserIsAuthenticated = UserAuthWrapper({
@@ -130,9 +131,9 @@ const UserIsAuthenticated = UserAuthWrapper({
       ...location,
       query: {
         ...location.query,
-        redirect: location.query.redirect + (window.location.hash || ""),
-      },
-    }),
+        redirect: location.query.redirect + (window.location.hash || "")
+      }
+    })
 });
 
 const UserIsAdmin = UserAuthWrapper({
@@ -141,7 +142,16 @@ const UserIsAdmin = UserAuthWrapper({
   authSelector: state => state.currentUser,
   allowRedirectBack: false,
   wrapperDisplayName: "UserIsAdmin",
-  redirectAction: routerActions.replace,
+  redirectAction: routerActions.replace
+});
+
+const UserHasPulsePermission = UserAuthWrapper({
+  predicate: permission => true,
+  failureRedirectPath: "/unauthorized",
+  authSelector: state => state.pulse.permission,
+  allowRedirectBack: false,
+  wrapperDisplayName: "UserHasPulsePermission",
+  redirectAction: routerActions.replace
 });
 
 const UserIsNotAuthenticated = UserAuthWrapper({
@@ -150,17 +160,20 @@ const UserIsNotAuthenticated = UserAuthWrapper({
   authSelector: state => state.currentUser,
   allowRedirectBack: false,
   wrapperDisplayName: "UserIsNotAuthenticated",
-  redirectAction: routerActions.replace,
+  redirectAction: routerActions.replace
 });
 
 const IsAuthenticated = MetabaseIsSetup(
-  UserIsAuthenticated(({ children }) => children),
+  UserIsAuthenticated(({ children }) => children)
 );
 const IsAdmin = MetabaseIsSetup(
-  UserIsAuthenticated(UserIsAdmin(({ children }) => children)),
+  UserIsAuthenticated(UserIsAdmin(({ children }) => children))
+);
+const HasPulsePermission = MetabaseIsSetup(
+  UserIsAuthenticated(UserHasPulsePermission(({ children }) => children))
 );
 const IsNotAuthenticated = MetabaseIsSetup(
-  UserIsNotAuthenticated(({ children }) => children),
+  UserIsNotAuthenticated(({ children }) => children)
 );
 
 export const getRoutes = store => (
@@ -203,7 +216,9 @@ export const getRoutes = store => (
       </Route>
 
       {/* MAIN */}
-      <Route component={IsAuthenticated}>
+      <Route component={IsAuthenticated} onEnter={ async ()=>{
+      //await store.dispatch(fetchPulsesPermission());
+      }}>
         {/* HOME */}
         <Route path="/" component={HomepageApp} />
         <Route path="/explore" component={PostSetupApp} />
@@ -363,9 +378,9 @@ export const getRoutes = store => (
         </Route>
 
         {/* PULSE */}
-        <Route path="/pulse" title={t`Pulses`}>
+        <Route path="/pulse" title={t`Pulses`} component={HasPulsePermission}>
           <IndexRoute component={PulseListApp} />
-          <Route path="permissions" component={PulsePermissions} /> 
+          <Route path="permissions" component={PulsePermissions} />
           <Route path="create" component={PulseEditApp} />
           <Route path=":pulseId" component={PulseEditApp} />
         </Route>
@@ -455,7 +470,7 @@ export const getRoutes = store => (
         onEnter={({ location, params }, replace) =>
           replace({
             pathname: `/question/${params.cardId}`,
-            hash: location.hash,
+            hash: location.hash
           })
         }
       />
