@@ -60,6 +60,7 @@ export default class VisualizationResult extends Component {
             message={t`This may be the answer you’re looking for. If not, try removing or changing your filters to make them less specific.`}
             action={
               <div>
+                {/*
                 {supportsRowsPresentAlert &&
                   !isDirty && (
                     <p>
@@ -70,6 +71,7 @@ export default class VisualizationResult extends Component {
                       )} when there are some results.`}
                     </p>
                   )}
+                */}
                 <button
                   className="Button"
                   onClick={() => window.history.back()}
@@ -79,6 +81,7 @@ export default class VisualizationResult extends Component {
               </div>
             }
           />
+          {/*
           {showCreateAlertModal && (
             <Modal full onClose={this.onCloseCreateAlertModal}>
               <CreateAlertModalContent
@@ -86,7 +89,7 @@ export default class VisualizationResult extends Component {
                 onAlertCreated={this.onCloseCreateAlertModal}
               />
             </Modal>
-          )}
+          )}*/}
         </div>
       );
     } else {

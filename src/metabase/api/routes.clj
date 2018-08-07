@@ -59,7 +59,7 @@
 
 (defroutes ^{:doc "Ring routes for API endpoints."} routes
   (context "/activity"             [] (+auth activity/routes))
-  (context "/alert"                [] (+auth alert/routes))
+  ;;(context "/alert"                [] (+auth alert/routes))
   (context "/async"                [] (+auth async/routes))
   (context "/automagic-dashboards" [] (+auth magic/routes))
   (context "/card"                 [] (+auth card/routes))

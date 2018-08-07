@@ -452,7 +452,7 @@ export default class QueryHeader extends Component {
         </a>
       </Tooltip>,
     ]);
-
+    {/*
     if (
       !isEditing &&
       card &&
@@ -492,7 +492,7 @@ export default class QueryHeader extends Component {
           />
         </div>,
       ]);
-    }
+    }*/}
 
     return (
       <ButtonBar
@@ -585,7 +585,7 @@ export default class QueryHeader extends Component {
             onChangeLocation={this.props.onChangeLocation}
           />
         </Modal>
-
+        {/*
         <Modal
           full
           isOpen={this.state.modal === "create-alert"}
@@ -596,7 +596,7 @@ export default class QueryHeader extends Component {
             onAlertCreated={this.onCloseModal}
           />
         </Modal>
-
+        */}
         <Modal
           isOpen={this.state.modal === "save-question-before-alert"}
           onClose={this.onCloseModal}
