@@ -10,6 +10,7 @@
              [util :as u]]
             [metabase.api.common :refer [*current-user*]]
             [metabase.api.common :refer [*current-user-id*]]
+            [metabase.api.common :as api]
             [metabase.models
              [card :refer [Card]]
              [interface :as i]
@@ -171,14 +172,16 @@
    
 (defn user-has-pulse-permisson? 
   "Fetch user's pulse permisson"
-  [current-user-permissions-set]
-  {:access (boolean (loop [[current & remaining] (into [] current-user-permissions-set)]
+  ( [current-user-permissions-set]
+    {:access (boolean (loop [[current & remaining] (into [] current-user-permissions-set)]
                      (if (empty? remaining)
                         false
                         (if (has-pulse-permission? current)
                           true
                           (recur remaining))
                         )))})
+  ([]
+    (user-has-pulse-permisson? @api/*current-user-permissions-set*)))
 
 (defn- query-as [model query]
   (db/do-post-select model (db/query query)))
