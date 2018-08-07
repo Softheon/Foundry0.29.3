@@ -146,7 +146,7 @@ const UserIsAdmin = UserAuthWrapper({
 });
 
 const UserHasPulsePermission = UserAuthWrapper({
-  predicate: permission => true,
+  predicate: permission => permission && permission.access,
   failureRedirectPath: "/unauthorized",
   authSelector: state => state.pulse.permission,
   allowRedirectBack: false,
@@ -378,7 +378,9 @@ export const getRoutes = store => (
         </Route>
 
         {/* PULSE */}
-        <Route path="/pulse" title={t`Pulses`} component={HasPulsePermission}>
+        <Route path="/pulse" title={t`Pulses`} onEnter={ async ()=>{
+            await store.dispatch(fetchPulsesPermission());
+          }} component={HasPulsePermission}>
           <IndexRoute component={PulseListApp} />
           <Route path="permissions" component={PulsePermissions} />
           <Route path="create" component={PulseEditApp} />

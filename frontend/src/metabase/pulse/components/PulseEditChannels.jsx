@@ -269,11 +269,12 @@ export default class PulseEditChannels extends Component {
             />
           )}
           <h2>{channelSpec.name}</h2>
+          {/*
           <Toggle
             className="flex-align-right"
             value={channels.length > 0}
             onChange={this.toggleChannel.bind(this, channelSpec.type)}
-          />
+          />*/}
         </div>
         {channels.length > 0 && channelSpec.configured ? (
           <ul className="bg-grey-0 px3">{channels}</ul>
@@ -294,7 +295,7 @@ export default class PulseEditChannels extends Component {
     // Default to show the default channels until full formInput is loaded
     let channels = formInput.channels || {
       email: { name: t`Email`, type: "email" },
-      slack: { name: t`Slack`, type: "slack" },
+      //slack: { name: t`Slack`, type: "slack" },
     };
     return (
       <ul className="bordered rounded">
