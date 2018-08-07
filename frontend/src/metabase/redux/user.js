@@ -27,9 +27,6 @@ export const loadCurrentUser = createThunkAction(
     if (!getState().currentUser) {
       await dispatch(refreshCurrentUser());
     }
-    
-      await dispatch(fetchPulsesPermission());
-    
   },
 );
 
