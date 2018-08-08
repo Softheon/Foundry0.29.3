@@ -216,9 +216,7 @@ export const getRoutes = store => (
       </Route>
 
       {/* MAIN */}
-      <Route component={IsAuthenticated} onEnter={ async ()=>{
-      //await store.dispatch(fetchPulsesPermission());
-      }}>
+      <Route component={IsAuthenticated}>
         {/* HOME */}
         <Route path="/" component={HomepageApp} />
         <Route path="/explore" component={PostSetupApp} />
@@ -378,9 +376,9 @@ export const getRoutes = store => (
         </Route>
 
         {/* PULSE */}
-        <Route path="/pulse" title={t`Pulses`} onEnter={ async ()=>{
-            await store.dispatch(fetchPulsesPermission());
-          }} component={HasPulsePermission}>
+        <Route path="/pulse" title={t`Pulses`} onEnter= {async () => {
+           await store.dispatch(fetchPulsesPermission());
+        }} component={HasPulsePermission}>
           <IndexRoute component={PulseListApp} />
           <Route path="permissions" component={PulsePermissions} />
           <Route path="create" component={PulseEditApp} />

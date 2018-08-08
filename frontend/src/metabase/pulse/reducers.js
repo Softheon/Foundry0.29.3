@@ -108,8 +108,6 @@ export const permission = handleActions(
   {
     [FETCH_PULSES_PERMISSION]: {
       next: (state, { payload }) => {
-        console.log("pulse permission is ");
-        console.log(payload);
         return payload;
       }},
   },

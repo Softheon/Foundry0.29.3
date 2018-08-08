@@ -102,7 +102,7 @@ export const fetchCards = createThunkAction(FETCH_CARDS, function(
 // NOTE: duplicated from admin/people/actions.js
 export const fetchUsers = createThunkAction(FETCH_USERS, function() {
   return async function(dispatch, getState) {
-    let users = await UserApi.list();
+    let users = await UserApi.pulse_eligible_user();
     return normalize(users, [user]);
   };
 });

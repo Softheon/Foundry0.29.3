@@ -318,6 +318,7 @@ export const SetupApi = {
 export const UserApi = {
   create: POST("/api/user"),
   list: GET("/api/user"),
+  pulse_eligible_user: GET("/api/user/pulse_eligible"),
   current: GET("/api/user/current"),
   // get:                         GET("/api/user/:userId"),
   update: PUT("/api/user/:id"),

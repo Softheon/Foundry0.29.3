@@ -426,6 +426,14 @@
   [group-or-id]
   (grant-permissions! (u/get-id group-or-id) (pulse-readwrite-path)))
 
+(defn pulse-eligible-group
+  "Return a set of group id that has pulse access permission"
+  []
+  (let [where {:where (apply list
+                             [:or
+                              [:= :object "/"]
+                              [:= :object (pulse-readwrite-path)]])}]
+      (db/select-field :group_id Permissions where)))
 ;;; ---------------------------------------- Graph Updating Fns ----------------------------------------
 
 (s/defn ^:private update-table-perms!
