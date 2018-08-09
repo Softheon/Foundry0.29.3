@@ -9,7 +9,6 @@ import { UserAuthWrapper } from "redux-auth-wrapper";
 import { t } from "c-3po";
 
 import { loadCurrentUser } from "metabase/redux/user";
-import { fetchPulsesPermission } from "metabase/pulse/actions";
 import MetabaseSettings from "metabase/lib/settings";
 
 import App from "metabase/App.jsx";
@@ -146,9 +145,9 @@ const UserIsAdmin = UserAuthWrapper({
 });
 
 const UserHasPulsePermission = UserAuthWrapper({
-  predicate: permission => permission && permission.access,
+  predicate: currentUser => currentUser && currentUser.pulsePermission,
   failureRedirectPath: "/unauthorized",
-  authSelector: state => state.pulse.permission,
+  authSelector: state => state.currentUser,
   allowRedirectBack: false,
   wrapperDisplayName: "UserHasPulsePermission",
   redirectAction: routerActions.replace
@@ -376,9 +375,7 @@ export const getRoutes = store => (
         </Route>
 
         {/* PULSE */}
-        <Route path="/pulse" title={t`Pulses`} onEnter= {async () => {
-           await store.dispatch(fetchPulsesPermission());
-        }} component={HasPulsePermission}>
+        <Route path="/pulse" title={t`Pulses`} component={HasPulsePermission}>
           <IndexRoute component={PulseListApp} />
           <Route path="permissions" component={PulsePermissions} />
           <Route path="create" component={PulseEditApp} />

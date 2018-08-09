@@ -13,7 +13,7 @@ import { SessionApi, SettingsApi } from "metabase/services";
 
 import { loadCurrentUser } from "./user";
 import { getUserIsAdmin } from "metabase/selectors/user";
-
+import { fetchPulsesPermission } from "metabase/pulse/actions";
 export const REFRESH_SITE_SETTINGS = "metabase/settings/REFRESH_SITE_SETTINGS";
 const REFRESH_SETTINGS_LIST = "metabase/settings/REFRESH_SETTINGS_LIST";
 

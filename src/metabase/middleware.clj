@@ -144,7 +144,9 @@
     (if-let [current-user-id (:metabase-user-id request)]
       (binding [*current-user-id*              current-user-id
                 *is-superuser?*                (:is-superuser? request)
-                *current-user*                 (delay (db/select-one current-user-fields, :id current-user-id))
+                *current-user*                 (delay (assoc (db/select-one current-user-fields, :id current-user-id) 
+                                                              :pulsePermission
+                                                              (:access (pulse/user-has-pulse-permisson?))))
                 *current-user-permissions-set* (delay (user/permissions-set current-user-id))]
         (handler request))
       (handler request))))

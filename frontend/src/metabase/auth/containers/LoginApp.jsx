@@ -136,11 +136,14 @@ export default class LoginApp extends Component {
   render() {
     const { loginError } = this.props;
     const ldapEnabled = Settings.ldapEnabled();
-    const showSpinner =  !loginError && this.state.showSpinner;
-    const blurStyle = showSpinner ? {opacity : 0.4} : {};
+    const showSpinner = !loginError && this.state.showSpinner;
+    const blurStyle = showSpinner ? { opacity: 0.4 } : {};
     return (
       <div className="full-height full bg-white flex flex-column flex-full md-layout-centered">
-        <div className="Login-wrapper wrapper Grid Grid--full md-Grid--1of2 relative z2" style={blurStyle}>
+        <div
+          className="Login-wrapper wrapper Grid Grid--full md-Grid--1of2 relative z2"
+          style={blurStyle}
+        >
           <div className="Grid-cell flex layout-centered text-brand">
             <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png" />
           </div>
@@ -246,7 +249,7 @@ export default class LoginApp extends Component {
           </div>
         </div>
         <AuthScene />
-        { showSpinner && (
+        {showSpinner && (
           <div
             className="wrapper py4 text-brand text-centered flex-full flex flex-column layout-centered"
             style={{

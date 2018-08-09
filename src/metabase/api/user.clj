@@ -1,6 +1,7 @@
 (ns metabase.api.user
   (:require [cemerick.friend.credentials :as creds]
             [clojure.tools.logging :as log]
+            [clojure.string :as str]
             [compojure.core :refer [DELETE GET POST PUT]]
             [metabase.api
              [common :as api]
@@ -51,7 +52,9 @@
   "Fetch all pulse elifible `users`"
   []
   (filter (fn [user] 
-            (in? (unique-member-ids-in-groups) (:id user)))  
+            (and (in? (unique-member-ids-in-groups) (:id user))
+                (str/ends-with? (:email user) "@softheon.com")
+                ))  
           (active-users)))
 
 (api/defendpoint GET "/pulse_eligible"

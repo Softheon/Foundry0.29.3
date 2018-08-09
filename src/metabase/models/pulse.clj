@@ -1,6 +1,7 @@
 (ns metabase.models.pulse
   (:require [clojure.set :as set]
             [clojure.tools.logging :as log]
+            [clojure.string :as str]
             [medley.core :as m]
             [clojure 
               [data :as data]]
@@ -298,7 +299,60 @@
       (update-pulse-channels! pulse channels)
       id)))
 
+           
+(defn pulse-eligible-member-emails
+  "Fetch a set of user's ids with pulse access permission."
+  []
+  (set  (db/query {:select     [:user.email :user.id]
+                                :from       [[:core_user :user]]
+                                :modifiers  [:distinct]
+                                :join       [[:permissions_group_membership :pgm] [:= :pgm.user_id  :user.id]]
+                                :where      [:in :pgm.group_id (perms/pulse-eligible-group)]})))
 
+(def REJECTED "rejected")
+
+(def VALID-DOMAIN "@softheon.com")
+
+(defn- pulse-eligible-member?
+  [members email id]
+  (some (fn [current-member] (and (:= id (:id current-member))
+                                  (:= email (:email current-member))))
+    members))
+
+(defn- valid-domain?
+  [email]
+  (str/ends-with? email VALID-DOMAIN))
+
+(defn- no-rejected-recipient?
+  [recipient]
+  (not= (:email recipient) REJECTED))
+
+(defn- valid-recipient?
+  [recipient eligible-member-emails]
+  (let [email (:email recipient)
+        id    (:id recipient)]
+        (and (pulse-eligible-member? eligible-member-emails email id)
+             (valid-domain? email))))
+ 
+(defn- filter-invalid-pulse-email
+  [recipients eligible-emails]
+  (into [] (for [recipient recipients]
+              (if-not (valid-recipient? recipient eligible-emails)
+                  (assoc recipient :email REJECTED)
+                  (identity recipient)))))
+
+(defn- filter-recipients
+  "Filter out invalid pulse recipients"
+  [recipients]
+  (let [eligible-emails (pulse-eligible-member-emails)
+        filtered-recipients (filter-invalid-pulse-email recipients eligible-emails)]
+      (filter no-rejected-recipient? filtered-recipients)))
+
+(defn- verified-channels
+  [channels]
+  (into [] (for [channel channels]
+              (assoc channel :recipients (into [] (filter-recipients (:recipients channel)))))))
+      
 (defn create-pulse!
   "Create a new `Pulse` by inserting it into the database along with all associated pieces of data such as:
   `PulseCards`, `PulseChannels`, and `PulseChannelRecipients`.
@@ -312,10 +366,12 @@
          (every? map? card-ids)
          (coll? channels)
          (every? map? channels)]}
-  (let [id (create-notification {:creator_id    creator-id
+  (let [
+        verified-channels (verified-channels channels)
+        id (create-notification {:creator_id    creator-id
                                  :name          pulse-name
                                  :skip_if_empty skip-if-empty?}
-                                card-ids channels)]
+                                card-ids verified-channels)]
     ;; return the full Pulse (and record our create event)
     (events/publish-event! :pulse-create (retrieve-pulse id))))
 
