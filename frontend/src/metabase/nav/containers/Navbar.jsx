@@ -142,7 +142,9 @@ export default class Navbar extends Component {
       <nav className="Nav relative bg-brand">
         <ul className="md-pl4 flex align-center md-pr1">
           <li>
-            <img src="https://www.softheon.com/HTMLCache/Resources/Logo-navbar-01.png" width="155" height="40" />
+            <Link to="/">
+              <img src="https://www.softheon.com/HTMLCache/Resources/Logo-navbar-01.png" width="155" height="40" />
+            </Link>
           </li>
           <li className="md-pl3 hide xs-show">
             <MainNavLink
