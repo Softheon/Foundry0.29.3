@@ -127,10 +127,7 @@ export default class LoginApp extends Component {
     this.setState({
       showSpinner: true
     });
-    login(credentials, location.query.redirect);
-    this.setState({
-      showSpinner: false
-    });
+    login(credentials, location.query.redirect)
   }
 
   render() {

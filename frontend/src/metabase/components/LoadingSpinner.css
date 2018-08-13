@@ -27,12 +27,6 @@
   left: -4px;
 }
 
-.overlay-center-spinner {
-  position: absolute;
-  z-index: 322;
-  height: 100%;
-}
-
 @keyframes LoadingSpinner-transition {
   from {
     transform: rotate(0deg);
