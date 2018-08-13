@@ -230,11 +230,11 @@ export default class LoginApp extends Component {
                       ? "?email=" + this.state.credentials.username
                       : "")
                   }
-                  className="Grid-cell py2 sm-py0 text-grey-3 md-text-right text-centered flex-full link"
+                  className="Grid-cell py2 sm-py0 text-grey-3 md-text-center text-centered flex-full link"
                   onClick={e => {
                     window.OSX ? window.OSX.resetPassword() : null;
                   }}
-                >{t`I seem to have forgotten my password`}</Link>
+                >{t`Forgot password?`}</Link>
               </div>
             </form>
           </div>
