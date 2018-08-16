@@ -39,6 +39,7 @@ import {
   DELETE_PUBLIC_LINK,
   UPDATE_ENABLE_EMBEDDING,
   UPDATE_EMBEDDING_PARAMS,
+  SORT_NATIVE_QUERY_TABLE_AND_RUN
 } from "./actions";
 
 // various ui state options
@@ -259,6 +260,13 @@ export const queryResult = handleActions(
     [QUERY_ERRORED]: {
       next: (state, { payload }) => (payload ? payload : state),
     },
+    [SORT_NATIVE_QUERY_TABLE_AND_RUN] :
+    {
+      next: (state, { payload }) => {
+        console.log("payload is");
+        console.log(payload);
+      return payload.queryResults[0] }},
+    
   },
   null,
 );
@@ -270,6 +278,13 @@ export const queryResults = handleActions(
     [QUERY_COMPLETED]: { next: (state, { payload }) => payload.queryResults },
     [QUERY_ERRORED]: {
       next: (state, { payload }) => (payload ? payload : state),
+    },
+    [SORT_NATIVE_QUERY_TABLE_AND_RUN]:
+    {
+      next: (state, { payload }) => {
+       
+        return payload.queryResults;
+      }
     },
   },
   null,

@@ -64,6 +64,7 @@ type Props = {
   clicked: ?ClickObject,
   clickActions: ?(ClickAction[]),
   onChangeCardAndRun: Object => void,
+  onChangeNativeQueryTableSortAndRun: Object => void,
   onClose: () => void,
 };
 
@@ -85,7 +86,7 @@ export default class ChartClickActions extends Component {
   };
 
   handleClickAction = (action: ClickAction) => {
-    const { onChangeCardAndRun } = this.props;
+    const { onChangeCardAndRun, onChangeNativeQueryTableSortAndRun } = this.props;
     if (action.popover) {
       MetabaseAnalytics.trackEvent(
         "Actions",
@@ -103,6 +104,12 @@ export default class ChartClickActions extends Component {
         );
         onChangeCardAndRun({ nextCard: nextQuestion.card() });
       }
+      this.close();
+    } else if (action.sort){
+      const sorting = action.sort();
+      console.log(sorting);
+      console.log(onChangeNativeQueryTableSortAndRun);
+      onChangeNativeQueryTableSortAndRun(sorting);
       this.close();
     }
   };

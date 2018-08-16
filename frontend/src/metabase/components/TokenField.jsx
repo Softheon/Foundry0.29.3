@@ -574,7 +574,7 @@ export default class TokenField extends Component {
             value={inputValue}
             autoFocus={isFocused}
             onKeyDown={this.onInputKeyDown}
-            //onChange={this.onInputChange}
+            onChange={this.onInputChange}
             onFocus={this.onInputFocus}
             onBlur={this.onInputBlur}
             onPaste={this.onInputPaste}

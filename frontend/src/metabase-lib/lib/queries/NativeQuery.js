@@ -197,6 +197,9 @@ export default class NativeQuery extends AtomicQuery {
     return new NativeQuery(this._originalQuestion, datasetQuery);
   }
 
+  sortTable(type, columnIndex){
+    return [columnIndex, type];
+  }
   /**
    * special handling for NATIVE cards to automatically detect parameters ... {{varname}}
    */
