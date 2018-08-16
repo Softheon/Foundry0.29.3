@@ -100,7 +100,6 @@ export default class PasswordResetApp extends Component {
     const { resetError, resetSuccess, newUserJoining } = this.props;
     const passwordComplexity = MetabaseSettings.passwordComplexity(false);
     const showSpinner = !resetSuccess && this.state.showSpinner && !resetError;
-    const blurStyle = showSpinner ? { opacity: 0.4 } : {};
 
     const requestLink = (
       <Link to="/auth/forgot_password" className="link">
@@ -135,7 +134,6 @@ export default class PasswordResetApp extends Component {
         <div className="full-height bg-white flex flex-column flex-full md-layout-centered">
           <div
             className="Login-wrapper wrapper Grid  Grid--full md-Grid--1of2"
-            style={blurStyle}
           >
             <div className="Grid-cell flex layout-centered text-brand">
               <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png" />
@@ -235,20 +233,15 @@ export default class PasswordResetApp extends Component {
               </div>
             )}
           </div>
-          <AuthScene />
           {showSpinner && (
-            <div
-              className="wrapper py4 text-brand text-centered flex-full flex flex-column layout-centered"
-              style={{
-                zIndex: 555,
-                position: "absolute",
-                height: "100%"
-              }}
-            >
+            <div className="Loading spread flex flex-column layout-centered text-brand z2" style={{zIndex: 50}}>
               <LoadingSpinner />
-              <h2 className="text-normal text-grey-2 mt1">{"Loading...."}</h2>
+              <h2 className="Loading-message text-brand text-uppercase my3">
+                {t`Loading `}...
+              </h2>
             </div>
           )}
+          <AuthScene />
         </div>
       );
     }
