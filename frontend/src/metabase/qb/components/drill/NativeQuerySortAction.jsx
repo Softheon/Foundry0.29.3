@@ -13,16 +13,7 @@ export default ({ question, clicked }: ClickActionProps): ClickAction[] => {
   if (!clicked || !clicked.column || clicked.value !== undefined) {
     return [];
   }
-    const { column, columnIndex } = clicked;
-
-  // const fieldRef = query.fieldReferenceForColumn(column);
-  // if (!fieldRef) {
-  //     return [];
-  // }
-
-  // const [sortFieldRef, sortDirection] = query.sorts()[0] || [];
-  // const isAlreadySorted =
-  //     sortFieldRef != null && Query.isSameField(sortFieldRef, fieldRef);
+  const { column, columnIndex } = clicked;
 
   const actions = [];
   actions.push({
@@ -38,29 +29,5 @@ export default ({ question, clicked }: ClickActionProps): ClickAction[] => {
     sort: () => query.sortTable("descending", columnIndex)
   });
 
-  // if (
-  //     !isAlreadySorted ||
-  //     sortDirection === "descending" ||
-  //     sortDirection === "desc"
-  // ) {
-  //     actions.push({
-  //         name: "sort-ascending",
-  //         section: "sort",
-  //         title: t`Ascending`,
-  //         question: () => query.replaceSort([fieldRef, "ascending"]).question(),
-  //     });
-  // }
-  // if (
-  //     !isAlreadySorted ||
-  //     sortDirection === "ascending" ||
-  //     sortDirection === "asc"
-  // ) {
-  //     actions.push({
-  //         name: "sort-descending",
-  //         section: "sort",
-  //         title: t`Descending`,
-  //         question: () => query.replaceSort([fieldRef, "descending"]).question(),
-  //     });
-  // }
   return actions;
 };

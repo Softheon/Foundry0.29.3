@@ -709,8 +709,8 @@ export const sortNativeQueryTableAndRun = sortingDetail => {
         if (isDate) {
           return Date.parse(a[columnIndex]) - Date.parse(b[columnIndex]);
         } else if(isString) {
-          if (a[columnIndex] > b[columnIndex]) return -1;
-          else if( a[columnIndex] < b[columnIndex]) return 1;
+          if (a[columnIndex] < b[columnIndex]) return -1;
+          else if( a[columnIndex] > b[columnIndex]) return 1;
           else return 0;
         }else {
           return a[columnIndex] - b[columnIndex];
@@ -721,8 +721,8 @@ export const sortNativeQueryTableAndRun = sortingDetail => {
         if (isDate) {
           return Date.parse(b[columnIndex]) - Date.parse(a[columnIndex]);
         } else if (isString) {
-          if (a[columnIndex] > b[columnIndex]) return 1;
-          else if (a[columnIndex] < b[columnIndex]) return -1;
+          if (a[columnIndex] < b[columnIndex]) return 1;
+          else if (a[columnIndex] > b[columnIndex]) return -1;
           else return 0;
         }else {
           return b[columnIndex] - a[columnIndex];
