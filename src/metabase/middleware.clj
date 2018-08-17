@@ -19,7 +19,9 @@
             [puppetlabs.i18n.core :refer [tru]]
             [metabase.mssqltoucan
              [db :as db]
-             [models :as models]])
+             [models :as models]]
+            [metabase.models
+             [pulse :as pulse :refer [Pulse]]])
   (:import com.fasterxml.jackson.core.JsonGenerator
            java.io.OutputStream))
 
@@ -118,6 +120,14 @@
       (handler request)
       response-unauthentic)))
 
+(defn enforce-pulse-permission-validation
+  "Middleware that returns a 403 response if a user has no pulse access permisson."
+  [handler]
+  (fn [{:keys [metabse-user-id] :as request}]
+    (if (:access (pulse/user-has-pulse-permisson?) false)
+      (handler request)
+      response-forbidden)))
+
 (def ^:private current-user-fields
   (vec (concat [User :is_active :google_auth :ldap_auth] (models/default-fields User))))
 
@@ -134,7 +144,9 @@
     (if-let [current-user-id (:metabase-user-id request)]
       (binding [*current-user-id*              current-user-id
                 *is-superuser?*                (:is-superuser? request)
-                *current-user*                 (delay (db/select-one current-user-fields, :id current-user-id))
+                *current-user*                 (delay (assoc (db/select-one current-user-fields, :id current-user-id) 
+                                                              :pulsePermission
+                                                              (:access (pulse/user-has-pulse-permisson?))))
                 *current-user-permissions-set* (delay (user/permissions-set current-user-id))]
         (handler request))
       (handler request))))

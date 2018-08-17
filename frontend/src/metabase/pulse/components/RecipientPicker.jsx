@@ -58,7 +58,7 @@ export default class RecipientPicker extends Component {
         onChange={this.handleOnChange}
         placeholder={
           recipients.length === 0
-            ? t`Enter email addresses you'd like this data to go to`
+            ? t`Select recipients you'd like this data to go to`
             : null
         }
         autoFocus={autoFocus && recipients.length === 0}

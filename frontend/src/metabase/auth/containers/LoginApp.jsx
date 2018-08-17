@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { findDOMNode } from "react-dom";
 import { Link } from "react-router";
 import { connect } from "react-redux";
-import { CallbackComponent } from "redux-oidc"
+import { CallbackComponent } from "redux-oidc";
 import cx from "classnames";
 import { t } from "c-3po";
 import AuthScene from "../components/AuthScene.jsx";
@@ -14,18 +14,18 @@ import LogoIcon from "metabase/components/LogoIcon.jsx";
 import Settings from "metabase/lib/settings";
 import Utils from "metabase/lib/utils";
 import userManager from "../userManager";
-
+import LoadingSpinner from "metabase/components/LoadingSpinner.jsx";
 import * as authActions from "../auth";
 
 const mapStateToProps = (state, props) => {
   return {
     loginError: state.auth && state.auth.loginError,
-    user: state.currentUser,
+    user: state.currentUser
   };
 };
 
 const mapDispatchToProps = {
-  ...authActions,
+  ...authActions
 };
 
 @connect(mapStateToProps, mapDispatchToProps)
@@ -35,7 +35,8 @@ export default class LoginApp extends Component {
     this.state = {
       credentials: {},
       valid: false,
-      showPassword: false
+      showPassword: false,
+      showSpinner: false
     };
   }
 
@@ -70,13 +71,13 @@ export default class LoginApp extends Component {
         window.gapi.load("auth2", () => {
           let auth2 = window.gapi.auth2.init({
             client_id: Settings.get("google_auth_client_id"),
-            cookiepolicy: "single_host_origin",
+            cookiepolicy: "single_host_origin"
           });
           auth2.attachClickHandler(
             ssoLoginButton,
             {},
             googleUser => loginGoogle(googleUser, location.query.redirect),
-            error => console.error("There was an error logging in", error),
+            error => console.error("There was an error logging in", error)
           );
         });
       } catch (error) {
@@ -94,28 +95,27 @@ export default class LoginApp extends Component {
     this.onChange(fieldName, fieldValue.trim());
   }
 
-  onBlurUserName(value){
-    if(!Settings.ssoEnabled()){
+  onBlurUserName(value) {
+    if (!Settings.ssoEnabled()) {
       this.setShowPassword(true);
       return;
     }
-    if(value){
-      if(value.endsWith("@softheon.com")){
+    if (value) {
+      if (value.endsWith("@softheon.com")) {
         userManager.signinRedirect();
-      }
-      else{
+      } else {
         this.setShowPassword(true);
       }
     }
   }
 
-  setShowPassword(value){
-    this.setState({showPassword :value});
+  setShowPassword(value) {
+    this.setState({ showPassword: value });
   }
 
   onChange(fieldName, fieldValue) {
     this.setState({
-      credentials: { ...this.state.credentials, [fieldName]: fieldValue },
+      credentials: { ...this.state.credentials, [fieldName]: fieldValue }
     });
   }
 
@@ -124,19 +124,25 @@ export default class LoginApp extends Component {
 
     let { login, location } = this.props;
     let { credentials } = this.state;
-
-    login(credentials, location.query.redirect);
+    this.setState({
+      showSpinner: true
+    });
+    login(credentials, location.query.redirect)
   }
 
   render() {
     const { loginError } = this.props;
     const ldapEnabled = Settings.ldapEnabled();
-
+    const showSpinner = !loginError && this.state.showSpinner;
+    const blurStyle = showSpinner ? { opacity: 0.4 } : {};
     return (
       <div className="full-height full bg-white flex flex-column flex-full md-layout-centered">
-        <div className="Login-wrapper wrapper Grid Grid--full md-Grid--1of2 relative z2">
+        <div
+          className="Login-wrapper wrapper Grid Grid--full md-Grid--1of2 relative z2"
+          style={blurStyle}
+        >
           <div className="Grid-cell flex layout-centered text-brand">
-            <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png"/> 
+            <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png" />
           </div>
           <div className="Login-content Grid-cell">
             <form
@@ -179,14 +185,14 @@ export default class LoginApp extends Component {
                     //ldapEnabled ? "text" : "email"
                     "text"
                   }
-                  onBlur={(e) => this.onBlurUserName(e.target.value)}
+                  onBlur={e => this.onBlurUserName(e.target.value)}
                   onChange={e => this.onChange("username", e.target.value)}
                   autoFocus
                 />
                 <span className="Form-charm" />
               </FormField>
 
-              {this.state.showPassword &&
+              {this.state.showPassword && (
                 <FormField
                   key="password"
                   fieldName="password"
@@ -206,7 +212,7 @@ export default class LoginApp extends Component {
                   />
                   <span className="Form-charm" />
                 </FormField>
-              }
+              )}
               <div className="Form-field">
                 <ul className="Form-offset">
                   <input name="remember" type="checkbox" defaultChecked />{" "}
@@ -217,7 +223,7 @@ export default class LoginApp extends Component {
               <div className="Form-actions p2 Grid Grid--full md-Grid--1of2">
                 <button
                   className={cx("Button Grid-cell", {
-                    "Button--primary": this.state.valid,
+                    "Button--primary": this.state.valid
                   })}
                   disabled={!this.state.valid}
                 >
@@ -240,6 +246,19 @@ export default class LoginApp extends Component {
           </div>
         </div>
         <AuthScene />
+        {showSpinner && (
+          <div
+            className="wrapper py4 text-brand text-centered flex-full flex flex-column layout-centered"
+            style={{
+              zIndex: 555,
+              position: "absolute",
+              height: "100%"
+            }}
+          >
+            <LoadingSpinner />
+            <h2 className="text-normal text-grey-2 mt1">{"Loading..."}</h2>`
+          </div>
+        )}
       </div>
     );
   }

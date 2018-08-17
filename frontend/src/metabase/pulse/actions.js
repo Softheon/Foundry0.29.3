@@ -23,6 +23,7 @@ export const FETCH_CARDS = "FETCH_CARDS";
 export const FETCH_USERS = "FETCH_USERS";
 export const FETCH_PULSE_FORM_INPUT = "FETCH_PULSE_FORM_INPUT";
 export const FETCH_PULSE_CARD_PREVIEW = "FETCH_PULSE_CARD_PREVIEW";
+export const FETCH_PULSES_PERMISSION = "FETCH_PULSE_PERMISSION";
 
 export const fetchPulses = createThunkAction(FETCH_PULSES, function() {
   return async function(dispatch, getState) {
@@ -101,7 +102,9 @@ export const fetchCards = createThunkAction(FETCH_CARDS, function(
 // NOTE: duplicated from admin/people/actions.js
 export const fetchUsers = createThunkAction(FETCH_USERS, function() {
   return async function(dispatch, getState) {
-    let users = await UserApi.list();
+    let users = await UserApi.pulse_eligible_user();
+    console.log("pulse fetchUser");
+    console.log(users);
     return normalize(users, [user]);
   };
 });
@@ -120,6 +123,15 @@ export const fetchPulseCardPreview = createThunkAction(
   function(id) {
     return async function(dispatch, getState) {
       return await PulseApi.preview_card({ id: id });
+    };
+  },
+);
+
+export const fetchPulsesPermission = createThunkAction(
+  FETCH_PULSES_PERMISSION,
+  function(){
+    return async function(dispatch, getState) {
+      return await PulseApi.pulses_permission();
     };
   },
 );

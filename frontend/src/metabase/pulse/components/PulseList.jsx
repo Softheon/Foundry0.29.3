@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { t } from "c-3po";
+import Icon from "metabase/components/Icon";
+import { Link } from "react-router";
 
 import PulseListItem from "./PulseListItem.jsx";
 import WhatsAPulse from "./WhatsAPulse.jsx";
@@ -15,7 +17,7 @@ export default class PulseList extends Component {
     super(props, context);
 
     this.state = {
-      showSetupModal: false,
+      showSetupModal: false
     };
 
     _.bindAll(this, "create");
@@ -38,18 +40,39 @@ export default class PulseList extends Component {
   }
 
   render() {
-    let { pulses, user } = this.props;
+    let { pulses, user, isAdmin } = this.props;
+    const hasPulses = pulses && pulses.length > 0;
+    const showsetPermissionsLink = isAdmin && hasPulses;
+    const lockStyle = {
+      position: "absolute",
+      right: 30,
+      top: 100
+    };
     return (
       <div className="PulseList px3">
         <div className="border-bottom mb2 mt3">
           <div className="wrapper wrapper--trim flex align-center mb2">
-            <h1>{t`Pulses`}</h1>
+            <h1>
+              {t`Pulses`} {isAdmin}
+            </h1>
             <a
               onClick={this.create}
               className="PulseButton Button flex-align-right"
             >{t`Create a pulse`}</a>
           </div>
+          {showsetPermissionsLink && (
+            <div style={lockStyle}>
+              <Link to="/pulse/permissions" className="flex-align-right">
+                <Icon
+                  size={18}
+                  name="lock"
+                  tooltip={t`Set permissions for Pulses`}
+                />
+              </Link>
+            </div>
+          )}
         </div>
+
         <LoadingAndErrorWrapper loading={!pulses}>
           {() =>
             pulses.length > 0 ? (

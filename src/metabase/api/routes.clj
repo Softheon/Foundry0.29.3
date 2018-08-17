@@ -56,6 +56,9 @@
 (def ^:private +auth
   "Wrap ROUTES so they may only be accessed with proper authentiaction credentials."
   middleware/enforce-authentication)
+(def ^:pirvate +pulse-permission-verification
+  "Wrap RPUTES so they only be access after proper pulse-permission verrification"
+  middleware/enforce-pulse-permission-validation)
 
 (defroutes ^{:doc "Ring routes for API endpoints."} routes
   (context "/activity"             [] (+auth activity/routes))
@@ -80,7 +83,7 @@
   (context "/permissions"          [] (+auth permissions/routes))
   (context "/preview_embed"        [] (+auth preview-embed/routes))
   (context "/public"               [] (+generic-exceptions public/routes))
-  (context "/pulse"                [] (+auth pulse/routes))
+  (context "/pulse"                [] (+pulse-permission-verification (+auth pulse/routes)))
   (context "/revision"             [] (+auth revision/routes))
   (context "/segment"              [] (+auth segment/routes))
   (context "/session"              [] session/routes)

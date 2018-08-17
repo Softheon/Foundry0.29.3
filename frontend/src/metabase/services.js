@@ -228,6 +228,9 @@ export const PulseApi = {
   test: POST("/api/pulse/test"),
   form_input: GET("/api/pulse/form_input"),
   preview_card: GET("/api/pulse/preview_card_info/:id"),
+  graph: GET("api/pulse/graph"),
+  updateGraph: PUT("api/pulse/graph"),
+  pulses_permission: GET("api/pulse/user/permission"),
 };
 
 export const AlertApi = {
@@ -315,6 +318,7 @@ export const SetupApi = {
 export const UserApi = {
   create: POST("/api/user"),
   list: GET("/api/user"),
+  pulse_eligible_user: GET("/api/user/pulse_eligible"),
   current: GET("/api/user/current"),
   // get:                         GET("/api/user/:userId"),
   update: PUT("/api/user/:id"),

@@ -232,7 +232,7 @@ export default class TokenField extends Component {
         isMatching
       );
     });
-
+  
     if (
       selectedOptionValue == null ||
       !_.find(filteredOptions, option =>
@@ -592,7 +592,7 @@ export default class TokenField extends Component {
           onMouseLeave={() => this.setState({ listIsHovered: false })}
         >
           {filteredOptions.map(option => (
-            <li className="mr1" key={this._value(option)}>
+            <li className="mr1" key={option.value.id}>
               <div
                 ref={
                   this._valueIsEqual(selectedOptionValue, this._value(option))

@@ -10,6 +10,7 @@ import FormLabel from "metabase/components/form/FormLabel.jsx";
 import FormMessage from "metabase/components/form/FormMessage.jsx";
 import LogoIcon from "metabase/components/LogoIcon.jsx";
 import Icon from "metabase/components/Icon.jsx";
+import LoadingSpinner from "metabase/components/LoadingSpinner.jsx";
 
 import MetabaseSettings from "metabase/lib/settings";
 
@@ -22,12 +23,12 @@ const mapStateToProps = (state, props) => {
     token: props.params.token,
     resetError: state.auth && state.auth.resetError,
     resetSuccess: state.auth && state.auth.resetSuccess,
-    newUserJoining: props.location.hash === "#new",
+    newUserJoining: props.location.hash === "#new"
   };
 };
 
 const mapDispatchToProps = {
-  ...authActions,
+  ...authActions
 };
 
 @connect(mapStateToProps, mapDispatchToProps)
@@ -38,6 +39,7 @@ export default class PasswordResetApp extends Component {
       credentials: {},
       valid: false,
       tokenValid: false,
+      showSpinner: false
     };
   }
 
@@ -58,7 +60,7 @@ export default class PasswordResetApp extends Component {
   async componentWillMount() {
     try {
       let result = await SessionApi.password_reset_token_valid({
-        token: this.props.token,
+        token: this.props.token
       });
       if (result && result.valid) {
         this.setState({ tokenValid: true });
@@ -78,7 +80,7 @@ export default class PasswordResetApp extends Component {
 
   onChange(fieldName, fieldValue) {
     this.setState({
-      credentials: { ...this.state.credentials, [fieldName]: fieldValue },
+      credentials: { ...this.state.credentials, [fieldName]: fieldValue }
     });
   }
 
@@ -88,12 +90,16 @@ export default class PasswordResetApp extends Component {
     let { token, passwordReset } = this.props;
     let { credentials } = this.state;
 
+    this.setState({
+      showSpinner: true
+    });
     passwordReset(token, credentials);
   }
 
   render() {
     const { resetError, resetSuccess, newUserJoining } = this.props;
     const passwordComplexity = MetabaseSettings.passwordComplexity(false);
+    const showSpinner = !resetSuccess && this.state.showSpinner && !resetError;
 
     const requestLink = (
       <Link to="/auth/forgot_password" className="link">
@@ -108,7 +114,7 @@ export default class PasswordResetApp extends Component {
             <div className="wrapper">
               <div className="Login-wrapper Grid  Grid--full md-Grid--1of2">
                 <div className="Grid-cell flex layout-centered text-brand">
-                  <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png"/>
+                  <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png" />
                 </div>
                 <div className="Grid-cell bordered rounded shadowed">
                   <h3 className="Login-header Form-offset mt4">{t`Whoops, that's an expired link`}</h3>
@@ -126,9 +132,11 @@ export default class PasswordResetApp extends Component {
     } else {
       return (
         <div className="full-height bg-white flex flex-column flex-full md-layout-centered">
-          <div className="Login-wrapper wrapper Grid  Grid--full md-Grid--1of2">
+          <div
+            className="Login-wrapper wrapper Grid  Grid--full md-Grid--1of2"
+          >
             <div className="Grid-cell flex layout-centered text-brand">
-              <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png"/>
+              <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png" />
             </div>
             {!resetSuccess ? (
               <div className="Grid-cell">
@@ -192,7 +200,7 @@ export default class PasswordResetApp extends Component {
                   <div className="Form-actions">
                     <button
                       className={cx("Button", {
-                        "Button--primary": this.state.valid,
+                        "Button--primary": this.state.valid
                       })}
                       disabled={!this.state.valid}
                     >
@@ -201,7 +209,7 @@ export default class PasswordResetApp extends Component {
                   </div>
                 </form>
               </div>
-                     ) : (
+            ) : (
               <div className="Grid-cell">
                 <div className="SuccessGroup bg-white bordered rounded shadowed">
                   <div className="SuccessMark">
@@ -223,8 +231,16 @@ export default class PasswordResetApp extends Component {
                   </p>
                 </div>
               </div>
-                     )}
+            )}
           </div>
+          {showSpinner && (
+            <div className="Loading spread flex flex-column layout-centered text-brand z2" style={{zIndex: 50}}>
+              <LoadingSpinner />
+              <h2 className="Loading-message text-brand text-uppercase my3">
+                {t`Loading `}...
+              </h2>
+            </div>
+          )}
           <AuthScene />
         </div>
       );

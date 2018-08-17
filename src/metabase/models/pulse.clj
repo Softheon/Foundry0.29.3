@@ -1,18 +1,29 @@
 (ns metabase.models.pulse
   (:require [clojure.set :as set]
             [clojure.tools.logging :as log]
+            [clojure.string :as str]
             [medley.core :as m]
+            [clojure 
+              [data :as data]]
             [metabase
              [db :as mdb]
              [events :as events]
              [util :as u]]
             [metabase.api.common :refer [*current-user*]]
+            [metabase.api.common :refer [*current-user-id*]]
+            [metabase.api.common :as api]
             [metabase.models
              [card :refer [Card]]
              [interface :as i]
              [pulse-card :refer [PulseCard]]
              [pulse-channel :as pulse-channel :refer [PulseChannel]]
-             [pulse-channel-recipient :refer [PulseChannelRecipient]]]
+             [pulse-channel-recipient :refer [PulseChannelRecipient]]
+             [pulse-revision :as pulse-revision :refer [PulseRevision]]
+             [permissions :as perms]]
+            [metabase.util :as u]
+            [metabase.util.schema :as su]
+            [schema.core :as s]
+            [clojure.java.jdbc :as jdbc]
             [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]
@@ -152,6 +163,27 @@
         hydrate-pulse
         remove-alert-fields)))
 
+(def ^:private ^:const valid-pulse-permissioin-path-patterns
+  [#"^/$"           ; root permisson
+   #"^/pulse/$"])   ; pulse permission
+
+(defn has-pulse-permission?
+  [object-path]
+  (boolean (some (u/rpartial re-matches object-path) valid-pulse-permissioin-path-patterns)))
+   
+(defn user-has-pulse-permisson? 
+  "Fetch user's pulse permisson"
+  ( [current-user-permissions-set]
+    {:access (boolean (loop [[current & remaining] (into [] current-user-permissions-set)]
+                     (if (empty? remaining)
+                        false
+                        (if (has-pulse-permission? current)
+                          true
+                          (recur remaining))
+                        )))})
+  ([]
+    (user-has-pulse-permisson? @api/*current-user-permissions-set*)))
+
 (defn- query-as [model query]
   (db/do-post-select model (db/query query)))
 
@@ -267,7 +299,60 @@
       (update-pulse-channels! pulse channels)
       id)))
 
+           
+(defn pulse-eligible-member-emails
+  "Fetch a set of user's ids with pulse access permission."
+  []
+  (set  (db/query {:select     [:user.email :user.id]
+                                :from       [[:core_user :user]]
+                                :modifiers  [:distinct]
+                                :join       [[:permissions_group_membership :pgm] [:= :pgm.user_id  :user.id]]
+                                :where      [:in :pgm.group_id (perms/pulse-eligible-group)]})))
 
+(def REJECTED "rejected")
+
+(def VALID-DOMAIN "@softheon.com")
+
+(defn- pulse-eligible-member?
+  [members email id]
+  (some (fn [current-member] (and (:= id (:id current-member))
+                                  (:= email (:email current-member))))
+    members))
+
+(defn- valid-domain?
+  [email]
+  (str/ends-with? email VALID-DOMAIN))
+
+(defn- no-rejected-recipient?
+  [recipient]
+  (not= (:email recipient) REJECTED))
+
+(defn- valid-recipient?
+  [recipient eligible-member-emails]
+  (let [email (:email recipient)
+        id    (:id recipient)]
+        (and (pulse-eligible-member? eligible-member-emails email id)
+             (valid-domain? email))))
+ 
+(defn- filter-invalid-pulse-email
+  [recipients eligible-emails]
+  (into [] (for [recipient recipients]
+              (if-not (valid-recipient? recipient eligible-emails)
+                  (assoc recipient :email REJECTED)
+                  (identity recipient)))))
+
+(defn- filter-recipients
+  "Filter out invalid pulse recipients"
+  [recipients]
+  (let [eligible-emails (pulse-eligible-member-emails)
+        filtered-recipients (filter-invalid-pulse-email recipients eligible-emails)]
+      (filter no-rejected-recipient? filtered-recipients)))
+
+(defn- verified-channels
+  [channels]
+  (into [] (for [channel channels]
+              (assoc channel :recipients (into [] (filter-recipients (:recipients channel)))))))
+      
 (defn create-pulse!
   "Create a new `Pulse` by inserting it into the database along with all associated pieces of data such as:
   `PulseCards`, `PulseChannels`, and `PulseChannelRecipients`.
@@ -281,10 +366,12 @@
          (every? map? card-ids)
          (coll? channels)
          (every? map? channels)]}
-  (let [id (create-notification {:creator_id    creator-id
+  (let [
+        verified-channels (verified-channels channels)
+        id (create-notification {:creator_id    creator-id
                                  :name          pulse-name
                                  :skip_if_empty skip-if-empty?}
-                                card-ids channels)]
+                                card-ids verified-channels)]
     ;; return the full Pulse (and record our create event)
     (events/publish-event! :pulse-create (retrieve-pulse id))))
 
@@ -360,3 +447,97 @@
       (log/warnf "Failed to remove user-id '%s' from pulse-id '%s'" user-id pulse-id))
 
     result))
+
+;;; +----------------------------------------------------------------------------------------------------------------+
+;;; |                                                  PERMISSIONS GRAPH                                             |
+;;; +----------------------------------------------------------------------------------------------------------------+
+
+;;; ------------------------------------------------------ Schmeas ---------------------------------------------------
+
+(def ^:private PulsePermisssons
+  (s/enum :write :none))
+
+(def ^:private GroupPermissionsGraph
+  "pulse -> status"
+  {su/NonBlankString PulsePermisssons})
+
+(def ^:private PermissionsGraph
+  {:revision s/Int
+   :groups {su/IntGreaterThanZero GroupPermissionsGraph}})
+
+;;;------------------------------------------------------- Fetch Graph ------------------------------------------------
+
+(def ^String PULSE "pulse")
+
+(defn- group-id->permissions-set []
+  (into {} (for [[group-id perms] (group-by :group_id (db/select 'Permissions))]
+              {group-id (set (map :object perms))})))          
+          
+(s/defn ^:private perms-type-for-pulse :- PulsePermisssons
+  [permissions-set]
+  (cond 
+    (perms/set-has-full-permissions? permissions-set (perms/pulse-readwrite-path))   :write
+    :else                                                                           :none))
+
+(s/defn ^:private group-permissions-graph :- GroupPermissionsGraph
+  "Return the permissions group for a single group havng PERMISSONS-SET"
+  [permissions-set]
+  {PULSE  (perms-type-for-pulse permissions-set)})
+
+(s/defn graph :- PermissionsGraph
+  "Fetch a graph representing the current permissions status for every group and all permissioned pulses. This
+   works just like  the function of the same in `metabase.models.permissions`; see the documentation for that function."
+  []
+  (let [group-id->perms (group-id->permissions-set)]
+    {:revision (pulse-revision/latest-id)
+     :groups (into {} (for [group-id (db/select-ids 'PermissionsGroup)]
+                        {group-id (group-permissions-graph (group-id->perms group-id))}))}))
+                      
+;;;------------------------------------------------------- Update Graph -----------------------------------------------
+
+(s/defn ^:private update-pulse-permissions!
+  [group-id :- su/IntGreaterThanZero,  new-pulse-perms :- PulsePermisssons]
+  (perms/revoke-pulse-permissions! group-id)
+  (case new-pulse-perms
+      :write  (perms/grant-pulse-readwrite-permissons! group-id)
+      :none nil))
+
+(s/defn ^:private update-group-permissions!
+  [group-id :- su/IntGreaterThanZero, new-group-perms :- GroupPermissionsGraph]
+  (doseq [[pulse-identifier new-perms] new-group-perms]
+    (update-pulse-permissions! group-id new-perms)))
+
+(defn- save-perms-revision!
+  "Save changes made to the pulse permissions for logging/auditing purpose.
+   This doesn't do anything if  `*current-user-id*` is unset (e.g. for testing or REPL usage)."
+   [current-revision old new]
+   (when *current-user-id*
+    ;; manually specify ID here so if one was somehow inserted in the meantime in the fraction of a second since we
+    ;; called 'check-revision-numbers' the PK constraints will fail and the transaction will abort
+    (db/set-identity-insert PulseRevision true)
+    (db/insert! PulseRevision
+      :id (inc current-revision)
+      :before old
+      :after new
+      :user_id *current-user-id*)
+    (db/set-identity-insert PulseRevision false)))
+
+(s/defn update-graph!
+  "Update the pulse permissions graph. This works just like the function of the same name 
+   in `metabase.models.permissons`, but for `Pulse`; refer to that function's extensive documentation to get a
+   sense for how this works"
+  ([new-graph :- PermissionsGraph]
+    (let [old-graph (graph)
+          [old new] (data/diff (:groups old-graph) (:groups new-graph))]
+      (perms/log-permissions-changes old new)
+      (perms/check-revision-numbers old-graph new-graph)
+      (when (seq new)
+        (db/transaction
+          (doseq [[group-id changes] new]
+            (update-group-permissions! group-id changes))
+          (save-perms-revision! (:revision old-graph) old new)))))
+
+  ;; The following arity is provided soley for conveience for test/REPL usage
+  ([ks new-value]
+    {:pre [(sequential? ks)]}
+    (update-graph! (assoc-in (graph) (cons :groups ks) new-value))))

@@ -2,6 +2,7 @@
   "/api/pulse endpoints."
   (:require [compojure.core :refer [DELETE GET POST PUT]]
             [hiccup.core :refer [html]]
+            [clojure.tools.logging :as log]
             [metabase
              [driver :as driver]
              [email :as email]
@@ -52,6 +53,10 @@
   (check-card-read-permissions cards)
   (api/check-500 (pulse/create-pulse! name api/*current-user-id* (map pulse/create-card-ref cards) channels skip_if_empty)))
 
+(api/defendpoint GET "/user/permission"
+  "Check if the current user has pulse permisson"
+  []
+  (pulse/user-has-pulse-permisson? @api/*current-user-permissions-set*))
 
 (api/defendpoint GET "/:id"
   "Fetch `Pulse` with ID."
@@ -81,9 +86,9 @@
   "Delete a `Pulse`."
   [id]
   (api/let-404 [pulse (Pulse id)]
-    (api/write-check Pulse id)
-    (db/delete! Pulse :id id)
-    (events/publish-event! :pulse-delete (assoc pulse :actor_id api/*current-user-id*)))
+               (api/write-check Pulse id)
+               (db/delete! Pulse :id id)
+               (events/publish-event! :pulse-delete (assoc pulse :actor_id api/*current-user-id*)))
   api/generic-204-no-content)
 
 
@@ -91,9 +96,9 @@
   "Provides relevant configuration information and user choices for creating/updating `Pulses`."
   []
   (let [chan-types (-> channel-types
-                       (assoc-in [:slack :configured] (slack/slack-configured?))
+                       ;;(assoc-in [:slack :configured] (slack/slack-configured?))
                        (assoc-in [:email :configured] (email/email-configured?)))]
-    {:channels (if-not (get-in chan-types [:slack :configured])
+    {:channels (if-not ( get-in chan-types [:slack :configured])
                  ;; no Slack integration, so we are g2g
                  chan-types
                  ;; if we have Slack enabled build a dynamic list of channels/users
@@ -155,5 +160,43 @@
   (check-card-read-permissions cards)
   (p/send-pulse! body)
   {:ok true})
+
+;;;-------------------------------------------------- GRAPH ENDPPOINTS ----------------------------------------------------------------------
+
+(defn- ->int
+  [id]
+  (Integer/parseInt (name id)))
+
+(defn- dejsonify-permissions
+  [permissionsSet]
+  (into {} (for [[feature-name perms] permissionsSet]
+             {(name feature-name) (keyword perms)})))
+
+(defn- dejsonify-groups
+  [groups]
+  (into {} (for [[group-id permissionSet] groups]
+             {(->int group-id) (dejsonify-permissions permissionSet)})))
+
+(defn- dejsonify-graph
+  "Fix the types in the graph when it comes in from the API, e.g. converting things like `\"none\"` to `:none` and
+  parsing object keys as intergers."
+  [graph]
+  (update graph :groups dejsonify-groups))
+
+(api/defendpoint GET "/graph"
+  "Fetch agraph of all pulse permissions."
+  []
+  (api/check-superuser)
+  (pulse/graph))
+
+
+(api/defendpoint PUT "/graph"
+  "Do a batch update of Pulse Permissions by passing in a modified graph."
+  [:as {body :body}]
+  {body su/Map}
+  (api/check-superuser)
+  (pulse/update-graph! (dejsonify-graph body))
+  (pulse/graph))
+
 
 (api/define-routes)

@@ -1,5 +1,7 @@
 (ns metabase.api.user
   (:require [cemerick.friend.credentials :as creds]
+            [clojure.tools.logging :as log]
+            [clojure.string :as str]
             [compojure.core :refer [DELETE GET POST PUT]]
             [metabase.api
              [common :as api]
@@ -10,7 +12,16 @@
             [metabase.util :as u]
             [metabase.util.schema :as su]
             [schema.core :as s]
-            [metabase.mssqltoucan.db :as db]))
+            [metabase.mssqltoucan.db :as db]
+            [metabase.models
+             [permissions :as perms]]))
+
+(defn- active-users
+  []
+  (db/select [User :id :first_name :last_name :email :is_superuser :google_auth :ldap_auth :last_login]
+    :is_active true
+    {:order-by [[:%lower.last_name :asc]
+                [:%lower.first_name :asc]]}))
 
 (defn- check-self-or-superuser
   "Check that USER-ID is *current-user-id*` or that `*current-user*` is a superuser, or throw a 403."
@@ -22,10 +33,35 @@
 (api/defendpoint GET "/"
   "Fetch a list of all active `Users` for the admin People page."
   []
-  (db/select [User :id :first_name :last_name :email :is_superuser :google_auth :ldap_auth :last_login]
-    :is_active true
-    {:order-by [[:%lower.last_name :asc]
-                [:%lower.first_name :asc]]}))
+  (active-users))
+
+(defn- unique-member-ids-in-groups
+  "Fetch a set of users in selected groups"
+  []
+  (set (map :user_id (db/query {:select     [:pgm.user_id]
+                                :from       [[:permissions_group_membership :pgm]]
+                                :modifiers  [:distinct]
+                                :where      [:in :pgm.group_id (perms/pulse-eligible-group)]})))) 
+          
+(defn- in?
+  "true if coll contains element"
+  [coll elem]
+  (some #(= elem %) coll))
+
+(defn- pulse-users
+  "Fetch all pulse elifible `users`"
+  []
+  (filter (fn [user] 
+            (and (in? (unique-member-ids-in-groups) (:id user))
+                (str/ends-with? (:email user) "@softheon.com")
+                ))  
+          (active-users)))
+
+(api/defendpoint GET "/pulse_eligible"
+  "Fetch all pulse elifible `users`"
+  []
+  (pulse-users)) 
+
 
 (defn- reactivate-user! [existing-user first-name last-name]
   (when-not (:is_active existing-user)

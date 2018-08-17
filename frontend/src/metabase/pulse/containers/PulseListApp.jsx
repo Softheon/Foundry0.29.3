@@ -7,11 +7,13 @@ import PulseList from "../components/PulseList.jsx";
 import { listPulseSelectors } from "../selectors";
 
 import { fetchPulses, fetchPulseFormInput, savePulse } from "../actions";
+import { getUserIsAdmin } from "metabase/selectors/user";
 
 const mapStateToProps = (state, props) => {
   return {
     ...listPulseSelectors(state, props),
     user: state.currentUser,
+    isAdmin: getUserIsAdmin(state, props),
     // onChangeLocation: onChangeLocation
   };
 };

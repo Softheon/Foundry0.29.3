@@ -30,7 +30,7 @@ import { defer } from "metabase/lib/promise";
 import { addUndo, createUndo } from "metabase/redux/undo";
 import Question from "metabase-lib/lib/Question";
 import { cardIsEquivalent } from "metabase/meta/Card";
-
+import moment from "moment";
 import {
   getTableMetadata,
   getNativeDatabases,
@@ -63,6 +63,7 @@ import StructuredQuery from "metabase-lib/lib/queries/StructuredQuery";
 import NativeQuery from "metabase-lib/lib/queries/NativeQuery";
 import { getPersistableDefaultSettings } from "metabase/visualizations/lib/settings";
 import { clearRequestState } from "metabase/redux/requests";
+import { isDate } from "util";
 
 type UiControls = {
   isEditing?: boolean,
@@ -688,6 +689,51 @@ export const setCardAndRun = (nextCard, shouldUpdateUrl = true) => {
   };
 };
 
+export const SORT_NATIVE_QUERY_TABLE_AND_RUN =
+  "metabase/qb/SORT_NATIVE_QUERY_TABLE_AND_RUN";
+export const sortNativeQueryTableAndRun = sortingDetail => {
+  return async (dispatch, getState) => {
+    const queryResult = Utils.copy(getState().qb.queryResult);
+    const original_rows = queryResult.data.rows;
+    const sortDirection = sortingDetail[1];
+    const columnIndex = sortingDetail[0];
+    let is_date = function(input) {
+      return moment(input, moment.ISO_8601, true).isValid();
+    };
+    let testValue = original_rows[0][columnIndex];
+    let isDate = is_date(testValue);
+    let isString = typeof testValue === "string" || testValue instanceof String;
+    console.log("is String " + isString);
+    if (sortDirection === "ascending") {
+      original_rows.sort((a, b) => {
+        if (isDate) {
+          return Date.parse(a[columnIndex]) - Date.parse(b[columnIndex]);
+        } else if(isString) {
+          if (a[columnIndex] < b[columnIndex]) return -1;
+          else if( a[columnIndex] > b[columnIndex]) return 1;
+          else return 0;
+        }else {
+          return a[columnIndex] - b[columnIndex];
+        }
+      });
+    } else if (sortDirection === "descending") {
+      original_rows.sort((a, b) => {
+        if (isDate) {
+          return Date.parse(b[columnIndex]) - Date.parse(a[columnIndex]);
+        } else if (isString) {
+          if (a[columnIndex] < b[columnIndex]) return 1;
+          else if (a[columnIndex] > b[columnIndex]) return -1;
+          else return 0;
+        }else {
+          return b[columnIndex] - a[columnIndex];
+        }
+      });
+    }
+
+    let queryResults = [queryResult];
+    dispatch.action(SORT_NATIVE_QUERY_TABLE_AND_RUN, { queryResults });
+  };
+};
 /**
  * User-triggered events that are handled with this action:
  *     - clicking a legend:
@@ -716,6 +762,16 @@ export const navigateToNewCardInsideQB = createThunkAction(
           setCardAndRun(getCardAfterVisualizationClick(nextCard, previousCard)),
         );
       }
+    };
+  },
+);
+
+export const SORT_NATIVE_QUERY_TABLE = "metabase/qb/SORT_NATIVE_QUERY_TABLE"
+export const sortNativeQueryTable = createThunkAction(
+  SORT_NATIVE_QUERY_TABLE,
+  (sortingDetail) => {
+    return async (dispatch, getState) => {
+      dispatch(sortNativeQueryTableAndRun(sortingDetail));
     };
   },
 );

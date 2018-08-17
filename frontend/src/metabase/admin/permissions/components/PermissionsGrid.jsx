@@ -325,7 +325,8 @@ const EntityRowHeader = ({ entity, icon }) => (
 const CornerHeader = ({ grid }) => (
   <div className="absolute bottom left right flex flex-column align-center pb1">
     <div className="flex align-center">
-      <h3 className="ml1">{capitalize(pluralize(grid.type))}</h3>
+      {grid.type.length < 0 && <h3 className="ml1"></h3>}
+      {grid.type.length > 0 && <h3 className="ml1">{capitalize(pluralize(grid.type))}</h3>}
     </div>
   </div>
 );

@@ -1,6 +1,7 @@
 (ns metabase.api.collection
   "/api/collection endpoints."
   (:require [compojure.core :refer [GET POST PUT]]
+            [clojure.tools.logging :as log]
             [metabase.api
              [card :as card-api]
              [common :as api]]

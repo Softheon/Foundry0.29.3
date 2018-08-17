@@ -322,7 +322,7 @@ export default class TableInteractive extends Component {
         clicked = column._dimension;
       }
     } else {
-      clicked = { column };
+      clicked = { column, columnIndex };
     }
 
     const isClickable =
