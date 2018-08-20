@@ -39,7 +39,8 @@ import {
   DELETE_PUBLIC_LINK,
   UPDATE_ENABLE_EMBEDDING,
   UPDATE_EMBEDDING_PARAMS,
-  SORT_NATIVE_QUERY_TABLE_AND_RUN
+  SORT_NATIVE_QUERY_TABLE_AND_RUN,
+  ADD_ORDER_BY_TO_NATIVE_QUERY_CARD
 } from "./actions";
 
 // various ui state options
@@ -127,6 +128,7 @@ export const card = handleActions(
     [RELOAD_CARD]: { next: (state, { payload }) => payload },
     [CANCEL_EDITING]: { next: (state, { payload }) => payload },
     [SET_CARD_AND_RUN]: { next: (state, { payload }) => payload.card },
+    [ADD_ORDER_BY_TO_NATIVE_QUERY_CARD]: { next: (state, {payload}) => payload.card },
     [API_CREATE_QUESTION]: { next: (state, { payload }) => payload },
     [API_UPDATE_QUESTION]: { next: (state, { payload }) => payload },
 
@@ -263,8 +265,6 @@ export const queryResult = handleActions(
     [SORT_NATIVE_QUERY_TABLE_AND_RUN] :
     {
       next: (state, { payload }) => {
-        console.log("payload is");
-        console.log(payload);
       return payload.queryResults[0] }},
     
   },

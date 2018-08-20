@@ -93,6 +93,7 @@ export const removeOrderBy = (query: SQ, index: number) =>
   setOrderByClause(query, O.removeOrderBy(query.order_by, index));
 export const clearOrderBy = (query: SQ) =>
   setOrderByClause(query, O.clearOrderBy(query.order_by));
+export const getNativeQueryOrderBys =(order_by) => O.getOrderBys(order_by);
 
 // LIMIT
 

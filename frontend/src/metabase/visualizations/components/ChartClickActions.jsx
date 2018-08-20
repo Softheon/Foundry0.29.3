@@ -107,8 +107,6 @@ export default class ChartClickActions extends Component {
       this.close();
     } else if (action.sort){
       const sorting = action.sort();
-      console.log(sorting);
-      console.log(onChangeNativeQueryTableSortAndRun);
       onChangeNativeQueryTableSortAndRun(sorting);
       this.close();
     }

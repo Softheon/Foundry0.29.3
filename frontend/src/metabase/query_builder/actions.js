@@ -703,7 +703,7 @@ export const sortNativeQueryTableAndRun = sortingDetail => {
     let testValue = original_rows[0][columnIndex];
     let isDate = is_date(testValue);
     let isString = typeof testValue === "string" || testValue instanceof String;
-    console.log("is String " + isString);
+
     if (sortDirection === "ascending") {
       original_rows.sort((a, b) => {
         if (isDate) {
@@ -765,12 +765,24 @@ export const navigateToNewCardInsideQB = createThunkAction(
     };
   },
 );
+export const ADD_ORDER_BY_TO_NATIVE_QUERY_CARD = "metabase/qb/ADD_ORDER_BY_TO_NATIVE_QUERY_CARD";
+export const addOrderByToNativeQueryCard = createThunkAction(
+  ADD_ORDER_BY_TO_NATIVE_QUERY_CARD,
+  (sortingDetail) => {
+    return async (dispatch, getState) =>{
+      let card = Utils.copy(getState().qb.card);
+      card.dataset_query.order_by = [[["field-id", sortingDetail[0]], sortingDetail[1]]];
+      return {card};
+    };
+  }
+);
 
 export const SORT_NATIVE_QUERY_TABLE = "metabase/qb/SORT_NATIVE_QUERY_TABLE"
 export const sortNativeQueryTable = createThunkAction(
   SORT_NATIVE_QUERY_TABLE,
   (sortingDetail) => {
     return async (dispatch, getState) => {
+      dispatch(addOrderByToNativeQueryCard (sortingDetail));
       dispatch(sortNativeQueryTableAndRun(sortingDetail));
     };
   },
