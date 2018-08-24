@@ -19,6 +19,7 @@
 	echo "Running 'yarn' to download javascript dependencies..." 
 	yarn install --production=false
 	echo "Running 'webpack' with NODE_ENV=production assemble and minify frontend assets..." 
+    $env:NODE_ENV="production"
 	./node_modules/.bin/webpack --bail
 
 
