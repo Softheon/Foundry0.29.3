@@ -327,12 +327,12 @@ export default class TableInteractive extends Component {
 
     const isClickable =
       onVisualizationClick && visualizationIsClickable(clicked);
-    const isSortable = isClickable && column.source;
+    const isSortable = isClickable && (column.source || sort);
     const isRightAligned = isColumnRightAligned(column);
 
     // the column id is in `["field-id", fieldId]` format
     const isSorted =
-      sort && sort[0] && sort[0][0] && sort[0][0][1] === column.id;
+      sort && sort[0] && sort[0][0] && (sort[0][0][1] === column.id || sort[0][0][1] === columnIndex);
     const isAscending = sort && sort[0] && sort[0][1] === "ascending";
 
     return (
