@@ -90,12 +90,12 @@ export default class List extends React.Component {
               ref={l => (this._list = l)}
               className={S.list}
               autoHeight
-              height={height}
+              height={height * 2}
               isScrolling={isScrolling}
               rowCount={items.length}
               rowHeight={ROW_HEIGHT}
               rowRenderer={this.renderRow}
-              scrollTop={scrollTop}
+              scrollTop={scrollTop }
               width={width - HORIZONTAL_PADDING * 2}
             />
           </div>
