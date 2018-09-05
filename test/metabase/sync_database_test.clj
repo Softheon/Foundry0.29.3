@@ -352,21 +352,3 @@
      (do (sync-table! (Table (data/id :venues)))
          (get-field-values))]))
 
-
-;; TODO - hey, what is this testing? If you wrote this test, please explain what's going on here
-(defn- narrow-to-min-max [row]
-  (-> row
-      (get-in [:type :type/Number])
-      (select-keys [:min :max])
-      (update :min #(u/round-to-decimals 4 %))
-      (update :max #(u/round-to-decimals 4 %))))
-
-(expect
-  [{:min -165.374 :max -73.9533}
-   {:min 10.0646 :max 40.7794}]
-  (tt/with-temp* [Database [database {:details (:details (Database (data/id))), :engine :h2}]
-                  Table    [table    {:db_id (u/get-id database), :name "VENUES"}]]
-    (sync-table! table)
-    (map narrow-to-min-max
-         [(db/select-one-field :fingerprint Field, :id (data/id :venues :longitude))
-          (db/select-one-field :fingerprint Field, :id (data/id :venues :latitude))])))
