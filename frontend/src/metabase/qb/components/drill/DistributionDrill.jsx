@@ -1,9 +1,7 @@
 /* @flow */
 
-import React from "react";
 import { t } from "c-3po";
-import { getFieldRefFromColumn } from "metabase/qb/lib/actions";
-import { isCategory } from "metabase/lib/schema_metadata";
+import { isPK } from "metabase/lib/schema_metadata";
 
 import type {
   ClickAction,
@@ -16,7 +14,7 @@ export default ({ question, clicked }: ClickActionProps): ClickAction[] => {
     !clicked.column ||
     clicked.value !== undefined ||
     clicked.column.source !== "fields" ||
-    !isCategory(clicked.column)
+    isPK(clicked.column)
   ) {
     return [];
   }
@@ -24,11 +22,10 @@ export default ({ question, clicked }: ClickActionProps): ClickAction[] => {
 
   return [
     {
-      name: "count-by-column",
+      name: "distribution",
+      title: t`Distribution`,
       section: "distribution",
-      title: <span>{t`Distribution`}</span>,
-      question: () =>
-        question.summarize(["count"]).pivot([getFieldRefFromColumn(column)]),
+      question: () => question.distribution(column),
     },
   ];
 };
