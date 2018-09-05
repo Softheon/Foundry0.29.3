@@ -75,7 +75,7 @@ window.MetabaseBootstrap = {
     "type/Income": ["type/Number"],
     "type/Comment": ["type/Text"],
     "type/Score": ["type/Number"],
-    "type/ZipCode": ["type/Integer", "type/Address"],
+    "type/ZipCode": ["type/Address", "type/Text"],
     "type/DateTime": ["type/*"],
     "type/UNIXTimestamp": ["type/Integer", "type/DateTime"],
     "type/Enum": ["type/Category", "type/*"],
