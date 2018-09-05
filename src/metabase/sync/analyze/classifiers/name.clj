@@ -41,7 +41,7 @@
    [#"^active$"                    bool-or-int-type :type/Category]
    [#"^city$"                      text-type        :type/City]
    [#"^country"                    text-type        :type/Country]
-   [#"_country"                    text-type        :type/Country]
+   [#"_country$"                   text-type        :type/Country]
    [#"^currency$"                  int-or-text-type :type/Category]
    [#"^first(?:_?)name$"           text-type        :type/Name]
    [#"^full(?:_?)name$"            text-type        :type/Name]
@@ -117,16 +117,16 @@
             pattern+base-types+special-type)))
 
 (s/defn infer-special-type :- (s/maybe i/FieldInstance)
-"Classifer that infers the special type of a FIELD based on its name and base type."
-[field :- i/FieldInstance, _ :- (s/maybe i/Fingerprint)]
-;; Don't overwrite keys, else we're ok with overwriting as a new more precise type might have
-;; been added.
-(when (not-any? (partial isa? (:special_type field)) [:type/PK :type/FK])
-  (when-let [inferred-special-type (special-type-for-name-and-base-type (:name field) (:base_type field))]
-    (log/debug (format "Based on the name of %s, we're giving it a special type of %s."
-                        (sync-util/name-for-logging field)
-                        inferred-special-type))
-    (assoc field :special_type inferred-special-type))))
+  "Classifer that infers the special type of a FIELD based on its name and base type."
+  [field :- i/FieldInstance, _ :- (s/maybe i/Fingerprint)]
+  ;; Don't overwrite keys, else we're ok with overwriting as a new more precise type might have
+  ;; been added.
+  (when (not-any? (partial isa? (:special_type field)) [:type/PK :type/FK])
+    (when-let [inferred-special-type (special-type-for-name-and-base-type (:name field) (:base_type field))]
+      (log/debug (format "Based on the name of %s, we're giving it a special type of %s."
+                         (sync-util/name-for-logging field)
+                         inferred-special-type))
+      (assoc field :special_type inferred-special-type))))
 
 (defn- prefix-or-postfix
   [s]
