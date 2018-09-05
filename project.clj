@@ -20,7 +20,7 @@
                  [org.clojure/java.jdbc "0.7.5"]                      ; basic JDBC access from Clojure
                  [org.clojure/math.combinatorics "0.1.4"]             ; combinatorics functions
                  [org.clojure/math.numeric-tower "0.0.4"]             ; math functions like `ceil`
-                 [org.clojure/tools.logging "0.3.1"]                  ; logging framework
+                 [org.clojure/tools.logging "0.4.1"]                  ; logging framework
                  [org.clojure/tools.namespace "0.2.10"]
                  [org.clojure/data.json "0.2.6"]
                  [base64-clj "0.1.1"]
@@ -54,7 +54,7 @@
                  [com.google.apis/google-api-services-bigquery        ; Google BigQuery Java Client Library
                    "v2-rev368-1.23.0"]
                  [com.jcraft/jsch "0.1.54"]                           ; SSH client for tunnels
-                 [com.h2database/h2 "1.4.194"]                        ; embedded SQL database
+                 [com.h2database/h2 "1.4.197"]                        ; embedded SQL database
                  [com.mattbertolini/liquibase-slf4j "2.0.0"]          ; Java Migrations lib
                  [com.mchange/c3p0 "0.9.5.2"]                         ; connection pooling library
                  [com.microsoft.sqlserver/mssql-jdbc "6.2.1.jre7"]    ; SQLServer JDBC driver. TODO - Switch this to `.jre8` once we officially switch to Java 8
