@@ -50,7 +50,7 @@ export const NoSavedQuestionsState = () => (
         <span
         >{t`Explore your data, create charts or maps, and save what you find.`}</span>
       }
-      image="/app/img/questions_illustration"
+      image="app/img/questions_illustration"
       action={t`Ask a question`}
       link="/question"
     />
