@@ -15,7 +15,7 @@ import MetabaseAnalytics from "metabase/lib/analytics";
 
 import {
   getVisualizationTransformed,
-  extractRemappings,
+  extractRemappings
 } from "metabase/visualizations";
 import { getSettings } from "metabase/visualizations/lib/settings";
 import { isSameSeries } from "metabase/visualizations/lib/utils";
@@ -25,7 +25,7 @@ import { datasetContainsNoResults } from "metabase/lib/dataset";
 
 import {
   MinRowsError,
-  ChartSettingsError,
+  ChartSettingsError
 } from "metabase/visualizations/lib/errors";
 
 import { assoc, setIn } from "icepick";
@@ -40,14 +40,14 @@ export const ERROR_MESSAGE_PERMISSION =
 import Question from "metabase-lib/lib/Question";
 import type {
   Card as CardObject,
-  VisualizationSettings,
+  VisualizationSettings
 } from "metabase/meta/types/Card";
 import type {
   HoverObject,
   ClickObject,
   Series,
   RawSeries,
-  OnChangeCardAndRun,
+  OnChangeCardAndRun
 } from "metabase/meta/types/Visualization";
 import Metadata from "metabase-lib/lib/metadata/Metadata";
 
@@ -91,14 +91,14 @@ type Props = {
   // number of grid cells wide and tall
   gridSize?: { width: number, height: number },
   // if gridSize isn't specified, compute using this gridSize (4x width, 3x height)
-  gridUnit?: number,
+  gridUnit?: number
 };
 
 type State = {
   series: ?Series,
   CardVisualization: ?(Component<void, VisualizationSettings, void> & {
     checkRenderable: (any, any) => void,
-    noHeader: boolean,
+    noHeader: boolean
   }),
 
   hovered: ?HoverObject,
@@ -106,7 +106,7 @@ type State = {
 
   error: ?Error,
   warnings: string[],
-  yAxisSplit: ?(number[][]),
+  yAxisSplit: ?(number[][])
 };
 
 @ExplicitSize
@@ -126,7 +126,7 @@ export default class Visualization extends Component {
       warnings: [],
       yAxisSplit: null,
       series: null,
-      CardVisualization: null,
+      CardVisualization: null
     };
   }
 
@@ -136,7 +136,7 @@ export default class Visualization extends Component {
     isDashboard: false,
     isEditing: false,
     onUpdateVisualizationSettings: (...args) =>
-      console.warn("onUpdateVisualizationSettings", args),
+      console.warn("onUpdateVisualizationSettings", args)
   };
 
   componentWillMount() {
@@ -167,7 +167,7 @@ export default class Visualization extends Component {
   componentDidCatch(error, info) {
     console.error("Error caught in <Visualization>", error, info);
     this.setState({
-      error: new Error("An error occurred displaying this visualization."),
+      error: new Error("An error occurred displaying this visualization.")
     });
   }
 
@@ -181,8 +181,8 @@ export default class Visualization extends Component {
           .filter(s => s.data && s.data.rows_truncated != null)
           .map(
             s =>
-              t`Data truncated to ${formatNumber(s.data.rows_truncated)} rows.`,
-          ),
+              t`Data truncated to ${formatNumber(s.data.rows_truncated)} rows.`
+          )
       );
     }
     return warnings;
@@ -201,7 +201,7 @@ export default class Visualization extends Component {
       error: null,
       warnings: [],
       yAxisSplit: null,
-      ...getVisualizationTransformed(extractRemappings(newProps.rawSeries)),
+      ...getVisualizationTransformed(extractRemappings(newProps.rawSeries))
     });
   }
 
@@ -211,7 +211,7 @@ export default class Visualization extends Component {
       // if we have Y axis split info then find the Y axis index (0 = left, 1 = right)
       if (yAxisSplit) {
         const axisIndex = _.findIndex(yAxisSplit, indexes =>
-          _.contains(indexes, hovered.index),
+          _.contains(indexes, hovered.index)
         );
         hovered = assoc(hovered, "axisIndex", axisIndex);
       }
@@ -265,7 +265,7 @@ export default class Visualization extends Component {
         "Clicked",
         `${clicked.column ? "column" : ""} ${clicked.value ? "value" : ""} ${
           clicked.dimensions ? "dimensions=" + clicked.dimensions.length : ""
-        }`,
+        }`
       );
     }
 
@@ -278,10 +278,10 @@ export default class Visualization extends Component {
   // Add the underlying card of current series to onChangeCardAndRun if available
   handleOnChangeCardAndRun = ({
     nextCard,
-    seriesIndex,
+    seriesIndex
   }: {
     nextCard: CardObject,
-    seriesIndex: number,
+    seriesIndex: number
   }) => {
     const { series, clicked } = this.state;
 
@@ -301,7 +301,9 @@ export default class Visualization extends Component {
   };
 
   hideActions = () => {
-    this.setState({ clicked: null });
+    if (this.state.clicked !== null) {
+      this.setState({ clicked: null });
+    }
   };
 
   render() {
@@ -315,7 +317,7 @@ export default class Visualization extends Component {
       errorIcon,
       isSlow,
       expectedDuration,
-      replacementContent,
+      replacementContent
     } = this.props;
     const { series, CardVisualization } = this.state;
     const small = width < 330;
@@ -333,7 +335,7 @@ export default class Visualization extends Component {
       series.length > 0 &&
       _.every(
         series,
-        s => s.data || _.isObject(s.card.visualization_settings.virtual_card),
+        s => s.data || _.isObject(s.card.visualization_settings.virtual_card)
       )
     );
     let noResults = false;
@@ -380,7 +382,7 @@ export default class Visualization extends Component {
       noResults = _.every(
         // $FlowFixMe
         series,
-        s => s && s.data && datasetContainsNoResults(s.data),
+        s => s && s.data && datasetContainsNoResults(s.data)
       );
     }
 
@@ -392,7 +394,7 @@ export default class Visualization extends Component {
               size={18}
               className={cx(
                 "Visualization-slow-spinner",
-                isSlow === "usually-slow" ? "text-gold" : "text-slate",
+                isSlow === "usually-slow" ? "text-gold" : "text-slate"
               )}
             />
           )}
@@ -404,7 +406,7 @@ export default class Visualization extends Component {
     if (!gridSize && gridUnit) {
       gridSize = {
         width: Math.round(width / (gridUnit * 4)),
-        height: Math.round(height / (gridUnit * 3)),
+        height: Math.round(height / (gridUnit * 3))
       };
     }
 
