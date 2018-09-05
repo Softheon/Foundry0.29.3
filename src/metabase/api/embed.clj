@@ -1,16 +1,12 @@
 (ns metabase.api.embed
   "Various endpoints that use [JSON web tokens](https://jwt.io/introduction/) to fetch Cards and Dashboards.
    The endpoints are the same as the ones in `api/public/`, and differ only in the way they are authorized.
-
    To use these endpoints:
-
     1.  Set the `embedding-secret-key` Setting to a hexadecimal-encoded 32-byte sequence (i.e., a 64-character string).
         You can use `/api/util/random_token` to get a cryptographically-secure value for this.
     2.  Sign/base-64 encode a JSON Web Token using the secret key and pass it as the relevant part of the URL path
         to the various endpoints here.
-
    Tokens can have the following fields:
-
       {:resource {:question  <card-id>
                   :dashboard <dashboard-id>}
        :params   <params>}"
@@ -20,7 +16,7 @@
             [clojure.tools.logging :as log]
             [compojure.core :refer [GET]]
             [medley.core :as m]
-            [metabase.api
+            [metabase.api`
              [common :as api]
              [dataset :as dataset-api]
              [public :as public-api]]
@@ -266,9 +262,7 @@
 
 (api/defendpoint GET "/card/:token"
   "Fetch a Card via a JSON Web Token signed with the `embedding-secret-key`.
-
    Token should have the following format:
-
      {:resource {:question <card-id>}}"
   [token]
   (let [unsigned (eu/unsign token)]
@@ -292,9 +286,7 @@
 
 (api/defendpoint GET "/card/:token/query"
   "Fetch the results of running a Card using a JSON Web Token signed with the `embedding-secret-key`.
-
    Token should have the following format:
-
      {:resource {:question <card-id>}
       :params   <parameters>}"
   [token & query-params]
@@ -314,9 +306,7 @@
 
 (api/defendpoint GET "/dashboard/:token"
   "Fetch a Dashboard via a JSON Web Token signed with the `embedding-secret-key`.
-
    Token should have the following format:
-
      {:resource {:dashboard <dashboard-id>}}"
   [token]
   (let [unsigned (eu/unsign token)]
@@ -324,17 +314,16 @@
     (dashboard-for-unsigned-token unsigned, :constraints {:enable_embedding true})))
 
 
-(api/defendpoint GET "/dashboard/:token/dashcard/:dashcard-id/card/:card-id"
+
+(defn- card-for-signed-token
   "Fetch the results of running a Card belonging to a Dashboard using a JSON Web Token signed with the
    `embedding-secret-key`.
-
    Token should have the following format:
-
      {:resource {:dashboard <dashboard-id>}
       :params   <parameters>}
-
    Additional dashboard parameters can be provided in the query string, but params in the JWT token take precedence."
-  [token dashcard-id card-id & query-params]
+  {:style/indent 1}
+  [token dashcard-id card-id query-params]
   (let [unsigned-token (eu/unsign token)
         dashboard-id   (eu/get-in-unsigned-token-or-throw unsigned-token [:resource :dashboard])]
     (check-embedding-enabled-for-dashboard dashboard-id)
@@ -346,6 +335,10 @@
       :token-params     (eu/get-in-unsigned-token-or-throw unsigned-token [:params])
       :query-params     query-params)))
 
+(api/defendpoint GET "/dashboard/:token/dashcard/:dashcard-id/card/:card-id"
+  "Fetch the results of running a Card belonging to a Dashboard using a JSON Web Token signed with the `embedding-secret-key`"
+  [token dashcard-id card-id & query-params]
+  (card-for-signed-token token dashcard-id card-id query-params ))
 
 ;;; +----------------------------------------------------------------------------------------------------------------+
 ;;; |                                        FieldValues, Search, Remappings                                         |
@@ -416,5 +409,13 @@
     (check-embedding-enabled-for-dashboard dashboard-id)
     (public-api/dashboard-field-remapped-values dashboard-id field-id remapped-id value)))
 
+
+(api/defendpoint GET ["/dashboard/:token/dashcard/:dashcard-id/card/:card-id/:export-format",
+                      :export-format dataset-api/export-format-regex]
+  "Fetch the results of running a Card belonging to a Dashboard using a JSON Web Token signed with the `embedding-secret-key`
+   return the data in one of the export formats"
+  [token export-format dashcard-id card-id & query-params]
+  {export-format dataset-api/ExportFormat}
+  (dataset-api/as-format export-format (card-for-signed-token token dashcard-id card-id query-params )))
 
 (api/define-routes)
