@@ -14,10 +14,7 @@ const DownloadButton = ({
   ...props
 }) => (
   <form className={className} style={style} method={method} action={url}>
-    {params &&
-      Object.entries(params).map(([name, value]) => (
-        <input key={name} type="hidden" name={name} value={value} />
-      ))}
+    {params && Object.entries(params).flatMap(getInputs)}
     <Button
       onClick={e => {
         if (window.OSX) {
@@ -34,6 +31,16 @@ const DownloadButton = ({
   </form>
 );
 
+const getInputs = ([name, value]) => {
+  if (value instanceof Array) return value.map(p => getInput(name, p));
+
+  return [getInput(name, value)];
+};
+
+const getInput = (name, value) => (
+  <input type="hidden" name={name} value={value} />
+);
+
 DownloadButton.propTypes = {
   className: PropTypes.string,
   style: PropTypes.object,
@@ -41,14 +48,14 @@ DownloadButton.propTypes = {
   method: PropTypes.string,
   params: PropTypes.object,
   icon: PropTypes.string,
-  extensions: PropTypes.array,
+  extensions: PropTypes.array
 };
 
 DownloadButton.defaultProps = {
   icon: "downarrow",
   method: "POST",
   params: {},
-  extensions: [],
+  extensions: []
 };
 
 export default DownloadButton;
