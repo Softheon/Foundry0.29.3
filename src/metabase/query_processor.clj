@@ -15,6 +15,7 @@
              [add-settings :as add-settings]
              [annotate-and-sort :as annotate-and-sort]
              [binning :as binning]
+             [bind-effective-timezone :as bind-timezone]
              [cache :as cache]
              [catch-exceptions :as catch-exceptions]
              [cumulative-aggregations :as cumulative-ags]
@@ -34,7 +35,9 @@
              [resolve :as resolve]
              [source-table :as source-table]]
             [metabase.query-processor.util :as qputil]
-            [metabase.util.schema :as su]
+            [metabase.util
+             [date :as du]
+             [schema :as su]]
             [schema.core :as s]
             [metabase.mssqltoucan.db :as db]))
 
@@ -72,13 +75,9 @@
 ;; (up through the preprocessing fns, back down through the post-processing ones)
 (defn- qp-pipeline
   "Construct a new Query Processor pipeline with F as the final 'piviotal' function. e.g.:
-
      All PRE-PROCESSING (query) --> F --> All POST-PROCESSING (result)
-
    Or another way of looking at it is
-
      (post-process (f (pre-process query)))
-
    Normally F is something that runs the query, like the `execute-query` function above, but this can be swapped out
    when we want to do things like process a query without actually running it."
   [f]
@@ -106,6 +105,7 @@
       driver-specific/process-query-in-context         ; (drivers can inject custom middleware if they implement IDriver's `process-query-in-context`)
       add-settings/add-settings
       resolve-driver/resolve-driver                    ; ▲▲▲ DRIVER RESOLUTION POINT ▲▲▲ All functions *above* will have access to the driver during PRE- *and* POST-PROCESSING
+      bind-timezone/bind-effective-timezone
       fetch-source-query/fetch-source-query
       log-query/log-initial-query
       cache/maybe-return-cached-results
@@ -140,7 +140,8 @@
        expand-macros/expand-macros
        driver-specific/process-query-in-context
        resolve-driver/resolve-driver
-       fetch-source-query/fetch-source-query))
+       fetch-source-query/fetch-source-query
+       bind-timezone/bind-effective-timezone))
 ;; ▲▲▲ This only does PRE-PROCESSING, so it happens from bottom to top, eventually returning the preprocessed query
 ;; instead of running it
 
@@ -229,7 +230,7 @@
    :hash              (or query-hash (throw (Exception. "Missing query hash!")))
    :native            (= query-type "native")
    :json_query        (dissoc query :info)
-   :started_at        (u/new-sql-timestamp)
+   :started_at        (du/new-sql-timestamp)
    :running_time      0
    :result_rows       0
    :start_time_millis (System/currentTimeMillis)})
@@ -268,15 +269,11 @@
 
 (s/defn process-query-and-save-execution!
   "Process and run a json based dataset query and return results.
-
   Takes 2 arguments:
-
   1.  the json query as a map
   2.  query execution options (and context information) specified as a map
-
   Depending on the database specified in the query this function will delegate to a driver specific implementation.
   For the purposes of tracking we record each call to this function as a QueryExecution in the database.
-
   OPTIONS must conform to the `DatasetQueryOptions` schema; refer to that for more details."
   {:style/indent 1}
   [query, options :- DatasetQueryOptions]

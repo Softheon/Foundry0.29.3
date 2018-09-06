@@ -4,16 +4,15 @@
    The new implementation uses prepared statement args instead of substituting them directly into the query,
    and is much better-organized and better-documented."
   (:require [clojure.string :as str]
-            [clojure.tools.logging :as log]
             [metabase.honeymssql.core :as hsql]
-            [instaparse.core :as insta]
             [medley.core :as m]
             [metabase.driver :as driver]
             [metabase.models.field :as field :refer [Field]]
-            [metabase.query-processor.middleware.parameters.dates :as date-params]
             [metabase.query-processor.middleware.expand :as ql]
-            [metabase.util :as u]
-            [metabase.util.schema :as su]
+            [metabase.query-processor.middleware.parameters.dates :as date-params]
+            [metabase.util
+             [date :as du]
+             [schema :as su]]
             [puppetlabs.i18n.core :refer [tru]]
             [schema.core :as s]
             [metabase.mssqltoucan.db :as db])
@@ -21,6 +20,7 @@
            metabase.honeymssql.types.SqlCall
            java.text.NumberFormat
            java.util.regex.Pattern
+           java.util.TimeZone
            metabase.models.field.FieldInstance))
 
 ;; The Basics:
@@ -45,9 +45,6 @@
 ;; TODO - we have dynamic *driver* variables like this in several places; it probably makes more sense to see if we
 ;; can share one used somewhere else instead
 (def ^:private ^:dynamic *driver* nil)
-
-(def ^:private ^:dynamic *timezone* nil)
-
 
 ;; various record types below are used as a convenience for differentiating the different param types.
 
@@ -141,7 +138,6 @@
 
 (s/defn ^:private param-with-target
   "Return the param in PARAMS with a matching TARGET. TARGET is something like:
-
      [:dimension [:template-tag <param-name>]] ; for Dimensions (Field Filters)
      [:variable  [:template-tag <param-name>]] ; for other types of params"
   [params :- (s/maybe [DimensionValue]), target]
@@ -255,7 +251,6 @@
 
 (s/defn ^:private query->params-map :- ParamValues
   "Extract parameters info from QUERY. Return a map of parameter name -> value.
-
      (query->params-map some-query)
       ->
       {:checkin_date {:field {:name \"date\", :parent_id nil, :table_id 1375}
@@ -286,7 +281,6 @@
   (^:private ->replacement-snippet-info [this]
    "Return information about how THIS should be converted to SQL, as a map with keys `:replacement-snippet` and
    `:prepared-statement-args`.
-
       (->replacement-snippet-info \"ABC\") -> {:replacement-snippet \"?\", :prepared-statement-args \"ABC\"}"))
 
 
@@ -300,7 +294,7 @@
 (s/defn ^:private relative-date-dimension-value->replacement-snippet-info :- ParamSnippetInfo
   [value]
   ;; TODO - get timezone from query dict
-  (-> (date-params/date-string->range value *timezone*)
+  (-> (date-params/date-string->range value (.getID du/*report-timezone*))
       map->DateRange
       ->replacement-snippet-info))
 
@@ -373,15 +367,15 @@
 
   Date
   (->replacement-snippet-info [{:keys [s]}]
-    (honeysql->replacement-snippet-info (u/->Timestamp s)))
+    (honeysql->replacement-snippet-info (du/->Timestamp s)))
 
   DateRange
   (->replacement-snippet-info [{:keys [start end]}]
     (cond
-      (= start end) {:replacement-snippet "= ?",             :prepared-statement-args [(u/->Timestamp start)]}
-      (nil? start)  {:replacement-snippet "< ?",             :prepared-statement-args [(u/->Timestamp end)]}
-      (nil? end)    {:replacement-snippet "> ?",             :prepared-statement-args [(u/->Timestamp start)]}
-      :else         {:replacement-snippet "BETWEEN ? AND ?", :prepared-statement-args [(u/->Timestamp start) (u/->Timestamp end)]}))
+      (= start end) {:replacement-snippet "= ?",             :prepared-statement-args [(du/->Timestamp start)]}
+      (nil? start)  {:replacement-snippet "< ?",             :prepared-statement-args [(du/->Timestamp end)]}
+      (nil? end)    {:replacement-snippet "> ?",             :prepared-statement-args [(du/->Timestamp start)]}
+      :else         {:replacement-snippet "BETWEEN ? AND ?", :prepared-statement-args [(du/->Timestamp start) (du/->Timestamp end)]}))
 
   ;; TODO - clean this up if possible!
   Dimension
@@ -529,8 +523,7 @@
 (defn expand
   "Expand parameters inside a *SQL* QUERY."
   [query]
-  (binding [*driver*   (ensure-driver query)
-            *timezone* (get-in query [:settings :report-timezone])]
+  (binding [*driver*   (ensure-driver query)]
     (if (driver/driver-supports? *driver* :native-query-params)
       (update query :native expand-query-params (query->params-map query))
       query)))
