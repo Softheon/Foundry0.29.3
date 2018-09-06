@@ -4155,4 +4155,27 @@ databaseChangeLog:
                 name: remark
                 type: varchar(max)
                 remarks: 'Optinal remarks explaining why these changes were made.'
-
+  - changeSet:
+      id: 77
+      author: senior
+      comment: 'Added 0.29.0'
+      changes:
+        - addColumn:
+            tableName: metabase_table
+            columns:
+              name: fields_hash
+              type: text
+              remarks: 'Computed hash of all of the fields associated to this table'  
+  - changeSet:
+      id: 78
+      author: senior
+      comment: 'Added 0.30.0'
+      changes:
+        - addColumn:
+            tableName: core_user
+            columns:
+              name: updated_at
+              type: datetime
+              remarks: 'When was this User last updated?'
+        - sql:
+            sql: update core_user set updated_at=date_joined
