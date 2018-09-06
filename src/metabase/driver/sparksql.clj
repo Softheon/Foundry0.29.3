@@ -23,6 +23,7 @@
            metabase.query_processor.interface.Field))
 
 (defrecord SparkSQLDriver []
+  :load-ns true
   clojure.lang.Named
   (getName [_] "Spark SQL"))
 
@@ -116,7 +117,7 @@
     (s/replace s #"-" "_")))
 
 ;; workaround for SPARK-9686 Spark Thrift server doesn't return correct JDBC metadata
-(defn- describe-database [driver {:keys [details] :as database}]
+(defn- describe-database [_ {:keys [details] :as database}]
   {:tables (with-open [conn (jdbc/get-connection (sql/db->jdbc-connection-spec database))]
              (set (for [result (jdbc/query {:connection conn}
                                  ["show tables"])]
@@ -125,7 +126,7 @@
                                (:database result))})))})
 
 ;; workaround for SPARK-9686 Spark Thrift server doesn't return correct JDBC metadata
-(defn- describe-table [driver {:keys [details] :as database} table]
+(defn- describe-table [_ {:keys [details] :as database} table]
   (with-open [conn (jdbc/get-connection (sql/db->jdbc-connection-spec database))]
     {:name (:name table)
      :schema (:schema table)

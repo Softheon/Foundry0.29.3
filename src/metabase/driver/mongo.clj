@@ -1,7 +1,6 @@
 (ns metabase.driver.mongo
   "MongoDB Driver."
   (:require [cheshire.core :as json]
-            [clojure.string :as str]
             [clojure.tools.logging :as log]
             [metabase
              [driver :as driver]
@@ -57,7 +56,7 @@
 
 (defn- process-query-in-context [qp]
   (fn [{database-id :database, :as query}]
-    (with-mongo-connection [^DB conn, (db/select-one [Database :details], :id database-id)]
+    (with-mongo-connection [_ (db/select-one [Database :details], :id database-id)]
       (qp query))))
 
 
@@ -166,6 +165,7 @@
 
 
 (defrecord MongoDriver []
+  :load-ns true
   clojure.lang.Named
   (getName [_] "MongoDB"))
 

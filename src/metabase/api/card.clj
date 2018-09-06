@@ -7,15 +7,14 @@
             [medley.core :as m]
             [metabase
              [events :as events]
-             [middleware :as middleware]
              [public-settings :as public-settings]
              [query-processor :as qp]
+             [related :as related]
              [util :as u]]
             [metabase.api
              [common :as api]
              [dataset :as dataset-api]
              [label :as label-api]]
-            [metabase.api.common.internal :refer [route-fn-name]]
             [metabase.email.messages :as messages]
             [metabase.models
              [card :as card :refer [Card]]
@@ -36,7 +35,6 @@
             [metabase.query-processor.middleware
              [cache :as cache]
              [results-metadata :as results-metadata]]
-            [metabase.related :as related]
             [metabase.util.schema :as su]
             [ring.util.codec :as codec]
             [schema.core :as s]
@@ -136,7 +134,6 @@
 (def ^:private filter-option->fn
   "Functions that should be used to return cards for a given filter option. These functions are all be called with
   `model-id` as the sole paramenter; functions that don't use the param discard it via `u/drop-first-arg`.
-
      ((filter->option->fn :recent) model-id) -> (cards:recent)"
   {:all      (u/drop-first-arg cards:all)
    :mine     (u/drop-first-arg cards:mine)
@@ -186,12 +183,9 @@
   "Get all the `Cards`. Option filter param `f` can be used to change the set of Cards that are returned; default is
   `all`, but other options include `mine`, `fav`, `database`, `table`, `recent`, `popular`, and `archived`. See
   corresponding implementation functions above for the specific behavior of each filter option. :card_index:
-
   Optionally filter cards by LABEL or COLLECTION slug. (COLLECTION can be a blank string, to signify cards with *no
   collection* should be returned.)
-
   NOTES:
-
   *  Filtering by LABEL is considered *deprecated*, as `Labels` will be removed from an upcoming version of Metabase
      in favor of `Collections`.
   *  LABEL and COLLECTION params are mutually exclusive; if both are specified, LABEL will be ignored and Cards will

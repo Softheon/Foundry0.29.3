@@ -13,7 +13,7 @@
             [metabase.query-processor.util :as qputil]
             [metabase.mssqltoucan.db :as db]))
 
-(def ^:const activity-feed-topics
+(def activity-feed-topics
   "The `Set` of event topics which are subscribed to for use in the Metabase activity feed."
   #{:alert-create
     :alert-delete

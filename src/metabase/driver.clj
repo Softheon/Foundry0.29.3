@@ -3,11 +3,9 @@
   introspecting their schemas and processing and running MBQL queries. Each Metabase driver lives in a namespace like
   `metabase.driver.<driver>`, e.g. `metabase.driver.postgres`. Each driver must implement the `IDriver` protocol
   below.
-
   JDBC-based drivers for SQL databases can use the 'Generic SQL' driver which acts as a sort of base class and
   implements most of this protocol. Instead, those drivers should implement the `ISQLDriver` protocol which can be
   found in `metabase.driver.generic-sql`.
-
   This namespace also contains various other functions for fetching drivers, testing database connections, and the
   like."
   (:require [clj-time
@@ -16,23 +14,19 @@
              [format :as tformat]]
             [clojure.tools.logging :as log]
             [medley.core :as m]
-            [metabase.config :as config]
+            [metabase
+             [config :as config]
+             [util :as u]]
             [metabase.models
              [database :refer [Database]]
-             field
-             [setting :refer [defsetting]]
-             table]
+             [setting :refer [defsetting]]]
             [metabase.sync.interface :as si]
-            [metabase.util :as u]
-            [puppetlabs.i18n.core :refer [tru]]
-            [schema.core :as s]
+            [metabase.util.date :as du]
             [puppetlabs.i18n.core :refer [trs tru]]
+            [schema.core :as s]
             [metabase.mssqltoucan.db :as db])
   (:import clojure.lang.Keyword
            java.text.SimpleDateFormat
-           metabase.models.database.DatabaseInstance
-           metabase.models.field.FieldInstance
-           metabase.models.table.TableInstance
            org.joda.time.DateTime
            org.joda.time.format.DateTimeFormatter))
 
@@ -62,9 +56,7 @@
   "Methods that Metabase drivers must implement. Methods marked *OPTIONAL* have default implementations in
    `IDriverDefaultsMixin`. Drivers should also implement `getName` form `clojure.lang.Named`, so we can call `name` on
     them:
-
      (name (PostgresDriver.)) -> \"PostgreSQL\"
-
    This name should be a \"nice-name\" that we'll display to the user."
 
   (can-connect? ^Boolean [this, ^java.util.Map details-map]
@@ -73,23 +65,22 @@
 
   (date-interval [this, ^Keyword unit, ^Number amount]
     "*OPTIONAL* Return an driver-appropriate representation of a moment relative to the current moment in time. By
-     default, this returns an `Timestamp` by calling `metabase.util/relative-date`; but when possible drivers should
+     default, this returns an `Timestamp` by calling `metabase.util.date/relative-date`; but when possible drivers should
      return a native form so we can be sure the correct timezone is applied. For example, SQL drivers should return a
      HoneySQL form to call the appropriate SQL fns:
-
        (date-interval (PostgresDriver.) :month 1) -> (hsql/call :+ :%now (hsql/raw \"INTERVAL '1 month'\"))")
 
-  (describe-database ^java.util.Map [this, ^DatabaseInstance database]
+  (describe-database ^java.util.Map [this database]
     "Return a map containing information that describes all of the schema settings in DATABASE, most notably a set of
      tables. It is expected that this function will be peformant and avoid draining meaningful resources of the
      database. Results should match the `DatabaseMetadata` schema.")
 
-  (describe-table ^java.util.Map [this, ^DatabaseInstance database, ^TableInstance table]
+  (describe-table ^java.util.Map [this database table]
     "Return a map containing information that describes the physical schema of TABLE.
      It is expected that this function will be peformant and avoid draining meaningful resources of the database.
      Results should match the `TableMetadata` schema.")
 
-  (describe-table-fks ^java.util.Set [this, ^DatabaseInstance database, ^TableInstance table]
+  (describe-table-fks ^java.util.Set [this database table]
     "*OPTIONAL*, BUT REQUIRED FOR DRIVERS THAT SUPPORT `:foreign-keys`*
      Results should match the `FKMetadata` schema.")
 
@@ -98,46 +89,30 @@
      be exposed to the user for databases that will use this driver. This information is used to build the UI for
      editing a `Database` `details` map, and for validating it on the Backend. It should include things like `host`,
      `port`, and other driver-specific parameters. Each field information map should have the following properties:
-
    *  `:name`
-
       The key that should be used to store this property in the `details` map.
-
    *  `:display-name`
-
       Human-readable name that should be displayed to the User in UI for editing this field.
-
    *  `:type` *(OPTIONAL)*
-
       `:string`, `:integer`, `:boolean`, or `:password`. Defaults to `:string`.
-
    *  `:default` *(OPTIONAL)*
-
        A default value for this field if the user hasn't set an explicit value. This is shown in the UI as a
        placeholder.
-
    *  `:placeholder` *(OPTIONAL)*
-
       Placeholder value to show in the UI if user hasn't set an explicit value. Similar to `:default`, but this value
       is *not* saved to `:details` if no explicit value is set. Since `:default` values are also shown as
       placeholders, you cannot specify both `:default` and `:placeholder`.
-
    *  `:required` *(OPTIONAL)*
-
       Is this property required? Defaults to `false`.")
 
   (^{:style/indent 1} execute-query ^java.util.Map [this, ^java.util.Map query]
     "Execute a query against the database and return the results.
-
   The query passed in will contain:
-
          {:database ^DatabaseInstance
           :native   {... driver specific query form such as one returned from a call to `mbql->native` ...}
           :settings {:report-timezone \"US/Pacific\"
                      :other-setting   \"and its value\"}}
-
   Results should look like:
-
          {:columns [\"id\", \"name\"]
           :rows    [[1 \"Lucky Bird\"]
                     [2 \"Rasta Can\"]]}")
@@ -145,7 +120,6 @@
   (features ^java.util.Set [this]
     "*OPTIONAL*. A set of keyword names of optional features supported by this driver, such as `:foreign-keys`. Valid
      features are:
-
   *  `:foreign-keys` - Does this database support foreign key relationships?
   *  `:nested-fields` - Does this database support nested fields (e.g. Mongo)?
   *  `:set-timezone` - Does this driver support setting a timezone for the query?
@@ -178,22 +152,17 @@
 
   (mbql->native ^java.util.Map [this, ^java.util.Map query]
     "Transpile an MBQL structured query into the appropriate native query form.
-
   The input QUERY will be a [fully-expanded MBQL query](https://github.com/metabase/metabase/wiki/Expanded-Queries)
   with all the necessary pieces of information to build a properly formatted native query for the given database.
-
   If the underlying query language supports remarks or comments, the driver should use `query->remark` to generate an
   appropriate message and include that in an appropriate place; alternatively a driver might directly include the
   query's `:info` dictionary if the underlying language is JSON-based.
-
   The result of this function will be passed directly into calls to `execute-query`.
-
   For example, a driver like Postgres would build a valid SQL expression and return a map such as:
-
        {:query \"-- [Contents of `(query->remark query)`]
                  SELECT * FROM my_table\"}")
 
-  (notify-database-updated [this, ^DatabaseInstance database]
+  (notify-database-updated [this database]
     "*OPTIONAL*. Notify the driver that the attributes of the DATABASE have changed. This is specifically relevant in
      the event that the driver was doing some caching or connection pooling.")
 
@@ -203,29 +172,26 @@
      follows a middleware pattern and is injected into the QP middleware stack immediately after the Query Expander;
      in other words, it will receive the expanded query. See the Mongo and H2 drivers for examples of how this is
      intended to be used.
-
        (defn process-query-in-context [driver qp]
          (fn [query]
            (qp query)))")
 
-  (^{:style/indent 2} sync-in-context [this, ^DatabaseInstance database, ^clojure.lang.IFn f]
+  (^{:style/indent 2} sync-in-context [this database ^clojure.lang.IFn f]
     "*OPTIONAL*. Drivers may provide this function if they need to do special setup before a sync operation such as
      `sync-database!`. The sync operation itself is encapsulated as the lambda F, which must be called with no
      arguments.
-
        (defn sync-in-context [driver database f]
          (with-connection [_ database]
            (f)))")
 
-  (table-rows-seq ^clojure.lang.Sequential [this, ^DatabaseInstance database, ^java.util.Map table]
+  (table-rows-seq ^clojure.lang.Sequential [this database ^java.util.Map table]
     "*OPTIONAL*. Return a sequence of *all* the rows in a given TABLE, which is guaranteed to have at least `:name`
      and `:schema` keys. (It is guaranteed too satisfy the `DatabaseMetadataTable` schema in
      `metabase.sync.interface`.) Currently, this is only used for iterating over the values in a `_metabase_metadata`
-
      table. As such, the results are not expected to be returned lazily. There is no expectation that the results be
      returned in any given order.")
 
-  (current-db-time ^org.joda.time.DateTime [this ^DatabaseInstance database]
+  (current-db-time ^org.joda.time.DateTime [this database]
     "Returns the current time and timezone from the perspective of `DATABASE`.")
 
   (default-to-case-sensitive? ^Boolean [this]
@@ -235,7 +201,7 @@
 
 (def IDriverDefaultsMixin
   "Default implementations of `IDriver` methods marked *OPTIONAL*."
-  {:date-interval                     (u/drop-first-arg u/relative-date)
+  {:date-interval                     (u/drop-first-arg du/relative-date)
    :describe-table-fks                (constantly nil)
    :features                          (constantly nil)
    :format-custom-field-name          (u/drop-first-arg identity)
@@ -260,7 +226,6 @@
 
 (defn register-driver!
   "Register a DRIVER, an instance of a class that implements `IDriver`, for ENGINE.
-
      (register-driver! :postgres (PostgresDriver.))"
   [^Keyword engine, driver-instance]
   {:pre [(keyword? engine) (map? driver-instance)]}
@@ -323,6 +288,7 @@
 ;; as it's not threadsafe. This will always create a new SimpleDateFormat instance and discard it after parsing the
 ;; date
 (defrecord ^:private ThreadSafeSimpleDateFormat [format-str]
+  :load-ns true
   ParseDateTimeString
   (parse [_ date-time-str]
     (let [sdf         (SimpleDateFormat. format-str)
@@ -415,9 +381,7 @@
 (defn engine->driver
   "Return the driver instance that should be used for given ENGINE keyword.
    This loads the corresponding driver if needed; this is done with a call like
-
      (require 'metabase.driver.<engine>)
-
    The namespace itself should register itself by passing an instance of a class that
    implements `IDriver` to `metabase.driver/register-driver!`."
   [engine]
@@ -433,7 +397,6 @@
 (def ^{:arglists '([database-id])} database-id->driver
   "Memoized function that returns the driver instance that should be used for `Database` with ID.
    (Databases aren't expected to change their types, and this optimization makes things a lot faster).
-
    This loads the corresponding driver if needed."
   (let [db-id->engine (memoize (fn [db-id] (db/select-one-field :engine Database, :id db-id)))]
     (fn [db-id]
@@ -461,7 +424,6 @@
   "Check whether we can connect to a database with ENGINE and DETAILS-MAP and perform a basic query
    such as `SELECT 1`. Specify optional param RETHROW-EXCEPTIONS if you want to handle any exceptions
    thrown yourself (e.g., so you can pass the exception message along to the user).
-
      (can-connect-with-details? :postgres {:host \"localhost\", :port 5432, ...})"
   ^Boolean [engine details-map & [rethrow-exceptions]]
   {:pre [(keyword? engine) (map? details-map)]}

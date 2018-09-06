@@ -107,6 +107,7 @@
 
 
 (defrecord VerticaDriver []
+  :load-ns true
   clojure.lang.Named
   (getName [_] "Vertica"))
 

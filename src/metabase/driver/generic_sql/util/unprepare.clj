@@ -14,7 +14,7 @@
   (hsql/call iso-8601-fn (hx/literal (u/date->iso-8601 date-or-time))))
 
 (extend-protocol IUnprepare
-  nil     (unprepare-arg [this _] "NULL")
+  nil     (unprepare-arg [_ _] "NULL")
   String  (unprepare-arg [this {:keys [quote-escape]}] (str \' (str/replace this "'" (str quote-escape "'")) \')) ; escape single-quotes
   Boolean (unprepare-arg [this _] (if this "TRUE" "FALSE"))
   Number  (unprepare-arg [this _] (str this))
