@@ -171,8 +171,8 @@
 (defn init!
   "General application initialization function which should be run once at application startup."
   []
-  (log/info (trs (format "Starting Metabase version %s ..." config/mb-version-string)))
-  (log/info (trs (format "System timezone is '%s' ..." (System/getProperty "user.timezone"))))
+  (log/info (trs (trs "Starting Metabase version %s ..." config/mb-version-string)))
+  (log/info (trs (trs "System timezone is '%s' ..." (System/getProperty "user.timezone"))))
   (init-status/set-progress! 0.1)
 
   ;; First of all, lets register a shutdown hook that will tidy things up for us on app exit
