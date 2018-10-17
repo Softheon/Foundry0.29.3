@@ -162,14 +162,14 @@ export default class Navbar extends Component {
               icon="all"
             />
           </li>
-          <li className="md-pl1 hide xs-show">
+          {/* <li className="md-pl1 hide xs-show">
             <MainNavLink
               to="/pulse"
               name={t`Pulses`}
               eventName="Pulses"
               icon="pulse"
             />
-          </li>
+          </li> */}
           <li className="md-pl1 hide xs-show">
             <MainNavLink
               to="/reference/guide"
