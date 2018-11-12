@@ -582,7 +582,7 @@ export default class TokenField extends Component {
         </li>
       </ul>
     );
-
+ 
     const optionsList =
       filteredOptions.length === 0 ? null : (
         <ul
@@ -592,7 +592,7 @@ export default class TokenField extends Component {
           onMouseLeave={() => this.setState({ listIsHovered: false })}
         >
           {filteredOptions.map(option => (
-            <li className="mr1" key={option.value.id}>
+            <li className="mr1" key={option.value}>
               <div
                 ref={
                   this._valueIsEqual(selectedOptionValue, this._value(option))
