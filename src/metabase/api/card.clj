@@ -40,6 +40,8 @@
             [metabase.util.schema :as su]
             [ring.util.codec :as codec]
             [schema.core :as s]
+            [metabase.util
+             [export :as ex]]
             [metabase.mssqltoucan
              [db :as db]
              [hydrate :refer [hydrate]]])
@@ -594,19 +596,45 @@
 (defn run-query-for-card
   "Run the query for Card with PARAMETERS and CONSTRAINTS, and return results in the usual format."
   {:style/indent 1}
-  [card-id & {:keys [parameters constraints context dashboard-id]
+  [card-id & {:keys [parameters constraints context dashboard-id full-query]
               :or   {constraints qp/default-query-constraints
-                     context     :question}}]
+                     context     :question
+                     full-query false}}]
   {:pre [(u/maybe? sequential? parameters)]}
   (let [card    (api/read-check (hydrate (Card card-id) :in_public_dashboard))
         query   (query-for-card card parameters constraints)
         options {:executed-by  api/*current-user-id*
                  :context      context
                  :card-id      card-id
-                 :dashboard-id dashboard-id}]
+                 :dashboard-id dashboard-id
+                 :full-query full-query}]
     (api/check-not-archived card)
     (qp/process-query-and-save-execution! query options)))
 
+ (defn stream-file
+   "Run the query for Card with PARAMETERS and CONSTRAINTS, and return results in the usual format."
+   {:style/indent 1}
+   [card-id  export-format & {:keys [parameters constraints context dashboard-id]
+                              :or   {constraints qp/default-query-constraints
+                                     context     :question}}]
+   (let [card    (api/read-check (hydrate (Card card-id) :in_public_dashboard))
+         query   (query-for-card card parameters constraints)
+         options {:executed-by  api/*current-user-id*
+                  :context      context
+                  :card-id      card-id
+                  :dashboard-id dashboard-id}]
+     (api/check-not-archived card)
+     (api/let-404 [export-conf (ex/export-formats export-format)]
+                  (if-let [input (qp/downloable-query-result-input 
+                                        query
+                                        (assoc options :export-fn (:export-fn export-conf)))]
+                    {:status 200
+                     :body input
+                     :headers {"Content-Type" (str (:content-type export-conf) "; charset=utf-8")
+                               "Content-Disposition" (str "attachment; filename=\"query_result_" (u/date->iso-8601) "." (:ext export-conf) "\"")}}
+                    {:status 500
+                     :body (str "something went wrong!")}))))
+ 
 (api/defendpoint POST "/:card-id/query"
   "Run the query associated with a Card."
   [card-id :as {{:keys [parameters ignore_cache], :or {ignore_cache false}} :body}]
@@ -621,12 +649,33 @@
   {parameters    (s/maybe su/JSONString)
    export-format dataset-api/ExportFormat}
   (binding [cache/*ignore-cached-results* true]
-    (dataset-api/as-format export-format
-      (run-query-for-card card-id
-        :parameters  (json/parse-string parameters keyword)
-        :constraints nil
-        :context     (dataset-api/export-format->context export-format)))))
+    (if (or (= export-format "xlsx")
+            (= export-format "json"))
+      (dataset-api/as-format export-format
+                             (run-query-for-card card-id
+                                                 :parameters  (json/parse-string parameters keyword)
+                                                 :constraints nil
+                                                 :context     (dataset-api/export-format->context export-format)
+                                                 :full-query true))
+      (stream-file card-id
+                   export-format
+                   :parameters  (json/parse-string parameters keyword)
+                   :constraints nil
+                   :context     (dataset-api/export-format->context export-format)))))
 
+
+; (api/defendpoint POST "/:card-id/query/:export-format"
+;   "Run the query associated with a Card, and return its results as a file in the specified format. Note that this
+;   expects the parameters as serialized JSON in the 'parameters' parameter"
+;   [card-id export-format parameters]
+;   {parameters    (s/maybe su/JSONString)
+;   export-format dataset-api/ExportFormat}
+;   (binding [cache/*ignore-cached-results* true]
+;   (stream-file card-id
+;                export-format
+;                :parameters  (json/parse-string parameters keyword)
+;                :constraints nil
+;                :context     (dataset-api/export-format->context export-format))))
 
 ;;; ----------------------------------------------- Sharing is Caring ------------------------------------------------
 

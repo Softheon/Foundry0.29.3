@@ -14,7 +14,8 @@
              [annotate :as annotate]
              [interface :as i]
              [util :as qputil]]
-            [metabase.util.honeysql-extensions :as hx])
+            [metabase.util.honeysql-extensions :as hx]
+            [metabase.java.jdbc :as f-jdbc])
   (:import clojure.lang.Keyword
            [java.sql PreparedStatement ResultSet ResultSetMetaData SQLException]
            [java.util Calendar Date TimeZone]
@@ -30,6 +31,10 @@
   find referenced aggregations (otherwise something like [:aggregate-field 0] could be ambiguous in a nested query).
   Each nested query increments this counter by 1."
   0)
+
+(def ^:private ^:const max-rows-maximum 1000)
+
+(def ^:private ^:const default-fetch-szie 500)
 
 ;;; ## Formatting
 
@@ -477,16 +482,63 @@
           (.cancel stmt)
           (throw e))))))
 
+(defn- cancellable-run-query-for-download
+  "Runs `sql` in such a way that it can be interrupted via a `future-cancel`"
+  [db sql params opts]
+  (with-ensured-connection conn db
+    (log/info "cancellable-run-query-for-download: running")
+    ;; This is normally done for us by java.jdbc as a result of our `jdbc/query` call
+    (let [^PreparedStatement stmt (jdbc/prepare-statement conn sql opts)]
+      ;; Need to run the query in another thread so that this thread can cancel it if need be
+      (try
+        (let [query-future (future (f-jdbc/inputstream-for-downloable-query conn (into [stmt] params) opts))]
+          ;; This thread is interruptable because it's awaiting the other thread (the one actually running the
+          ;; query). Interrupting this thread means that the client has disconnected (or we're shutting down) and so
+          ;; we can give up on the query running in the future
+          ; (log/info (identity
+          ;   (print 
+          ;                     (filter  (fn [x] (boolean true)))   (jdbc/reducible-query conn (into [stmt] params) {:raw true})
+          ;             )
+          ; ))
+          @query-future)
+        (catch InterruptedException e
+          (log/warn e "Client closed connection, cancelling query")
+          ;; This is what does the real work of cancelling the query. We aren't checking the result of
+          ;; `query-future` but this will cause an exception to be thrown, saying the query has been cancelled.
+          (.cancel stmt)
+          (throw e))))))
+
 (defn- run-query
   "Run the query itself."
-  [{sql :query, params :params, remark :remark} timezone connection]
+  [{sql :query, params :params, remark :remark, export-fn :export-fn, full-query :full-query} timezone connection]
   (let [sql              (str "-- " remark "\n" (hx/unescape-dots sql))
-        statement        (into [sql] params)
-        [columns & rows] (cancellable-run-query connection sql params {:identifiers    identity, :as-arrays? true
-                                                                       :read-columns   (read-columns-with-date-handling timezone)
-                                                                       :set-parameters (set-parameters-with-timezone timezone)})]
-       {:rows    (or rows [])
-        :columns columns}))
+        statement        (into [sql] params)]
+      (if-not (nil? export-fn)
+        (do
+          (cancellable-run-query-for-download connection sql params {:identifiers    identity, :as-arrays? true
+                                                                     :read-columns   (read-columns-with-date-handling timezone)
+                                                                     :set-parameters (set-parameters-with-timezone timezone)
+                                                                     :result-set-fn  export-fn
+                                                                     :fetch-size 500
+                                                                     :concurrency :read-only
+                                                                     :result-type :forward-only
+                                                                     :keywordize? false}))
+        (do
+          (if (true? full-query)
+            (let [[columns & rows] (cancellable-run-query connection sql params {:identifiers    identity, :as-arrays? true
+                                                                                 :read-columns   (read-columns-with-date-handling timezone)
+                                                                                 :set-parameters (set-parameters-with-timezone timezone)
+                                                                                 :fetch-size 500})]
+              {:rows    (or rows [])
+               :columns columns})
+
+            (let [[columns & rows] (cancellable-run-query connection sql params {:identifiers    identity, :as-arrays? true
+                                                                                 :read-columns   (read-columns-with-date-handling timezone)
+                                                                                 :set-parameters (set-parameters-with-timezone timezone)
+                                                                                 :fetch-size 500
+                                                                                 :max-rows  max-rows-maximum})]
+              {:rows    (or rows [])
+               :columns columns}))))))
 
 (defn- exception->nice-error-message ^String [^SQLException e]
   (or (->> (.getMessage e)     ; error message comes back like 'Column "ZID" not found; SQL statement: ... [error-code]' sometimes
@@ -526,7 +578,7 @@
   "Set the timezone for the current connection."
   [driver settings connection]
   (let [timezone      (u/prog1 (:report-timezone settings)
-                        (assert (re-matches #"[A-Za-z\/_]+" <>)))
+                               (assert (re-matches #"[A-Za-z\/_]+" <>)))
         format-string (sql/set-timezone-sql driver)
         sql           (format format-string (str \' timezone \'))]
     (log/debug (u/format-color 'green "Setting timezone with statement: %s" sql))
@@ -547,14 +599,53 @@
       (log/error "Failed to set timezone:\n" (.getMessage e))
       (run-query-without-timezone driver settings connection query))))
 
+(defn- do-in-transaction-withou-auto-close [connection f]
+  (f-jdbc/with-db-transaction-without-auto-close [transaction-connection connection]
+    (do-with-auto-commit-disabled transaction-connection (partial f transaction-connection))))
+
+(defn- run-query-without-timezone-for-downloable-query [driver settings connection query]
+  (do-in-transaction-withou-auto-close connection (partial run-query query nil)))
+
+(defn- run-query-with-timezone-for-downloable-query [driver {:keys [^String report-timezone] :as settings} connection query]
+  (try
+    (do-in-transaction-withou-auto-close connection (fn [transaction-connection]
+                                    (set-timezone! driver settings transaction-connection)
+                                    (run-query query (some-> report-timezone TimeZone/getTimeZone) transaction-connection)))
+    (catch SQLException e
+      (log/error "Failed to set timezone 1:\n" (with-out-str (jdbc/print-sql-exception-chain e)))
+      (run-query-without-timezone-for-downloable-query driver settings connection query))
+    (catch Throwable e
+      (log/error "Failed to set timezone 2:\n" (.getMessage e))
+      (run-query-without-timezone-for-downloable-query driver settings connection query))))
 
 (defn execute-query
   "Process and run a native (raw SQL) QUERY."
   [driver {:keys [database settings], query :native, :as outer-query}]
-  (let [query (assoc query :remark (qputil/query->remark outer-query))]
+  (let [query (assoc query :remark (qputil/query->remark outer-query) 
+                     :export-fn (get-in outer-query [:info :export-fn]) 
+                     :full-query (get-in outer-query [:info :full-query]))]
+    (if-not (:export-fn query)
+      (do-with-try-catch
+       (fn []
+         (let [db-connection (sql/db->jdbc-connection-spec database)]
+           ((if (seq (:report-timezone settings))
+              run-query-with-timezone
+              run-query-without-timezone) driver settings db-connection query))))
+      (do-with-try-catch
+       (fn []
+         (let [db-connection (sql/db->jdbc-connection-spec database)]
+           ((if (seq (:report-timezone settings))
+              run-query-without-timezone-for-downloable-query
+              run-query-without-timezone-for-downloable-query) driver settings db-connection query)))))))
+
+
+(defn execute-query-and-make-input-stream
+  "Process and run a native (raw SQL) QUERY, and return an input stream for streaming query result sets"
+  [driver {:keys [database settings], query :native, :as outer-query}]
+  (let [query (assoc query :remark (qputil/query->remark outer-query) :export-fn (get-in outer-query [:info :export-fn]))]
     (do-with-try-catch
       (fn []
         (let [db-connection (sql/db->jdbc-connection-spec database)]
           ((if (seq (:report-timezone settings))
-             run-query-with-timezone
-             run-query-without-timezone) driver settings db-connection query))))))
+             run-query-without-timezone-for-downloable-query
+             run-query-with-timezone-for-downloable-query) driver settings db-connection query))))))

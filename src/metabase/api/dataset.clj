@@ -125,12 +125,47 @@
   [export-format query]
   {query         su/JSONString
    export-format ExportFormat}
-  (let [query (json/parse-string query keyword)]
-    (api/read-check Database (:database query))
-    (as-format export-format
-      (qp/process-query-and-save-execution! (dissoc query :constraints)
-        {:executed-by api/*current-user-id*, :context (export-format->context export-format)}))))
+  (if (or (= export-format "xlsx")
+          (= export-format "json"))
+    (let [query (json/parse-string query keyword)]
+      (api/read-check Database (:database query))
+      (as-format export-format
+                 (qp/process-query-and-save-execution! (dissoc query :constraints)
+                                                       {:executed-by api/*current-user-id*, 
+                                                        :context (export-format->context export-format)
+                                                        :full-query true})))
+    (let [query (json/parse-string query keyword)
+          read-check (api/read-check Database (:database query))]
+      (api/let-404 [export-conf (ex/export-formats export-format)]
+                   (if-let [input (qp/downloable-query-result-input (dissoc query :constraints)
+                                                                    {:executed-by api/*current-user-id*
+                                                                     :content (export-format->context export-format)
+                                                                     :export-fn (:export-fn export-conf)})]
+                     {:status 200
+                      :body input
+                      :headers {"Content-Type" (str (:content-type export-conf) "; charset=utf-8")
+                                "Content-Disposition" (str "attachment; filename=\"query_result_" (u/date->iso-8601) "." (:ext export-conf) "\"")}}
+                     {:status 500
+                      :body (str "somthing went wrong!")})))))
 
+; (api/defendpoint POST ["/:export-format", :export-format export-format-regex]
+;   "Execute a query and download the result data as a file in the specified format."
+;   [export-format query]
+;   {query         su/JSONString
+;    export-format ExportFormat}
+;   (let [query (json/parse-string query keyword)
+;         read-check (api/read-check Database (:database query))]
+;     (api/let-404 [export-conf (ex/export-formats export-format)]
+;                  (if-let [input (qp/downloable-query-result-input (dissoc query :constraints)
+;                                                           {:executed-by api/*current-user-id*
+;                                                            :content (export-format->context export-format)
+;                                                            :export-fn (:export-fn export-conf)})]
+;                    {:status 200
+;                     :body input
+;                     :headers {"Content-Type" (str (:content-type export-conf) "; charset=utf-8")
+;                               "Content-Disposition" (str "attachment; filename=\"query_result_" (u/date->iso-8601) "." (:ext export-conf) "\"")}}
+;                    {:status 500
+;                     :body (str "somthing went wrong!")})))) 
 
 ;;; ------------------------------------------------ Other Endpoints -------------------------------------------------
 

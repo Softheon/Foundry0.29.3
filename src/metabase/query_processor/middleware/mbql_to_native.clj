@@ -29,3 +29,12 @@
                          (assoc query :native native-form))
           results      (qp native-query)]
       (assoc results :native_form native-form))))
+
+(defn mbql-native-download
+  [qp]
+  (fn [query]
+    (let [native-form  (query->native-form query)
+          native-query (if-not (qputil/mbql-query? query)
+                         query
+                         (assoc query :native native-form))]
+      (qp native-query))))

@@ -113,6 +113,32 @@
       catch-exceptions/catch-exceptions))
 ;; ▲▲▲ PRE-PROCESSING ▲▲▲ happens from BOTTOM-TO-TOP, e.g. the results of `expand-macros` are (eventually) passed to `expand-resolve`
 
+
+(defn- qp-pipeline-for-downloading
+  [f]
+  (-> f
+      ;dev/guard-multiple-calls
+      mbql-to-native/mbql-native-download
+      ;annotate-and-sort/annotate-and-sort
+      perms/check-query-permissions ; NO POSTPROCESSING
+      log-query/log-expanded-query ; NOT POST PROCESSING
+     ; limit/limit ; 
+     ; binning/update-binning-strategy
+      resolve/resolve-middleware ; no POSTPROCESSING
+      ;add-dim/add-remapping ;; may realized the sequence?
+      add-dim/add-fk-remapping ;; no POSTPROCESSING
+      implicit-clauses/add-implicit-clauses ; ; no POSTPROCESSING
+      source-table/resolve-source-table-middleware ; ; no POSTPROCESSING
+      expand/expand-middleware ; no POSTPROCESSING
+      parameters/substitute-parameters ;no poss processing
+      expand-macros/expand-macros ;no postprocessing
+      ;driver-specific/process-query-in-context ; no post processing
+      add-settings/add-settings ; no post processing
+      resolve-driver/resolve-driver ; no post processing
+      fetch-source-query/fetch-source-query ;no post processing
+    )
+  )
+
 (defn query->native
   "Return the native form for QUERY (e.g. for a MBQL query on Postgres this would return a map containing the compiled
   SQL form)."
@@ -128,6 +154,17 @@
   {:style/indent 0}
   [query]
   ((qp-pipeline execute-query) query))
+
+; (defn- create-input-stream
+;   [query]
+;   {:pre [(map? query) (:driver query)]}
+;   (driver/exe (:driver query) query))
+
+(defn get-inputStream-of-downable-result-set 
+  "A pipeline of various QP functions (including middleware) that are used to get the inputstream of downloable result sets."
+  {:style/indent 0}
+  [query]
+  ((qp-pipeline-for-downloading execute-query) query))
 
 (def ^{:arglists '([query])} expand
   "Expand a QUERY the same way it would normally be done as part of query processing.
@@ -249,6 +286,14 @@
                     (u/pprint-to-str (u/filtered-stacktrace e))))
         (save-and-return-failed-query! query-execution (.getMessage e))))))
 
+(defn- run-query-and-get-stream
+  "Run QUERY and get an inputstream which is connected to an ouputstream filled with all downloable result data."
+  [query]
+  (try 
+    (get-inputStream-of-downable-result-set query)
+    (catch Exception e
+      (log/info (str "run-query-and-get-stream Exception: " (.getMessage e))))))
+
 (def ^:private DatasetQueryOptions
   "Schema for the options map for the `dataset-query` function.
    This becomes available to QP middleware as the `:info` dictionary in the top level of a query.
@@ -260,7 +305,8 @@
                   (s/optional-key :card-id)      (s/maybe su/IntGreaterThanZero)
                   (s/optional-key :dashboard-id) (s/maybe su/IntGreaterThanZero)
                   (s/optional-key :pulse-id)     (s/maybe su/IntGreaterThanZero)
-                  (s/optional-key :nested?)      (s/maybe s/Bool)}
+                  (s/optional-key :nested?)      (s/maybe s/Bool)
+                  (s/optional-key :full-query)   (s/maybe s/Bool)}
                  (fn [{:keys [executed-by]}]
                    (or (integer? executed-by)
                        *allow-queries-with-no-executor-id*))
@@ -284,13 +330,19 @@
                                             :query-hash (qputil/query-hash query)
                                             :query-type (if (qputil/mbql-query? query) "MBQL" "native")))))
 
+  (s/defn downloable-query-result-input
+    {:style/indent 1}
+    [query, options]
+    (run-query-and-get-stream (assoc query :info (assoc options
+                                                       :query-hash (qputil/query-hash query)
+                                                       :query-type (if (qputil/mbql-query? query) "MBQL" "native")))))                                        
 (def ^:private ^:const max-results-bare-rows
   "Maximum number of rows to return specifically on :rows type queries via the API."
-  2000)
+  500)
 
 (def ^:private ^:const max-results
   "General maximum number of rows to return from an API query."
-  10000)
+  1000)
 
 (def default-query-constraints
   "Default map of constraints that we apply on dataset queries executed by the api."

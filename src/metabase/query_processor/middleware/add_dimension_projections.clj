@@ -145,3 +145,7 @@
   query execution."
   [qp]
   (comp remap-results qp add-fk-remaps))
+
+(defn add-fk-remapping  
+  [qp]
+  (comp qp add-fk-remaps))

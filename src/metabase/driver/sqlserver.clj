@@ -55,6 +55,8 @@
     :varbinary        :type/*
     :varchar          :type/Text
     :xml              :type/*
+    :sysname         :type/Text
+    (keyword "bigint identity") :type/BigInteger
     (keyword "int identity") :type/Integer} column-type)) ; auto-incrementing integer (ie pk) field
 
 
