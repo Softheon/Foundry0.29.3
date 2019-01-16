@@ -54,6 +54,7 @@
 
 .List-item-title {
   color: var(--default-font-color);
+  word-break: break-all;
 }
 
 .List-item:not(.List-item--disabled):hover .List-item-title,
