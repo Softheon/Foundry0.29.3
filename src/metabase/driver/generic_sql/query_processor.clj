@@ -34,7 +34,7 @@
 
 (def ^:private ^:const max-rows-maximum 1000)
 
-(def ^:private ^:const default-fetch-szie 500)
+(def ^:private ^:const default-fetch-szie 100)
 
 ;;; ## Formatting
 
@@ -499,7 +499,7 @@
           ;   (print 
           ;                     (filter  (fn [x] (boolean true)))   (jdbc/reducible-query conn (into [stmt] params) {:raw true})
           ;             )
-          ; ))
+          ; )) 
           @query-future)
         (catch InterruptedException e
           (log/warn e "Client closed connection, cancelling query")
@@ -507,6 +507,19 @@
           ;; `query-future` but this will cause an exception to be thrown, saying the query has been cancelled.
           (.cancel stmt)
           (throw e))))))
+
+(defn- n-result-sets
+  "Only process n result sets"
+  [records]
+  (loop [records records
+         results '()
+         count 0]
+    (if (> count max-rows-maximum)
+      (reverse results)
+      (if-let [records-seq (seq records)]
+        (let [record (first records)]
+          (recur (next records) (conj results record) (+ count 1)))
+        (reverse results)))))
 
 (defn- run-query
   "Run the query itself."
@@ -519,7 +532,7 @@
                                                                      :read-columns   (read-columns-with-date-handling timezone)
                                                                      :set-parameters (set-parameters-with-timezone timezone)
                                                                      :result-set-fn  export-fn
-                                                                     :fetch-size 500
+                                                                     :fetch-size default-fetch-szie
                                                                      :concurrency :read-only
                                                                      :result-type :forward-only
                                                                      :keywordize? false}))
@@ -528,15 +541,15 @@
             (let [[columns & rows] (cancellable-run-query connection sql params {:identifiers    identity, :as-arrays? true
                                                                                  :read-columns   (read-columns-with-date-handling timezone)
                                                                                  :set-parameters (set-parameters-with-timezone timezone)
-                                                                                 :fetch-size 500})]
+                                                                                 :fetch-size default-fetch-szie})]
               {:rows    (or rows [])
                :columns columns})
 
             (let [[columns & rows] (cancellable-run-query connection sql params {:identifiers    identity, :as-arrays? true
                                                                                  :read-columns   (read-columns-with-date-handling timezone)
                                                                                  :set-parameters (set-parameters-with-timezone timezone)
-                                                                                 :fetch-size 500
-                                                                                 :max-rows  max-rows-maximum})]
+                                                                                 :fetch-size default-fetch-szie
+                                                                                 :result-set-fn  n-result-sets})]
               {:rows    (or rows [])
                :columns columns}))))))
 
