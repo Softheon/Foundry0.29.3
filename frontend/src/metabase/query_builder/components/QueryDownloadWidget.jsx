@@ -17,8 +17,8 @@ import * as Urls from "metabase/lib/urls";
 import _ from "underscore";
 import cx from "classnames";
 
-const EXPORT_FORMATS = ["csv", "xlsx", "json"];
-//const EXPORT_FORMATS = ["csv",  "json"];
+//const EXPORT_FORMATS = ["csv", "xlsx", "json"];
+const EXPORT_FORMATS = ["csv"];
 const QueryDownloadWidget = ({ className, card, result, uuid, token }) => (
   <PopoverWithTrigger
     triggerElement={
@@ -36,7 +36,7 @@ const QueryDownloadWidget = ({ className, card, result, uuid, token }) => (
           <div>{t`The maximum download size is 1 million rows.`}</div>
         </FieldSet>
       )}
-      <div className="flex flex-row mt2">
+      <div className="flex flex-row mt2 justify-center">
         {EXPORT_FORMATS.map(
           type =>
             uuid ? (
