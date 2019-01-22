@@ -12,7 +12,8 @@
              [util :as u]]
             [metabase.db.spec :as dbspec]
             [ring.util.codec :as codec]
-            [metabase.mssqltoucan.db :as db])
+            [metabase.mssqltoucan.db :as db]
+            [cheshire.core :as json])
   (:import com.mchange.v2.c3p0.ComboPooledDataSource
            java.io.StringWriter
            java.util.Properties
@@ -70,31 +71,47 @@
   (or (:type @connection-string-details)
       (config/config-kw :mb-db-type)))
 
+(defn- db-connection-config
+  "Reads and parses a connection configuration json file."
+  []
+  (let [config-file (config/config-str :database-connection-file)]
+    (log/info (identity config-file))
+    (with-open [reader (io/reader config-file)]
+      (json/parse-stream reader true))))
+
 (def db-connection-details
   "Connection details that can be used when pretending the Metabase DB is itself a `Database`
    (e.g., to use the Generic SQL driver functions on the Metabase DB itself)."
   (delay (or @connection-string-details
-             (case (db-type)
-               :h2       {:type     :h2                               ; TODO - we probably don't need to specifc `:type` here since we can just call (db-type)
-                          :db       @db-file}
-               :mysql    {:type     :mysql
-                          :host     (config/config-str :mb-db-host)
-                          :port     (config/config-int :mb-db-port)
-                          :dbname   (config/config-str :mb-db-dbname)
-                          :user     (config/config-str :mb-db-user)
-                          :password (config/config-str :mb-db-pass)}
-               :postgres {:type     :postgres
-                          :host     (config/config-str :mb-db-host)
-                          :port     (config/config-int :mb-db-port)
-                          :dbname   (config/config-str :mb-db-dbname)
-                          :user     (config/config-str :mb-db-user)
-                          :password (config/config-str :mb-db-pass)}
-               :sqlserver{:type     :sqlserver
-                          :host     (config/config-str :mb-db-host)
-                          :port     (config/config-str :mb-db-port)
-                          :dbname   (config/config-str :mb-db-dbname)
-                          :user     (config/config-str :mb-db-user)
-                          :password (config/config-str :mb-db-pass)}))))
+            ;  (case (db-type)
+            ;   ;  :h2       {:type     :h2                               ; TODO - we probably don't need to specifc `:type` here since we can just call (db-type)
+            ;   ;             :db       @db-file}
+            ;   ;  :mysql    {:type     :mysql
+            ;   ;             :host     (config/config-str :mb-db-host)
+            ;   ;             :port     (config/config-int :mb-db-port)
+            ;   ;             :dbname   (config/config-str :mb-db-dbname)
+            ;   ;             :user     (config/config-str :mb-db-user)
+            ;   ;             :password (config/config-str :mb-db-pass)}
+            ;   ;  :postgres {:type     :postgres
+            ;   ;             :host     (config/config-str :mb-db-host)
+            ;   ;             :port     (config/config-int :mb-db-port)
+            ;   ;             :dbname   (config/config-str :mb-db-dbname)
+            ;   ;             :user     (config/config-str :mb-db-user)
+            ;   ;             :password (config/config-str :mb-db-pass)}
+            ;    :sqlserver {:type     :sqlserver
+            ;                :host     (config/config-str :mb-db-host)
+            ;                :port     (config/config-str :mb-db-port)
+            ;                :dbname   (config/config-str :mb-db-dbname)
+            ;                :user     (config/config-str :mb-db-user)
+            ;                :password (config/config-str :mb-db-pass)})
+             (let [connection-details (db-connection-config)]
+               {:type     :sqlserver
+                :host     (:mb-db-host connection-details)
+                :port     (:mb-db-port connection-details)
+                :dbname   (:mb-db-dbname connection-details)
+                :user     (:mb-db-user connection-details)
+                :password (:mb-db-pass connection-details)})
+            )))
 
 (defn jdbc-details
   "Takes our own MB details map and formats them properly for connection details for JDBC."
