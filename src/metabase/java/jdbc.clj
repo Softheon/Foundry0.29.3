@@ -512,7 +512,6 @@
                    :or {identifiers str/lower-case
                         keywordize? true
                         read-columns dft-read-columns}}]
-   (log/info "result-set-seq starts")
    (let [rsmeta (.getMetaData rs)
          idxs (range 1 (inc (.getColumnCount rsmeta)))
          col-name-fn (if (= :cols-as-is as-arrays?) identity make-cols-unique)
@@ -1715,7 +1714,6 @@
   The read-only? option puts the transaction in readonly mode (if supported)."
   ([db func] (db-transaction-without-auto-close* db func {}))
   ([db func opts]
-   (log/info "db-transaction-without-auto-close* start")
    (let [{:keys [isolation read-only?] :as opts}
          (merge (when (map? db) db) opts)]
      (if (zero? (get-level db))
@@ -1724,7 +1722,6 @@
                auto-commit (.getAutoCommit con)
                old-isolation (.getTransactionIsolation con)
                old-readonly  (.isReadOnly con)]
-           (log/info "db-transaction-without-auto-close* : 1727")
            (io!
             (when isolation
               (.setTransactionIsolation con (isolation isolation-levels)))
@@ -1738,7 +1735,6 @@
                   (.commit con))
                 result)
               (catch Throwable t
-                (log/info "db-transaction-without-auto-close* : 1741")
                 (try
                   (.rollback con)
                   (catch Throwable rb
@@ -1757,19 +1753,18 @@
                 ;; want to ignore exceptions here anyway
                 (try
                   (.setAutoCommit con auto-commit)
-                  (catch Exception e  (log/info (str "1760" (.getMessage e)))))
+                  (catch Exception e  (log/info (str "" (.getMessage e)))))
                 (when isolation
                   (try
                     (.setTransactionIsolation con old-isolation)
-                     (catch Exception e  (log/info (str "1760" (.getMessage e))))))
+                     (catch Exception e  (log/info (str "" (.getMessage e))))))
                 (when read-only?
                   (try
                     (.setReadOnly con old-readonly)
-                     (catch Exception e  (log/info (str "1760" (.getMessage e))))))))))
+                     (catch Exception e  (log/info (str "" (.getMessage e))))))))))
          ;; avoid confusion of read-only? TX and read-only? connection:
          ;; ******* the connection is needed to be closed explicitly!!!!!! *******
          (let [con (get-connection db (dissoc opts :read-only?))]
-           (log/info "db-transaction-without-auto-close*: 1769")
            (db-transaction-without-auto-close* (add-connection db con) func opts)))
        (do
          (when (and isolation
@@ -1802,13 +1797,10 @@
         (merge {:row-fn identity} opts)
         result-set-fn (or result-set-fn (if as-arrays? vec doall))]
     (if as-arrays?
-      (try
-        ((^:once fn* [out rs]
-                     (result-set-fn out (cons (first rs)
-                                              (map row-fn (rest rs)))))
-         writer (result-set-seq rset opts))
-        (catch Exception e (log/info (str "write-to-outputException: " (.getMessage e)))))
-
+      ((^:once fn* [out rs]
+                   (result-set-fn out (cons (first rs)
+                                            (map row-fn (rest rs)))))
+       writer (result-set-seq rset opts))
       ;(result-set-fn writer (map row-fn (result-set-seq rset opts)))
       )))
 
@@ -1823,67 +1815,48 @@
           output (PipedOutputStream.)
           set-paramters ((:set-parameters opts dft-set-parameters) stmt params)
           ;need to close rset
-          rset (.executeQuery stmt)]
-      (log/info "inputstream-for-downloable-query make-input-stream-from-query*1")   
+          rset (.executeQuery stmt)] 
       (.connect input output)
       (future
         (try
           (func output rset)
           (finally
-            (try
-              (log/info "start closeing 1")
-
               (.close rset)
               (.close stmt)
-              (try
-                (.close ^Connection db)
-                (catch Exception e (log/info "close conection:1845 : " (.getMessage e))))
-              (.close output)
-            
-              (log/info "closed all open I/Os 1")
-              (catch Exception e (log/info "close conection:1847 : " (.getMessage e)))))))
+              (.close ^Connection db)
+              (.close output))))
       input)
     (if-let [con (db-find-connection db)]
       (let [^PreparedStatement stmt (prepare-statement con sql opts)
             input (PipedInputStream.)
             output (PipedOutputStream.)
             set-paramters ((:set-parameters opts dft-set-parameters) stmt params)
-          ;need to close rset
             rset (.executeQuery stmt)]
-        (log/info "inputstream-for-downloable-query make-input-stream-from-query*2")
         (.connect input output)
         (future
           (try
             (func output rset)
             (finally
-              (log/info "start closeing 2")
               (.close rset)
               (.close stmt)
               (.close con)
-              (.close output)
-              (log/info "closed all open I/Os 2")))
-          )
+              (.close output))))
         input)
       (let [con (get-connection db opts)
             ^PreparedStatement stmt (prepare-statement con sql opts)
             input (PipedInputStream.)
             output (PipedOutputStream.)
-            ;writer (io/make-writer  output {})
             set-paramters ((:set-parameters opts dft-set-parameters) stmt params)
-          ;need to close rset
             rset (.executeQuery stmt)]
-        (log/info "inputstream-for-downloable-query make-input-stream-from-query*3")
         (.connect input output)
         (future
           (try
             (func output rset)
             (finally
-              (log/info "start closeing 3")
               (.close output)
               (.close rset)
               (.close stmt)
-              (.close con)
-              (log/info "closed all open I/Os 3"))))
+              (.close con))))
         input))))
 
 
@@ -1905,32 +1878,28 @@
   See also prepare-statement for additional options."
   ([db sql-params] (inputstream-for-downloable-query db sql-params {}))
   ([db sql-params opts]
-   (log/info "inputstream-for-downloable-query executing")
-   (try
-     (let [{:keys [explain? explain-fn] :as opts}
-           (merge {:explain-fn println} (when (map? db) db) opts)
-           [sql & params] (if (sql-stmt? sql-params) (vector sql-params) (vec sql-params))]
-       (log/info "inputstream-for-downloable-query let")
-       (when-not (sql-stmt? sql)
-         (log/info "inputstream-for-downloable-query when-not")
-         (let [^Class sql-class (class sql)
-               ^String msg (format "\"%s\" expected %s %s, found %s %s"
-                                   "sql-params"
-                                   "vector"
-                                   "[sql param*]"
-                                   (.getName sql-class)
-                                   (pr-str sql))]
-           (throw (IllegalArgumentException. msg))))
-       (when (and explain? (string? sql))
-         (inputstream-for-downloable-query db (into [(str (if (string? explain?) explain? "EXPLAIN")
-                                                          " "
-                                                          sql)]
-                                                    params)
-                                           (-> opts
-                                               (dissoc :explain? :result-set-fn :row-fn)
-                                               (assoc :result-set-fn explain-fn))))
-       (make-input-stream-from-query* db sql params
-                                      (^:once fn* [writer rset]
-                                                  (write-to-output writer rset opts))
-                                      opts))
-     (catch Exception e (log/info (str "inputstream-for-downloable-query Exception: " (.getMessage e)))))))
+   (let [{:keys [explain? explain-fn] :as opts}
+         (merge {:explain-fn println} (when (map? db) db) opts)
+         [sql & params] (if (sql-stmt? sql-params) (vector sql-params) (vec sql-params))]
+     (when-not (sql-stmt? sql)
+       (let [^Class sql-class (class sql)
+             ^String msg (format "\"%s\" expected %s %s, found %s %s"
+                                 "sql-params"
+                                 "vector"
+                                 "[sql param*]"
+                                 (.getName sql-class)
+                                 (pr-str sql))]
+         (throw (IllegalArgumentException. msg))))
+     (when (and explain? (string? sql))
+       (inputstream-for-downloable-query db (into [(str (if (string? explain?) explain? "EXPLAIN")
+                                                        " "
+                                                        sql)]
+                                                  params)
+                                         (-> opts
+                                             (dissoc :explain? :result-set-fn :row-fn)
+                                             (assoc :result-set-fn explain-fn))))
+     (make-input-stream-from-query* db sql params
+                                    (^:once fn* [writer rset]
+                                                (write-to-output writer rset opts))
+                                    opts))))
+     

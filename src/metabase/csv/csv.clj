@@ -125,11 +125,6 @@ sequence of vectors.
                      (post-processing-string string preserve-leading-zero?)))
     (when must-quote (.write writer (int quote)))))
 
-; (defn- write-cell [^Writer writer obj sep quote quote? preserve-leading-zero?]
-;   (let [string (str obj)
-;         must-quote (quote? string)]
-;     (log/info string)))
-
 (defn- write-record [^Writer writer record sep quote quote? preserve-leading-zero?]
   (loop [record record]
     (when-first [cell record]

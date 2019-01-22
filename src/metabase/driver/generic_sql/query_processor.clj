@@ -34,7 +34,7 @@
 
 (def ^:private ^:const max-rows-maximum 1000)
 
-(def ^:private ^:const default-fetch-szie 100)
+(def ^:private ^:const default-fetch-szie 500)
 
 ;;; ## Formatting
 
@@ -486,7 +486,6 @@
   "Runs `sql` in such a way that it can be interrupted via a `future-cancel`"
   [db sql params opts]
   (with-ensured-connection conn db
-    (log/info "cancellable-run-query-for-download: running")
     ;; This is normally done for us by java.jdbc as a result of our `jdbc/query` call
     (let [^PreparedStatement stmt (jdbc/prepare-statement conn sql opts)]
       ;; Need to run the query in another thread so that this thread can cancel it if need be
@@ -495,11 +494,6 @@
           ;; This thread is interruptable because it's awaiting the other thread (the one actually running the
           ;; query). Interrupting this thread means that the client has disconnected (or we're shutting down) and so
           ;; we can give up on the query running in the future
-          ; (log/info (identity
-          ;   (print 
-          ;                     (filter  (fn [x] (boolean true)))   (jdbc/reducible-query conn (into [stmt] params) {:raw true})
-          ;             )
-          ; )) 
           @query-future)
         (catch InterruptedException e
           (log/warn e "Client closed connection, cancelling query")
@@ -512,14 +506,14 @@
   "Only process n result sets"
   [records]
   (loop [records records
-         results '()
+         results []
          count 0]
     (if (> count max-rows-maximum)
-      (reverse results)
+      results
       (if-let [records-seq (seq records)]
         (let [record (first records)]
           (recur (next records) (conj results record) (+ count 1)))
-        (reverse results)))))
+        results))))
 
 (defn- run-query
   "Run the query itself."

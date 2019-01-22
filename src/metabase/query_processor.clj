@@ -121,7 +121,7 @@
       mbql-to-native/mbql-native-download
       ;annotate-and-sort/annotate-and-sort
       perms/check-query-permissions ; NO POSTPROCESSING
-      log-query/log-expanded-query ; NOT POST PROCESSING
+      ;log-query/log-expanded-query ; NOT POST PROCESSING
      ; limit/limit ; 
      ; binning/update-binning-strategy
       resolve/resolve-middleware ; no POSTPROCESSING

@@ -84,12 +84,10 @@
   [writer results]
   (let [out (io/make-writer writer {})]
     (try
-      (log/info "export-to-csv-stream-writer start")
       (csv/write-csv out results)
       (.flush out)
       (catch Exception e 
-        (.close out)
-        (log/info (str "export-to-csv-stream-writer:92 : " (.getMessage e)))))))
+        (log/info (str "" (.getMessage e)))))))
 
 (def export-formats
   "Map of export types to their relevant metadata"
