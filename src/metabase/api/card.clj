@@ -29,7 +29,8 @@
              [pulse :as pulse :refer [Pulse]]
              [query :as query]
              [table :refer [Table]]
-             [view-log :refer [ViewLog]]]
+             [view-log :refer [ViewLog]]
+             [field :as field :refer [Field]]]
             [metabase.query-processor
              [interface :as qpi]
              [util :as qputil]]
@@ -728,5 +729,58 @@
   "Return related entities for an ad-hoc query."
   [:as {query :body}]
   (related/related (query/adhoc-query query)))
+
+;;; --------------------------------------------- Exporting Card ----------------------------------------------------------------------------------
+
+(defn- dowloable-card-json
+  [id]
+  (u/prog1 (-> (Card id)
+               api/read-check)
+           (events/publish-event! :card-json-download (assoc <> :actor-id api/*current-user-id*))))
+
+(defn- field-with-table-and-field-name
+  [id]
+  (let [field (-> (Field id)
+                  (hydrate :table)
+                  api/read-check)]
+    (if (and (get-in field [:table :name])
+             (:name field))
+      [(get-in field [:table :name]), (:name field)]
+      (throw (Exception. (str "Unable to find field id:" id))))))
+
+(defn- convert-dimension-format
+  [template-tag]
+  (let [tag-value (second template-tag)
+        value-key-set (set (keys tag-value))]
+    (if (contains? value-key-set :dimension)
+      (let [new-dimension-value (field-with-table-and-field-name (second (:dimension tag-value)))]
+        (assoc template-tag 1 (assoc tag-value :dimension new-dimension-value)))
+      template-tag)))
+
+(defn- update-template-tag
+  [template-tag]
+  (let [result (map convert-dimension-format template-tag)]
+    (into {} result)))
+
+(defn- card-report
+  [card]
+  (try
+    (update-in card [:dataset_query :native :template_tags] update-template-tag)
+    (catch Exception e nil)))
+
+(api/defendpoint POST "/:card-id/download/:export-format"
+  "Finds a Card with card id, and returns its results as a file in the specified format."
+  [card-id export-format]
+  (let [card (->  card-id
+                  dowloable-card-json
+                  card-report)]
+    (api/let-404 [export-conf (ex/card-export-formats export-format)]
+                 (if-not (nil? card)
+                   {:status  200
+                    :body     ((:export-fn export-conf) card)
+                    :headers {"Content-Type"        (str (:content-type export-conf) "; charset=utf-8")
+                              "Content-Disposition" (str "attachment; filename=\"" (card :name) "." (:ext export-conf) "\"")}}
+                   {:status 500
+                    :body   (str "something went wrong")}))))
 
 (api/define-routes)
