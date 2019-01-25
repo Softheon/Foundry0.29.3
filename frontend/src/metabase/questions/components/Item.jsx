@@ -58,22 +58,24 @@ const ItemDownloadButton = ({
   method,
   url,
 }: ItemDownloadButtonProp) => (
-  <form  method={method} action={url} className="">
-      <Tooltip tooltip={t`Download`}>
-        <Icon
-          className="text-light-blue cursor-pointer text-brand-hover transition-color"
-          name={"download"}
-          onClick={e => {
-            if (window.OSX) {
-              // prevent form from being submitted normally
-              e.preventDefault();
-              // download using the API provided by the OS X app
-              window.OSX.download(method, url, {}, []);
-            }
-          }}
-          size={18}
-        />
-      </Tooltip>
+  <form  method={method} action={url} style={{display:'inline'}}>
+      <button style={{border:'none', background:'inherit'}}>
+        <Tooltip tooltip={t`Download`}>
+          <Icon
+            className="text-light-blue cursor-pointer text-brand-hover transition-color"
+            name={"downarrow"}
+            onClick={e => {
+              if (window.OSX) {
+                // prevent form from being submitted normally
+                e.preventDefault();
+                // download using the API provided by the OS X app
+                window.OSX.download(method, url, {}, []);
+              }
+            }}
+            size={18}
+          />
+        </Tooltip>
+      </button>
       {/* <Button
         onClick={e => {
           if (window.OSX) {
