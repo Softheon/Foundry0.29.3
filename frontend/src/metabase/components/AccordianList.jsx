@@ -294,7 +294,6 @@ export default class AccordianList extends Component {
         }
       }
     }
-
     const maxHeight =
       this.props.maxHeight > 0 && this.props.maxHeight < Infinity
         ? this.props.maxHeight

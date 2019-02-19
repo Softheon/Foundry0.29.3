@@ -8,6 +8,34 @@ export function isQueryable(table) {
   return table.visibility_type == null;
 }
 
+export function hasFolderName(name){
+  return name.includes("_Profile") || name.includes("_Extension");
+}
+
+export function getFolderName(name){
+  let index = name.indexOf("_");
+  return name.substring(0, index);
+}
+
+export function isProfileTable(name) {
+  return name.includes("_Profile");
+}
+
+export function isExtensionTable(name) {
+  return name.includes("_Extension");
+}
+
+export function getFolderChildTableName(tableName, folderName, tableType) {
+  let regexString = `^${folderName}_(.*)_${tableType}`
+  let regex = new RegExp(regexString);
+  let result =  regex.exec(tableName);
+  if(result && result.length > 1){
+    return result[1].replace("_", " ");
+  }
+  return null;
+}
+
+
 export async function loadTableAndForeignKeys(tableId) {
   let [table, foreignKeys] = await Promise.all([
     MetabaseApi.table_query_metadata({ tableId }),

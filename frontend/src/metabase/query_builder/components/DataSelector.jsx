@@ -8,7 +8,7 @@ import PopoverWithTrigger from "metabase/components/PopoverWithTrigger.jsx";
 import AccordianList from "metabase/components/AccordianList.jsx";
 import LoadingAndErrorWrapper from "metabase/components/LoadingAndErrorWrapper";
 
-import { isQueryable } from "metabase/lib/table";
+import { isQueryable, hasFolderName, getFolderChildTableName, getFolderName, isProfileTable, isExtensionTable } from "metabase/lib/table";
 import { titleize, humanize } from "metabase/lib/formatting";
 
 import { fetchTableMetadata } from "metabase/redux/metadata";
@@ -20,16 +20,25 @@ import _ from "underscore";
 const DATABASE_STEP = "DATABASE";
 // chooses a database and a schema inside that database
 const DATABASE_SCHEMA_STEP = "DATABASE_SCHEMA";
+// chooses a database and a folder inside that database
+const DATABASE_FOLDER_STEP = "DATABASE_FOLDER";
 // chooses a schema (given that a database has already been selected)
 const SCHEMA_STEP = "SCHEMA";
 // chooses a database and a schema and provides additional "Segments" option for jumping to SEGMENT_STEP
 const SCHEMA_AND_SEGMENTS_STEP = "SCHEMA_AND_SEGMENTS";
+// chooses a folder(database has already been selected)
+const FOLDER_STEP = "FOLDER"
+// chooses a database, a folder and a profile inside that database
+const PROFILE_STEP = "PROFILE"
+// chooses a database, a folder, a profile, and an extension inside that database
+const EXTENSION_STEP = "EXTENSION"
 // chooses a table (database has already been selected)
 const TABLE_STEP = "TABLE";
 // chooses a table field (table has already been selected)
 const FIELD_STEP = "FIELD";
 // shows either table or segment list depending on which one is selected
 const SEGMENT_OR_TABLE_STEP = "SEGMENT_OR_TABLE_STEP";
+// chooses a folder (given that a database has already been selected)
 
 export const SchemaTableAndSegmentDataSelector = props => (
   <DataSelector
@@ -112,6 +121,15 @@ export const DatabaseSchemaAndTableDataSelector = props => (
     {...props}
   />
 );
+
+export const DatabaseFolderProfileExtensionDataSelector = props => (
+  <DataSelector
+    steps = {[DATABASE_FOLDER_STEP, FOLDER_STEP, PROFILE_STEP, EXTENSION_STEP, TABLE_STEP]}
+    getTriggerElementContent = {TableTriggerContent}
+    {...props}
+  />
+);
+
 export const SchemaAndTableDataSelector = props => (
   <DataSelector
     steps={[SCHEMA_STEP, TABLE_STEP]}
@@ -139,6 +157,80 @@ export default class DataSelector extends Component {
       isLoading: false,
     };
   }
+  getUniqueFolderName = tables => {
+    let folders = new Set();
+    for (let table of tables.filter(hasFolderName)) {
+      let index = table.name.indexOf("_");
+      folders.add(table.name.substring(0, index))
+    }
+    return folders;
+  };
+  
+  getEdwFolders = database => {
+    let folders = {};
+    let other = [];
+    for (let table of database.tables) {
+      const tableName = table.name;
+      if (tableName && hasFolderName(tableName)) {
+        const folderName = getFolderName(tableName);
+        // Add a folder
+        folders[folderName] = folders[folderName] || {
+          name: folderName,
+          type: "folder",
+          profiles: {},
+        };
+        // Add a profile
+        if (isProfileTable(tableName)) {
+          const profileName = getFolderChildTableName(tableName, folderName, "Profile");
+          folders[folderName].profiles[profileName] = profileName &&
+            profileName.length > 1 &&
+            folders[folderName].profiles[profileName] || {
+              name: profileName,
+              type: "profile",
+              table: table,
+              extensions: {}
+            };
+        }else if (isExtensionTable(tableName)){
+          // Add am extension
+          const name = getFolderChildTableName(tableName, folderName, "Extension");
+          const profileName = name &&
+            name.length > 1 &&
+            name.substring(0, name.indexOf(" "));
+
+          folders[folderName].profiles[profileName] = profileName &&
+            profileName.length > 1 &&
+            folders[folderName].profiles[profileName] || {
+              name: profileName,
+              type: "profile",
+              table: table,
+              extensions: {}
+            };
+          const extensionName = name.split(" ")[1];
+          folders[folderName].profiles[profileName].extensions[extensionName] = 
+          folders[folderName].profiles[profileName].extensions[extensionName]  || {
+            name: extensionName,
+            type: "extension",
+            table: table,
+          }; 
+        }
+      }else {
+        other.push(
+            {
+              name: "other",
+              type: "other",
+              table: table
+            });
+      }
+    }
+    folders = Object.values(folders);
+    folders.sort((a,b) => a.name.localeCompare(b.name));
+    folders.push({
+      name: "other",
+      type: "other",
+      tables: other,
+    })
+    return folders;
+  };
 
   getStepsAndSelectedEntities = props => {
     let selectedSchema, selectedTable;
@@ -167,12 +259,15 @@ export default class DataSelector extends Component {
         if (schemas.length === 1) {
           schemas[0].name = "";
         }
+        const lastThreeChars = database.name.substring(database.name.length - 3);
+        const isEdwDatabase = lastThreeChars.toUpperCase() === "EDW";
+        
         return {
           ...database,
           schemas: schemas.sort((a, b) => a.name.localeCompare(b.name)),
+          folders: isEdwDatabase && database.id > 0 ? this.getEdwFolders(database) : [],
         };
       });
-
     const selectedDatabase = selectedDatabaseId
       ? databases.find(db => db.id === selectedDatabaseId)
       : null;
@@ -191,6 +286,23 @@ export default class DataSelector extends Component {
       selectedSchema = selectedDatabase.schemas[0];
     }
 
+    let { selectedFolder, selectedProfile, selectedExtension } = props
+    // removes the folder, profile, and extension step if the the last three characters of the name of a database is not EDW
+    const lastThreeCharOfSelectedDatabaseName = selectedDatabase && selectedDatabase.name.substring(selectedDatabase.name.length - 3)
+    const isEDWDatabase = lastThreeCharOfSelectedDatabaseName && lastThreeCharOfSelectedDatabaseName.toUpperCase().localeCompare("EDW");
+
+    if (selectedDatabase &&
+      !isEDWDatabase && 
+      !hasMultipleSchemas && 
+      steps.includes(FOLDER_STEP) &&
+      steps.includes(PROFILE_STEP) &&
+      steps.includes(EXTENSION_STEP)) {
+      steps.splice(props.steps.indexOf(FOLDER_STEP), 3);
+      selectedFolder = null;
+      selectedProfile = null;
+      selectedExtension = null;
+    }
+  
     // if a db is selected but schema isn't, default to the first schema
     selectedSchema =
       selectedSchema || (selectedDatabase && selectedDatabase.schemas[0]);
@@ -202,7 +314,7 @@ export default class DataSelector extends Component {
     const selectedField = props.selectedFieldId
       ? props.metadata.fields[props.selectedFieldId]
       : null;
-
+      
     return {
       databases,
       selectedDatabase,
@@ -210,6 +322,9 @@ export default class DataSelector extends Component {
       selectedTable,
       selectedSegment,
       selectedField,
+      selectedFolder,
+      selectedProfile,
+      selectedExtension,
       steps,
     };
   };
@@ -289,7 +404,7 @@ export default class DataSelector extends Component {
       ...stateChange,
       activeStep: stepName,
     };
-
+    
     const loadersForSteps = {
       [FIELD_STEP]: () =>
         updatedState.selectedTable &&
@@ -390,6 +505,52 @@ export default class DataSelector extends Component {
     this.nextStep({ selectedDatabase: null, selectedSchema: null });
   };
 
+
+  onChangeFolder = folder => {
+      this.nextStep({selectedFolder : folder})
+    }
+  
+
+  onChangeProfile = profile => {
+    this.nextStep({selectedProfile: profile})
+  }
+
+  onChangeExtension = extension => {
+    this.nextStep({selectedExtension: extension})
+  }
+
+  onChangeDatabaseAndFolder = (index, schemaInSameStep) => {
+    let database = this.state.databases[index];
+    let databaseName = database.name.toUpperCase();
+    if (!databaseName || databaseName && !databaseName.endsWith("EDW")) {
+      return this.onChangeDatabase(index, schemaInSameStep);
+    }
+    let folder =
+      database && (database.folders.length > 1 ? null : database.folders[0])
+
+    console.log(folder);
+    if (database && database.tables.length === 0) {
+      folder = {
+        name: "",
+        type: "folder",
+        profiles: [],
+      };
+    }
+
+    const stateChange = {
+      selectedDatabase: database,
+      selectedFolder: folder,
+    }
+    this.props.setDatabaseFn && this.props.setDatabaseFn(database.id);
+    if (schemaInSameStep && database.folders.length > 1) {
+      this.setState(stateChange);
+    } else {
+      this.nextStep(stateChange);
+    }
+  }
+
+  onChangeProfileAnd
+
   getTriggerElement() {
     const {
       className,
@@ -435,6 +596,9 @@ export default class DataSelector extends Component {
       selectedTable,
       selectedField,
       selectedSegment,
+      selectedFolder,
+      selectedProfile,
+      selectedExtension,
     } = this.state;
 
     const hasAdjacentStep = this.hasAdjacentStep();
@@ -533,6 +697,18 @@ export default class DataSelector extends Component {
             />
           );
         }
+      case DATABASE_FOLDER_STEP:
+        return (
+          <DatabaseFolderPicker
+            skipDatabaseSelection={skipDatabaseSelection}
+            databases={databases}
+            selectedDatabase={selectedDatabase}
+            selectedFolder={selectedFolder}
+            onChangeFolder={this.onChangeFolder}
+            onChangeDatabase={this.onChangeDatabaseAndFolder}
+            hasAdjacentStep={hasAdjacentStep}
+          />
+        )
     }
 
     return null;
@@ -734,6 +910,70 @@ export const DatabaseSchemaPicker = ({
       />
     </div>
   );
+};
+
+export const DatabaseFolderPicker = ({
+  skipDatabaseSelection,
+  databases,
+  selectedDatabase,
+  selectedFolder,
+  onChangeFolder,
+  onChangeDatabase,
+  hasAdjacentStep
+}) => {
+  if(databases.length === 0){
+    return <DataSelectorLoading/>;
+  }
+  const isEdwDatabase = name => {
+    const lastThreeChars = name.substring(name.length - 3);
+    return lastThreeChars.toUpperCase() === "EDW";
+  }
+  const getSubSections =  database => {
+    if(isEdwDatabase(database.name)){
+      return database.folders.length > 1 ? database.folders : [];
+    }
+    else{
+      return database.schemas.length > 1 ? database.schemas : [];
+    }
+  }
+  const sections = databases.map(database => ({
+    name: database.name,
+    items: getSubSections(database),
+    className: database.is_saved_questions ? "bg-slate-extra-ligh" : null,
+    icon: database.is_saved_questions? "all" : "database",
+  }));
+  console.log(selectedFolder);
+  let openSection = 
+    selectedFolder && 
+    _.findIndex(databases, db => _.find(db.folders, selectedFolder));
+    console.log(openSection);
+  if(
+      openSection >= 0 &&
+      databases[openSection] &&
+      databases[openSection].folders.length === 1
+  ){
+    openSection = -1;
+  }
+  return (
+    <div>
+      <AccordianList
+        id="DatabaseFolderPicker"
+        key="databaseFolderPicker"
+        className="text-brand"
+        sections={sections}
+        onChange={onChangeFolder}
+        onChangeSection={dbId => onChangeDatabase(dbId, true)}
+        itemIsSelected = {folder => folder === selectedFolder}
+        renderSectionIcon={item =>(
+          <Icon className="Icon text-default" name={item.icon} size={18}/>
+        )}
+        renderItemIcon = {() => (<Icon name="folder" size={16}/>)}
+        initiallyOpenSection={openSection}
+        alwaysTogglable = {true}
+        showItemArrows={hasAdjacentStep}
+      />
+    </div>
+  )
 };
 
 export const TablePicker = ({
