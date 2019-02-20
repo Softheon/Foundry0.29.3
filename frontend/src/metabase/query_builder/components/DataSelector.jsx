@@ -8,13 +8,14 @@ import PopoverWithTrigger from "metabase/components/PopoverWithTrigger.jsx";
 import AccordianList from "metabase/components/AccordianList.jsx";
 import LoadingAndErrorWrapper from "metabase/components/LoadingAndErrorWrapper";
 
-import { isQueryable, hasFolderName, getFolderChildTableName, getFolderName, isProfileTable, isExtensionTable } from "metabase/lib/table";
+import { isQueryable, isEDW, hasFolderName, getFolderChildTableName, getFolderName, isProfileTable, isExtensionTable } from "metabase/lib/table";
 import { titleize, humanize } from "metabase/lib/formatting";
 
 import { fetchTableMetadata } from "metabase/redux/metadata";
 import { getMetadata } from "metabase/selectors/metadata";
 
 import _ from "underscore";
+
 
 // chooses a database
 const DATABASE_STEP = "DATABASE";
@@ -30,6 +31,8 @@ const SCHEMA_AND_SEGMENTS_STEP = "SCHEMA_AND_SEGMENTS";
 const FOLDER_STEP = "FOLDER"
 // chooses a database, a folder and a profile inside that database
 const PROFILE_STEP = "PROFILE"
+// chooses a database, a folder, a profile, and a profile table inside that database
+const PROFILE_TABLE_STEP = "PROFILE_TABLE"
 // chooses a database, a folder, a profile, and an extension inside that database
 const EXTENSION_STEP = "EXTENSION"
 // chooses a table (database has already been selected)
@@ -38,7 +41,20 @@ const TABLE_STEP = "TABLE";
 const FIELD_STEP = "FIELD";
 // shows either table or segment list depending on which one is selected
 const SEGMENT_OR_TABLE_STEP = "SEGMENT_OR_TABLE_STEP";
-// chooses a folder (given that a database has already been selected)
+
+// chose an edw table (edw database has already been selected)
+const  EDW_TABLE_STEP ="EDW_TABLE";
+
+const EVERYTHING_ELSE ="other";
+
+const EXTENSION_TABLE_LABEL ="Extension Table";
+
+const EXTENSION_TYPE = "extension";
+
+const FOLDER_TYPE = "folder";
+
+const PROFILE_TYPE = "profile";
+
 
 export const SchemaTableAndSegmentDataSelector = props => (
   <DataSelector
@@ -124,7 +140,7 @@ export const DatabaseSchemaAndTableDataSelector = props => (
 
 export const DatabaseFolderProfileExtensionDataSelector = props => (
   <DataSelector
-    steps = {[DATABASE_FOLDER_STEP, FOLDER_STEP, PROFILE_STEP, EXTENSION_STEP, TABLE_STEP]}
+    steps = {[DATABASE_FOLDER_STEP, PROFILE_STEP, PROFILE_TABLE_STEP, EDW_TABLE_STEP]}
     getTriggerElementContent = {TableTriggerContent}
     {...props}
   />
@@ -214,18 +230,15 @@ export default class DataSelector extends Component {
           }; 
         }
       }else {
-        other.push(
-            {
-              name: "other",
-              type: "other",
-              table: table
-            });
+        other.push(table);
       }
     }
     folders = Object.values(folders);
     folders.sort((a,b) => a.name.localeCompare(b.name));
+    other.sort((a,b) => a.name.localeCompare(b.name));
+
     folders.push({
-      name: "other",
+      name: "Everything Else",
       type: "other",
       tables: other,
     })
@@ -287,22 +300,17 @@ export default class DataSelector extends Component {
     }
 
     let { selectedFolder, selectedProfile, selectedExtension } = props
-    // removes the folder, profile, and extension step if the the last three characters of the name of a database is not EDW
-    const lastThreeCharOfSelectedDatabaseName = selectedDatabase && selectedDatabase.name.substring(selectedDatabase.name.length - 3)
-    const isEDWDatabase = lastThreeCharOfSelectedDatabaseName && lastThreeCharOfSelectedDatabaseName.toUpperCase().localeCompare("EDW");
 
     if (selectedDatabase &&
-      !isEDWDatabase && 
-      !hasMultipleSchemas && 
-      steps.includes(FOLDER_STEP) &&
-      steps.includes(PROFILE_STEP) &&
-      steps.includes(EXTENSION_STEP)) {
-      steps.splice(props.steps.indexOf(FOLDER_STEP), 3);
+      !isEDW(selectedDatabase.name) && 
+      steps.includes(DATABASE_FOLDER_STEP) 
+      ) {
       selectedFolder = null;
       selectedProfile = null;
       selectedExtension = null;
+      steps = [DATABASE_FOLDER_STEP, TABLE_STEP];
     }
-  
+
     // if a db is selected but schema isn't, default to the first schema
     selectedSchema =
       selectedSchema || (selectedDatabase && selectedDatabase.schemas[0]);
@@ -314,7 +322,7 @@ export default class DataSelector extends Component {
     const selectedField = props.selectedFieldId
       ? props.metadata.fields[props.selectedFieldId]
       : null;
-      
+
     return {
       databases,
       selectedDatabase,
@@ -398,13 +406,20 @@ export default class DataSelector extends Component {
     }
   };
 
+  edwTableStep = (stateChange = {}) => {
+    const updatedState = {
+      ...stateChange,
+      steps: [DATABASE_FOLDER_STEP, EDW_TABLE_STEP]
+    }
+    this.switchToStep(EDW_TABLE_STEP, updatedState);
+  };
+
   switchToStep = async (stepName, stateChange = {}) => {
     const updatedState = {
       ...this.state,
       ...stateChange,
       activeStep: stepName,
     };
-    
     const loadersForSteps = {
       [FIELD_STEP]: () =>
         updatedState.selectedTable &&
@@ -455,11 +470,11 @@ export default class DataSelector extends Component {
         tables: [],
       };
     }
+
     const stateChange = {
       selectedDatabase: database,
       selectedSchema: schema,
     };
-
     this.props.setDatabaseFn && this.props.setDatabaseFn(database.id);
 
     if (schemaInSameStep) {
@@ -507,8 +522,16 @@ export default class DataSelector extends Component {
 
 
   onChangeFolder = folder => {
+    if(folder.type === "folder"){
       this.nextStep({selectedFolder : folder})
+    }else if(folder.type === EVERYTHING_ELSE){
+      this.edwTableStep({selectedFolder : folder})
+;
     }
+    else{
+      return this.onChangeSchema(folder);
+    }
+  }
   
 
   onChangeProfile = profile => {
@@ -527,8 +550,6 @@ export default class DataSelector extends Component {
     }
     let folder =
       database && (database.folders.length > 1 ? null : database.folders[0])
-
-    console.log(folder);
     if (database && database.tables.length === 0) {
       folder = {
         name: "",
@@ -536,7 +557,6 @@ export default class DataSelector extends Component {
         profiles: [],
       };
     }
-
     const stateChange = {
       selectedDatabase: database,
       selectedFolder: folder,
@@ -549,7 +569,17 @@ export default class DataSelector extends Component {
     }
   }
 
-  onChangeProfileAnd
+  onChangeProfileTable = item =>{
+      if(item.table != null){
+        let {steps} = this.state;
+        if(steps.includes(EDW_TABLE_STEP)){
+          steps.splice(steps.indexOf(EDW_TABLE_STEP), 1)
+        }
+        this.onChangeTable(item);
+      }else{
+        this.onChangeExtension(item);
+      }
+  };
 
   getTriggerElement() {
     const {
@@ -602,7 +632,6 @@ export default class DataSelector extends Component {
     } = this.state;
 
     const hasAdjacentStep = this.hasAdjacentStep();
-
     switch (this.state.activeStep) {
       case DATABASE_STEP:
         return (
@@ -703,10 +732,49 @@ export default class DataSelector extends Component {
             skipDatabaseSelection={skipDatabaseSelection}
             databases={databases}
             selectedDatabase={selectedDatabase}
-            selectedFolder={selectedFolder}
+            selectedFolder={selectedFolder || selectedSchema}  
             onChangeFolder={this.onChangeFolder}
             onChangeDatabase={this.onChangeDatabaseAndFolder}
             hasAdjacentStep={hasAdjacentStep}
+          />
+        )
+      case PROFILE_STEP:
+        return (
+          <ProfilePicker
+            selectedDatabase={selectedDatabase}
+            selectedFolder={selectedFolder}
+            selectedProfile={selectedProfile}
+            onChangeProfile={this.onChangeProfile}
+            hasAdjacentStep={hasAdjacentStep}
+            onBack={this.hasPreviousStep() && this.onBack}
+          />
+        )
+      case EDW_TABLE_STEP:
+        return (
+          <EdwTablePicker
+            databases={databases}
+            disabledTableIds={disabledTableIds}
+            onChangeTable={this.onChangeTable}
+            onBack={this.hasPreviousStep() && this.onBack}
+            selectedDatabase={selectedDatabase}
+            selectedFolder={selectedFolder}
+            selectedProfile={selectedProfile}
+            selectedExtension={selectedExtension}
+            selectedTable={selectedTable}
+          />
+        )
+      case PROFILE_TABLE_STEP:
+        return (
+          <ProfileTablePicker
+            databases={databases}
+            disabledTableIds={disabledTableIds}
+            onChangeTable={this.onChangeProfileTable}
+            onBack={this.hasPreviousStep() && this.onBack}
+            selectedDatabase={selectedDatabase}
+            selectedFolder={selectedFolder}
+            selectedProfile={selectedProfile}
+            selectedExtension={selectedExtension}
+            selectedTable={selectedTable}
           />
         )
     }
@@ -918,6 +986,7 @@ export const DatabaseFolderPicker = ({
   selectedDatabase,
   selectedFolder,
   onChangeFolder,
+  selectedSchema,
   onChangeDatabase,
   hasAdjacentStep
 }) => {
@@ -942,11 +1011,9 @@ export const DatabaseFolderPicker = ({
     className: database.is_saved_questions ? "bg-slate-extra-ligh" : null,
     icon: database.is_saved_questions? "all" : "database",
   }));
-  console.log(selectedFolder);
   let openSection = 
     selectedFolder && 
     _.findIndex(databases, db => _.find(db.folders, selectedFolder));
-    console.log(openSection);
   if(
       openSection >= 0 &&
       databases[openSection] &&
@@ -963,7 +1030,7 @@ export const DatabaseFolderPicker = ({
         sections={sections}
         onChange={onChangeFolder}
         onChangeSection={dbId => onChangeDatabase(dbId, true)}
-        itemIsSelected = {folder => folder === selectedFolder}
+        itemIsSelected = {folder => folder === selectedFolder || folder === selectedSchema}
         renderSectionIcon={item =>(
           <Icon className="Icon text-default" name={item.icon} size={18}/>
         )}
@@ -1070,6 +1137,270 @@ export const TablePicker = ({
   }
 };
 
+export const ProfilePicker = ({
+  selectedDatabase,
+  selectedFolder,
+  selectedProfile,
+  onChangeProfile,
+  hasAdjacentStep,
+  onBack,
+}) => {
+  if(!selectedDatabase || !selectedFolder){
+    if(onBack) onBack();
+    return null;
+  }
+  let header =(
+    <div className="flex flex-wrap align-center">
+      <span
+        className={cx("flex align-center", {
+          "text-brand-hover cursor-pointer" : onBack,
+        })}
+        onClick={onBack}
+      >
+        {onBack && <Icon name="chevronleft" size={18} />}
+        <span className="ml1">{selectedDatabase.name}</span>
+      </span>
+      {selectedFolder.name && (
+        <span className="ml1 text-slate">Folder- {selectedFolder.name}</span>
+      )}
+    </div>
+  );
+  const profiles = selectedFolder && selectedFolder.profiles && Object.values(selectedFolder.profiles);
+  if(profiles.length === 0){
+    return (
+      <section
+        className="List-section List-section--open"
+        style={{ width: 300 }}
+      >
+        <div className="p1 border-bottom">
+          <div className="px1 py1 flex align-center">
+            <h3 className="text-default">{header}</h3>
+          </div>
+        </div>
+        <div className="p4 text-centered">{t`No Profiles found in this database.`}</div>
+      </section>
+    )
+  } else {
+    let sections=[
+      {
+        name: header,
+        items: profiles.map(profile => ({
+          name: profile.name,
+          profile: profile,
+        })),
+      }
+    ];
+    return (
+      <div style={{ width: 300}}>
+        <AccordianList
+          id="ProfilePicker"
+          key="profilePicker"
+          className="text-brand"
+          sections={sections}
+          onChange={onChangeProfile}
+          itemIsSelected={item => item === selectedProfile}
+          renderItemIcon={item =>
+            item.profile ? <Icon name="folder" size={18}/> : null
+          }
+          showItemArrows={hasAdjacentStep}
+        />
+      </div>
+    )
+  }
+};
+
+export const EdwTablePicker = ({
+  selectedDatabase,
+  selectedFolder,
+  selectedProfile,
+  selectedExtension,
+  selectedTable,
+  disabledTableIds,
+  onChangeTable,
+  onBack,
+}) => {
+  if(!selectedDatabase){
+    if(onBack) onBack();
+    return null;
+  }
+  let tables = null;
+  if(selectedFolder && selectedProfile && selectedExtension){
+    tables = selectedExtension.extensions;
+  }else if (selectedFolder && !selectedProfile && selectedFolder.type === EVERYTHING_ELSE){
+    tables = selectedFolder.tables
+  }
+
+  if(!tables){
+    return null;
+  }else{
+    tables = Object.values(tables);
+  }
+
+  let header = (
+    <div className="flex flex-wrap align-center">
+      <span
+        className={cx("flex align-center", {
+          "text-brand-hover cursor-pointer": onBack,
+        })}
+        onClick={onBack}
+      >
+        {onBack && <Icon name="chevronleft" size={18} />}
+        <span className="ml1">{selectedDatabase.name}</span>
+      </span>
+      {selectedFolder.name && (
+        <span className="ml1 text-slate">Folder- {selectedFolder.name}</span>
+      )}
+      {selectedProfile && selectedProfile.name && (
+        <span className="ml1 text-slate">Profile- {selectedProfile.name}</span>
+      )}
+      {selectedExtension && (
+        <span className="ml1 text-slate">Extension</span>
+      )}
+    </div>
+  );
+  if(tables.length === 0){
+    return (
+            <section
+        className="List-section List-section--open"
+        style={{ width: 300 }}
+      >
+        <div className="p1 border-bottom">
+          <div className="px1 py1 flex align-center">
+            <h3 className="text-default">{header}</h3>
+          </div>
+        </div>
+        <div className="p4 text-centered">{t`No Extension tables found in this database.`}</div>
+      </section>
+    )
+  }else{
+    let sections = [
+      {
+        name: header,
+        items: tables.map(table => ({
+          name: table.display_name,
+          disabled: disabledTableIds && disabledTableIds.includes(table.id),
+          table: table,
+          database: selectedDatabase,
+        }))
+      }];
+    return (
+      <div style={{ width: 300}}>
+        <AccordianList
+          id="EdwTablePicker"
+          key="edwTablePicker"
+          className="text-brand"
+          sections={sections}
+          searchable
+          onChange={onChangeTable}
+          itemIsSelected={item =>
+            item.table && selectedTable 
+              ? item.table.id === selectedTable.id : false
+          }
+          itemIsClickable={item => item.table && !item.disabled}
+          renderItemIcon={item => 
+            item.table ? <Icon name="table2" size={18} /> : null
+          }
+          showItemArrows={false}
+        />
+      </div>
+    );
+  }
+};
+
+export const ProfileTablePicker = ({
+  selectedDatabase,
+  selectedFolder,
+  selectedProfile,
+  selectedTable,
+  disabledTableIds,
+  onChangeTable,
+  onBack,
+}) => {
+  if(!selectedDatabase){
+    if(onBack) onBack();
+    return null;
+  }
+  let profileTable = null
+  if(selectedFolder && selectedProfile){
+    profileTable = selectedProfile.profile.table;
+  }
+  let header = (
+    <div className="flex flex-wrap align-center">
+      <span
+        className={cx("flex align-center", {
+          "text-brand-hover cursor-pointer": onBack,
+        })}
+        onClick={onBack}
+      >
+        {onBack && <Icon name="chevronleft" size={18} />}
+        <span className="ml1">{selectedDatabase.name}</span>
+      </span>
+      {selectedFolder.name && (
+        <span className="ml1 text-slate">Folder- {selectedFolder.name}</span>
+      )}
+      {selectedProfile && selectedProfile.name && (
+        <span className="ml1 text-slate">Profile- {selectedProfile.name}</span>
+      )}
+    </div>
+  );
+  if(!profileTable){
+    return (
+            <section
+        className="List-section List-section--open"
+        style={{ width: 300 }}
+      >
+        <div className="p1 border-bottom">
+          <div className="px1 py1 flex align-center">
+            <h3 className="text-default">{header}</h3>
+          </div>
+        </div>
+        <div className="p4 text-centered">{t`No Profiles found in this database.`}</div>
+      </section>
+    )
+  }else{
+    let sections = [
+      {
+        name: header,
+        items: [{
+          name: profileTable.display_name,
+          disabled: disabledTableIds && disabledTableIds.includes(profileTable.id),
+          table: profileTable,
+          database: selectedDatabase,
+          type: PROFILE_TYPE
+        },
+        {
+          name: EXTENSION_TABLE_LABEL,
+          disable: false,
+          table: null,
+          database: selectedDatabase,
+          type: EXTENSION_TYPE,
+          extensions: Object.values(selectedProfile.profile.extensions).map(extension => extension.table)
+        }
+      ]
+      }];
+      return (
+        <div style={{ width: 300}}>
+          <AccordianList
+            id="ProfileTablePicker"
+            key="profileTablePicker"
+            className="text-brand"
+            sections={sections}
+            searchable
+            onChange={onChangeTable}
+            itemIsSelected={item =>
+              item.table && selectedTable 
+                ? item.table.id === selectedTable.id : false
+            }
+            itemIsClickable={item => item.table && !item.disabled || item.type === EXTENSION_TYPE}
+            renderItemIcon={item => 
+              item.table ? <Icon name="table2" size={18} /> : <Icon name="folder" size={18} />
+            }
+            showItemArrows={true}
+          />
+        </div>
+      );
+  }
+};
 @connect(state => ({ metadata: getMetadata(state) }))
 export class FieldPicker extends Component {
   render() {

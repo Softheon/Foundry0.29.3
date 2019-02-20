@@ -25,6 +25,10 @@ export function isExtensionTable(name) {
   return name.includes("_Extension");
 }
 
+export function isEDW (name){
+  return name.toUpperCase().endsWith("EDW");
+}
+
 export function getFolderChildTableName(tableName, folderName, tableType) {
   let regexString = `^${folderName}_(.*)_${tableType}`
   let regex = new RegExp(regexString);
