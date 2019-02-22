@@ -9,7 +9,7 @@ import AccordianList from "metabase/components/AccordianList.jsx";
 import LoadingAndErrorWrapper from "metabase/components/LoadingAndErrorWrapper";
 
 import { isQueryable, isEDW, hasFolderName, getFolderChildTableName, getFolderName, isProfileTable, isExtensionTable } from "metabase/lib/table";
-import { titleize, humanize } from "metabase/lib/formatting";
+import { titleize, humanize, formatCamelCase} from "metabase/lib/formatting";
 
 import { fetchTableMetadata } from "metabase/redux/metadata";
 import { getMetadata } from "metabase/selectors/metadata";
@@ -27,14 +27,10 @@ const DATABASE_FOLDER_STEP = "DATABASE_FOLDER";
 const SCHEMA_STEP = "SCHEMA";
 // chooses a database and a schema and provides additional "Segments" option for jumping to SEGMENT_STEP
 const SCHEMA_AND_SEGMENTS_STEP = "SCHEMA_AND_SEGMENTS";
-// chooses a folder(database has already been selected)
-const FOLDER_STEP = "FOLDER"
 // chooses a database, a folder and a profile inside that database
 const PROFILE_STEP = "PROFILE"
 // chooses a database, a folder, a profile, and a profile table inside that database
 const PROFILE_TABLE_STEP = "PROFILE_TABLE"
-// chooses a database, a folder, a profile, and an extension inside that database
-const EXTENSION_STEP = "EXTENSION"
 // chooses a table (database has already been selected)
 const TABLE_STEP = "TABLE";
 // chooses a table field (table has already been selected)
@@ -182,16 +178,30 @@ export default class DataSelector extends Component {
     return folders;
   };
   
-  getEdwFolders = database => {
+  profileAndExtensionTableNameOrder = (a, b) =>{
+    if(isProfileTable(a))
+      return -1
+    if(isProfileTable(b))
+      return 1;
+    return 0;
+  }
+
+  getEdwFoldersAndSelectedEntities = (database, selectedTableId) => {
     let folders = {};
     let other = [];
-    for (let table of database.tables) {
+    let selectedFolder = null;
+    let selectedProfile = null;
+    let selectedExtension = null;
+    const sortedTables = database.tables.sort(
+      (a,b)=> this.profileAndExtensionTableNameOrder(a.name,b.name));
+    // Construct Edw tables' metadata for folder-profile-extension table selection dropdown list.
+    for (let table of sortedTables) {
       const tableName = table.name;
       if (tableName && hasFolderName(tableName)) {
         const folderName = getFolderName(tableName);
         // Add a folder
         folders[folderName] = folders[folderName] || {
-          name: folderName,
+          name: formatCamelCase(folderName),
           type: "folder",
           profiles: {},
         };
@@ -200,54 +210,121 @@ export default class DataSelector extends Component {
           const profileName = getFolderChildTableName(tableName, folderName, "Profile");
           folders[folderName].profiles[profileName] = profileName &&
             profileName.length > 1 &&
-            folders[folderName].profiles[profileName] || {
-              name: profileName,
-              type: "profile",
-              table: table,
-              extensions: {}
-            };
-        }else if (isExtensionTable(tableName)){
+            (folders[folderName].profiles[profileName] || {
+              name: formatCamelCase(profileName),
+              profile: {
+                name: formatCamelCase(profileName),
+                type: "profile",
+                table: table,
+                extensions: {}
+              }
+            });
+            // if(!folders[folderName].profiles[profileName].profile.table){
+            //   folders[folderName].profiles[profileName].profile.table = table
+            // }
+        } else if (isExtensionTable(tableName)) {
           // Add am extension
           const name = getFolderChildTableName(tableName, folderName, "Extension");
-          const profileName = name &&
-            name.length > 1 &&
-            name.substring(0, name.indexOf(" "));
-
+          const profileName = name.substring(0, name.indexOf(" "));
           folders[folderName].profiles[profileName] = profileName &&
             profileName.length > 1 &&
-            folders[folderName].profiles[profileName] || {
-              name: profileName,
-              type: "profile",
-              table: table,
-              extensions: {}
-            };
+            (folders[folderName].profiles[profileName] 
+            || {
+              name: formatCamelCase(profileName),
+              profile: {
+                name: formatCamelCase(profileName),
+                type: "profile",
+                table: null,
+                extensions: {}
+              }
+            });
           const extensionName = name.split(" ")[1];
-          folders[folderName].profiles[profileName].extensions[extensionName] = 
-          folders[folderName].profiles[profileName].extensions[extensionName]  || {
-            name: extensionName,
-            type: "extension",
-            table: table,
-          }; 
+          folders[folderName].profiles[profileName].profile.extensions[extensionName] =
+            folders[folderName].profiles[profileName].profile.extensions[extensionName] || {
+              name: formatCamelCase(extensionName),
+              type: "extension",
+              table: table,
+            };
+        }else{
+          other.push(table);
         }
-      }else {
+      } else {
         other.push(table);
       }
     }
-    folders = Object.values(folders);
-    folders.sort((a,b) => a.name.localeCompare(b.name));
-    other.sort((a,b) => a.name.localeCompare(b.name));
 
+    let folderArray = [...Object.values(folders)];
+    folderArray.sort((a, b) => a.name.localeCompare(b.name));
+    // Convert array like arrays to actual arrays.
+    for (let folder of folderArray) {
+      folder.profiles = Object.values(folder.profiles);
+      folder.profiles.sort((a, b) => a.name.localeCompare(b.name));
+      let folderProfiles = folder.profiles;
+      for (let profile of folderProfiles) {
+        if (!selectedProfile && profile.profile.table && profile.profile.table.id === selectedTableId) {
+          selectedProfile = profile;
+          selectedFolder = folder;
+        }
+        profile.profile.extensions = Object.values(profile.profile.extensions);
+        profile.profile.extensions.sort((a, b) => a.name.localeCompare(b.name));
+        // If the selected extension is not found, search for it.
+        if (!selectedExtension) {
+          for (let extension of profile.profile.extensions) {
+            if (extension.table && extension.table.id === selectedTableId) {
+              selectedExtension = extension;
+              selectedProfile = profile;
+              selectedFolder = folder;
+            }
+          }
+        }
+      }
+    }
+
+    folders = folderArray
+    other.sort((a, b) => a.name.localeCompare(b.name));
     folders.push({
       name: "Everything Else",
       type: "other",
       tables: other,
     })
-    return folders;
+    // If the selected folder is still not found, 
+    // check the selected folder in the folder containing all tables that don't belong to any found folders.
+    if (!selectedFolder) {
+      for (let table of other) {
+        if (table.id === selectedTableId) {
+          selectedFolder = folders[folders.length - 1];
+        }
+      }
+    }
+    
+    return {
+      folders: folders,
+      selectedFolder: selectedFolder,
+      selectedProfile: selectedProfile,
+      selectedExtension: selectedExtension
+    };
+  };
+  
+  convertFolderArrayLikeToArray = folders => {
+    let folderArray = [...Object.values(folders)];
+    folderArray.sort((a, b) => a.name.localeCompare(b.name));
+
+    for (let folder of folderArray) {
+      folder.profiles = Object.values(folder.profiles);
+      folder.profiles.sort((a, b) => a.name.localeCompare(b.name));
+      let folderProfiles = folder.profiles;
+      for (let profile of folderProfiles) {
+        profile.profile.extensions = Object.values(profile.profile.extensions);
+        profile.profile.extensions.sort((a, b) => a.name.localeCompare(b.name));
+      }
+    }
+    return folderArray;
   };
 
   getStepsAndSelectedEntities = props => {
     let selectedSchema, selectedTable;
     let selectedDatabaseId = props.selectedDatabaseId;
+    let { selectedFolder, selectedProfile, selectedExtension } = props
     // augment databases with schemas
     const databases =
       props.databases &&
@@ -272,13 +349,18 @@ export default class DataSelector extends Component {
         if (schemas.length === 1) {
           schemas[0].name = "";
         }
-        const lastThreeChars = database.name.substring(database.name.length - 3);
-        const isEdwDatabase = lastThreeChars.toUpperCase() === "EDW";
-        
+        const edwDatabaseResult = isEDW(database.name) && database.id > 0 ?
+          this.getEdwFoldersAndSelectedEntities(database, props.selectedTableId) : null;
+        if(edwDatabaseResult){
+          selectedFolder = selectedFolder ? selectedFolder : edwDatabaseResult.selectedFolder;
+          selectedProfile = selectedProfile ? selectedProfile : edwDatabaseResult.selectedProfile;
+          selectedExtension = selectedExtension ? selectedExtension : edwDatabaseResult.selectedExtension;
+        }
+
         return {
           ...database,
           schemas: schemas.sort((a, b) => a.name.localeCompare(b.name)),
-          folders: isEdwDatabase && database.id > 0 ? this.getEdwFolders(database) : [],
+          folders: isEDW(database.name) && database.id > 0 ? edwDatabaseResult.folders : [],
         };
       });
     const selectedDatabase = selectedDatabaseId
@@ -299,7 +381,6 @@ export default class DataSelector extends Component {
       selectedSchema = selectedDatabase.schemas[0];
     }
 
-    let { selectedFolder, selectedProfile, selectedExtension } = props
 
     if (selectedDatabase &&
       !isEDW(selectedDatabase.name) && 
@@ -309,6 +390,9 @@ export default class DataSelector extends Component {
       selectedProfile = null;
       selectedExtension = null;
       steps = [DATABASE_FOLDER_STEP, TABLE_STEP];
+    }
+    if(selectedDatabase && selectedFolder && !selectedProfile && !selectedExtension){
+      steps = [DATABASE_FOLDER_STEP, EDW_TABLE_STEP]
     }
 
     // if a db is selected but schema isn't, default to the first schema
@@ -323,6 +407,12 @@ export default class DataSelector extends Component {
       ? props.metadata.fields[props.selectedFieldId]
       : null;
 
+      console.log("selected folder")
+      console.log(selectedFolder);
+      console.log("selected profile")
+      console.log(selectedProfile);
+      console.log("selected extension");
+      console.log(selectedExtension)
     return {
       databases,
       selectedDatabase,
@@ -386,7 +476,14 @@ export default class DataSelector extends Component {
     } else if (this.props.selectedTableId) {
       if (this.props.segments) {
         this.switchToStep(SEGMENT_OR_TABLE_STEP);
-      } else {
+      }else if(this.state.selectedExtension){
+        this.switchToStep(EDW_TABLE_STEP)
+      }else if(this.state.selectedProfile){
+        this.switchToStep(PROFILE_TABLE_STEP)
+      }else if(this.state.selectedFolder){
+        this.switchToStep(EDW_TABLE_STEP)
+      }
+      else {
         this.switchToStep(TABLE_STEP);
       }
     } else {
@@ -525,15 +622,13 @@ export default class DataSelector extends Component {
     if(folder.type === "folder"){
       this.nextStep({selectedFolder : folder})
     }else if(folder.type === EVERYTHING_ELSE){
-      this.edwTableStep({selectedFolder : folder})
-;
+      this.edwTableStep({selectedFolder : folder});
     }
     else{
       return this.onChangeSchema(folder);
     }
   }
   
-
   onChangeProfile = profile => {
     this.nextStep({selectedProfile: profile})
   }
@@ -581,6 +676,17 @@ export default class DataSelector extends Component {
       }
   };
 
+  
+  onBackEdwTable = () => {
+    if (!this.hasPreviousStep()) {
+      return;
+    }
+    const previousStep = this.state.steps[
+      this.state.steps.indexOf(this.state.activeStep) - 1
+    ];
+    this.switchToStep(previousStep, {steps: [DATABASE_FOLDER_STEP, PROFILE_STEP, PROFILE_TABLE_STEP, EDW_TABLE_STEP]});
+  };
+  
   getTriggerElement() {
     const {
       className,
@@ -755,7 +861,7 @@ export default class DataSelector extends Component {
             databases={databases}
             disabledTableIds={disabledTableIds}
             onChangeTable={this.onChangeTable}
-            onBack={this.hasPreviousStep() && this.onBack}
+            onBack={this.hasPreviousStep() && this.onBackEdwTable}
             selectedDatabase={selectedDatabase}
             selectedFolder={selectedFolder}
             selectedProfile={selectedProfile}
@@ -769,7 +875,7 @@ export default class DataSelector extends Component {
             databases={databases}
             disabledTableIds={disabledTableIds}
             onChangeTable={this.onChangeProfileTable}
-            onBack={this.hasPreviousStep() && this.onBack}
+            onBack={this.hasPreviousStep() && this.onBackEdwTable}
             selectedDatabase={selectedDatabase}
             selectedFolder={selectedFolder}
             selectedProfile={selectedProfile}
@@ -1165,7 +1271,7 @@ export const ProfilePicker = ({
       )}
     </div>
   );
-  const profiles = selectedFolder && selectedFolder.profiles && Object.values(selectedFolder.profiles);
+  const profiles = selectedFolder && selectedFolder.profiles;
   if(profiles.length === 0){
     return (
       <section
@@ -1184,10 +1290,7 @@ export const ProfilePicker = ({
     let sections=[
       {
         name: header,
-        items: profiles.map(profile => ({
-          name: profile.name,
-          profile: profile,
-        })),
+        items: profiles,
       }
     ];
     return (
@@ -1225,17 +1328,20 @@ export const EdwTablePicker = ({
   }
   let tables = null;
   if(selectedFolder && selectedProfile && selectedExtension){
-    tables = selectedExtension.extensions;
+    tables = selectedExtension.extensions || 
+    (selectedProfile.profile && 
+      selectedProfile.profile.extensions && 
+      selectedProfile.profile.extensions.map(extension => extension.table)) || [];
+      console.log(selectedProfile)
+      console.log(tables)
   }else if (selectedFolder && !selectedProfile && selectedFolder.type === EVERYTHING_ELSE){
-    tables = selectedFolder.tables
+    tables = selectedFolder.tables;
   }
 
   if(!tables){
     return null;
-  }else{
-    tables = Object.values(tables);
   }
-
+  
   let header = (
     <div className="flex flex-wrap align-center">
       <span
@@ -1343,7 +1449,7 @@ export const ProfileTablePicker = ({
       )}
     </div>
   );
-  if(!profileTable){
+  if(null && !profileTable){
     return (
             <section
         className="List-section List-section--open"
@@ -1358,26 +1464,58 @@ export const ProfileTablePicker = ({
       </section>
     )
   }else{
-    let sections = [
-      {
-        name: header,
-        items: [{
+
+    // let sections = [
+    //   {
+    //     name: header,
+    //     items: [
+    //       {
+    //         name: profileTable.display_name,
+    //         disabled: disabledTableIds && disabledTableIds.includes(profileTable.id),
+    //         table: profileTable,
+    //         database: selectedDatabase,
+    //         type: PROFILE_TYPE
+    //       },
+    //       {
+    //         name: EXTENSION_TABLE_LABEL,
+    //         disable: false,
+    //         table: null,
+    //         database: selectedDatabase,
+    //         type: EXTENSION_TYPE,
+    //         extensions: Object.values(selectedProfile.profile.extensions).map(extension => extension.table)
+    //       }
+    //     ]
+    //   }];
+
+    let items = [];
+    console.log("profile table");
+    console.log(profileTable);
+    if (profileTable) {
+      items.push(
+        {
           name: profileTable.display_name,
           disabled: disabledTableIds && disabledTableIds.includes(profileTable.id),
           table: profileTable,
           database: selectedDatabase,
           type: PROFILE_TYPE
-        },
-        {
-          name: EXTENSION_TABLE_LABEL,
-          disable: false,
-          table: null,
-          database: selectedDatabase,
-          type: EXTENSION_TYPE,
-          extensions: Object.values(selectedProfile.profile.extensions).map(extension => extension.table)
         }
-      ]
-      }];
+      )
+    }
+    items.push({
+      name: EXTENSION_TABLE_LABEL,
+      disable: false,
+      table: null,
+      database: selectedDatabase,
+      type: EXTENSION_TYPE,
+      extensions: Object.values(selectedProfile.profile.extensions).map(extension => extension.table)
+    });
+
+    let sections = [{
+      name: header,
+      items: items
+    }]
+    console.log("sections is (profile table")
+    console.log(sections);
       return (
         <div style={{ width: 300}}>
           <AccordianList
