@@ -51,6 +51,8 @@ const FOLDER_TYPE = "folder";
 
 const PROFILE_TYPE = "profile";
 
+const OTHER_TYPE = "other";
+
 
 export const SchemaTableAndSegmentDataSelector = props => (
   <DataSelector
@@ -406,13 +408,6 @@ export default class DataSelector extends Component {
     const selectedField = props.selectedFieldId
       ? props.metadata.fields[props.selectedFieldId]
       : null;
-
-      console.log("selected folder")
-      console.log(selectedFolder);
-      console.log("selected profile")
-      console.log(selectedProfile);
-      console.log("selected extension");
-      console.log(selectedExtension)
     return {
       databases,
       selectedDatabase,
@@ -619,12 +614,12 @@ export default class DataSelector extends Component {
 
 
   onChangeFolder = folder => {
-    if(folder.type === "folder"){
-      this.nextStep({selectedFolder : folder})
-    }else if(folder.type === EVERYTHING_ELSE){
-      this.edwTableStep({selectedFolder : folder});
+    if (folder.type === "folder") {
+      this.nextStep({ selectedFolder: folder })
+    } else if (folder.type === EVERYTHING_ELSE) {
+      this.edwTableStep({ selectedFolder: folder, selectedProfile: null });
     }
-    else{
+    else {
       return this.onChangeSchema(folder);
     }
   }
@@ -675,6 +670,17 @@ export default class DataSelector extends Component {
         this.onChangeExtension(item);
       }
   };
+  
+  onChangeEdwTable = item => {
+    if (item.table != null) {
+      this.props.setSourceTableFn && this.props.setSourceTableFn(item.table.id);
+      if(item.isEveryElseTable){
+        this.nextStep({ selectedTable: item.table, selectedProfile: null});
+      }else{
+        this.nextStep({ selectedTable: item.table });
+      }
+    }
+  };
 
   
   onBackEdwTable = () => {
@@ -684,7 +690,13 @@ export default class DataSelector extends Component {
     const previousStep = this.state.steps[
       this.state.steps.indexOf(this.state.activeStep) - 1
     ];
-    this.switchToStep(previousStep, {steps: [DATABASE_FOLDER_STEP, PROFILE_STEP, PROFILE_TABLE_STEP, EDW_TABLE_STEP]});
+    let {steps} = this.state;
+    if(status.includes(PROFILE_TABLE_STEP)){
+      steps =  [DATABASE_FOLDER_STEP, PROFILE_STEP, PROFILE_TABLE_STEP, EDW_TABLE_STEP];
+    } else{
+      steps = [DATABASE_FOLDER_STEP, EDW_TABLE_STEP];
+    }
+    this.switchToStep(previousStep, {steps:  [DATABASE_FOLDER_STEP, PROFILE_STEP, PROFILE_TABLE_STEP, EDW_TABLE_STEP]});
   };
   
   getTriggerElement() {
@@ -860,7 +872,7 @@ export default class DataSelector extends Component {
           <EdwTablePicker
             databases={databases}
             disabledTableIds={disabledTableIds}
-            onChangeTable={this.onChangeTable}
+            onChangeTable={this.onChangeEdwTable}
             onBack={this.hasPreviousStep() && this.onBackEdwTable}
             selectedDatabase={selectedDatabase}
             selectedFolder={selectedFolder}
@@ -1327,15 +1339,15 @@ export const EdwTablePicker = ({
     return null;
   }
   let tables = null;
-  if(selectedFolder && selectedProfile && selectedExtension){
+  let isEveryElseTable = false;
+  if(selectedFolder && selectedProfile && selectedExtension && selectedFolder.type === FOLDER_TYPE){
     tables = selectedExtension.extensions || 
     (selectedProfile.profile && 
       selectedProfile.profile.extensions && 
       selectedProfile.profile.extensions.map(extension => extension.table)) || [];
-      console.log(selectedProfile)
-      console.log(tables)
-  }else if (selectedFolder && !selectedProfile && selectedFolder.type === EVERYTHING_ELSE){
+  }else if (selectedFolder && selectedFolder.type === EVERYTHING_ELSE){
     tables = selectedFolder.tables;
+    isEveryElseTable = true;
   }
 
   if(!tables){
@@ -1359,7 +1371,7 @@ export const EdwTablePicker = ({
       {selectedProfile && selectedProfile.name && (
         <span className="ml1 text-slate">Profile- {selectedProfile.name}</span>
       )}
-      {selectedExtension && (
+      {!isEveryElseTable && selectedExtension && (
         <span className="ml1 text-slate">Extension</span>
       )}
     </div>
@@ -1387,6 +1399,7 @@ export const EdwTablePicker = ({
           disabled: disabledTableIds && disabledTableIds.includes(table.id),
           table: table,
           database: selectedDatabase,
+          isEveryElseTable: isEveryElseTable
         }))
       }];
     return (
@@ -1465,31 +1478,7 @@ export const ProfileTablePicker = ({
     )
   }else{
 
-    // let sections = [
-    //   {
-    //     name: header,
-    //     items: [
-    //       {
-    //         name: profileTable.display_name,
-    //         disabled: disabledTableIds && disabledTableIds.includes(profileTable.id),
-    //         table: profileTable,
-    //         database: selectedDatabase,
-    //         type: PROFILE_TYPE
-    //       },
-    //       {
-    //         name: EXTENSION_TABLE_LABEL,
-    //         disable: false,
-    //         table: null,
-    //         database: selectedDatabase,
-    //         type: EXTENSION_TYPE,
-    //         extensions: Object.values(selectedProfile.profile.extensions).map(extension => extension.table)
-    //       }
-    //     ]
-    //   }];
-
     let items = [];
-    console.log("profile table");
-    console.log(profileTable);
     if (profileTable) {
       items.push(
         {
@@ -1514,8 +1503,6 @@ export const ProfileTablePicker = ({
       name: header,
       items: items
     }]
-    console.log("sections is (profile table")
-    console.log(sections);
       return (
         <div style={{ width: 300}}>
           <AccordianList
