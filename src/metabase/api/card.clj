@@ -750,25 +750,26 @@
 
 (defn- convert-field-id
   [parameter-array]
-  (if (or (not (vector? parameter-array))
-          (< (count parameter-array) 1))
+  (if  (not (vector? parameter-array))
     parameter-array
     (let [count (count parameter-array)]
-      (if (> count 1)
-        (loop [i 0
-               size count
-               result []]
-          (if (< i size)
-            (let [current-element (get parameter-array i)]
-              (if (vector? current-element)
-                (conj result (convert-field-id current-element))
-                (let [first-element (get parameter-array 0)]
-                  (if  (and (= first-element "field-id")
-                            (= i 1))
-                    (conj result ["field-id" (field-with-table-and-field-name (get parameter-array i))])
-                    (rec (+ i 1) size result))))
-              result)))
-          parameter-array))))
+      (loop [i 0
+             size count
+             result []]
+        (if (< i size)
+          (let [current-element (get parameter-array i)]
+            (if (vector? current-element)
+              (recur (+ i 1) size (conj result (convert-field-id current-element)))
+              (let [first-element (get parameter-array 0 nil)
+                    second-element (get parameter-array 1 nil)]
+                (if  (and (= i 0)
+                          first-element
+                          second-element
+                          (= first-element "field-id")
+                          (integer? second-element))
+                  (recur 3 size (conj (conj result "field-id") (field-with-table-and-field-name second-element)))
+                  (recur (+ i 1) size (conj result current-element))))))
+          result)))))
 
 (defn- convert-dimension-format
   [template-tag]
