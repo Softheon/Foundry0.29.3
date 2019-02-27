@@ -104,3 +104,22 @@
   ;          :ext          "json"
   ;          :context      :json-download}
    })
+
+(defn- export-card-to-json
+  [card]
+  (assoc {}
+         :name (:name card)
+         :description (:description card)
+         :display (:display card)
+         :visualization_settings (:visualization_settings card)
+         :dataset_query (:dataset_query card))
+  )
+
+(def card-export-formats
+  "Map of card export types to their relevant metadata"
+  {
+   "json" {
+           :export-fn export-card-to-json
+           :content-type "application/json"
+           :ext "json"
+           :context ":json-download"}})

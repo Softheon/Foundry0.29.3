@@ -44,6 +44,8 @@ export const CardApi = {
   listEmbeddable: GET("/api/card/embeddable"),
   createPublicLink: POST("/api/card/:id/public_link"),
   deletePublicLink: DELETE("/api/card/:id/public_link"),
+  
+  download :POST("/api/card/:cardId/download/json")
 };
 
 export const DashboardApi = {

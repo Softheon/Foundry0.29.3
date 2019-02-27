@@ -14,7 +14,7 @@ import Tooltip from "metabase/components/Tooltip.jsx";
 import ModalWithTrigger from "metabase/components/ModalWithTrigger.jsx";
 import MoveToCollection from "../containers/MoveToCollection.jsx";
 import CollectionBadge from "./CollectionBadge.jsx";
-
+import Button from "metabase/components/Button.jsx";
 import * as Urls from "metabase/lib/urls";
 
 const ITEM_ICON_SIZE = 20;
@@ -47,6 +47,51 @@ type ItemCreatedProps = {
   created: string,
   by: string,
 };
+
+type ItemDownloadButtonProp = {
+  url: string,
+  method: string,
+};
+
+
+const ItemDownloadButton = ({
+  method,
+  url,
+}: ItemDownloadButtonProp) => (
+  <form  method={method} action={url} style={{display:'inline'}}>
+      <button style={{border:'none', background:'inherit'}}>
+        <Tooltip tooltip={t`Download`}>
+          <Icon
+            className="text-light-blue cursor-pointer text-brand-hover transition-color"
+            name={"downarrow"}
+            onClick={e => {
+              if (window.OSX) {
+                // prevent form from being submitted normally
+                e.preventDefault();
+                // download using the API provided by the OS X app
+                window.OSX.download(method, url, {}, []);
+              }
+            }}
+            size={18}
+          />
+        </Tooltip>
+      </button>
+      {/* <Button
+        onClick={e => {
+          if (window.OSX) {
+            // prevent form from being submitted normally
+            e.preventDefault();
+            // download using the API provided by the OS X app
+            window.OSX.download(method, url, {}, {});
+          }
+        }
+        
+        }icon ="downarrow"
+       
+      ></Button> */}
+   
+  </form>
+);
 
 const Item = ({
   entity,
@@ -113,6 +158,11 @@ const Item = ({
       <ItemCreated by={by} created={created} />
       {setArchived && (
         <div className="hover-child mt1 ml-auto">
+            <ItemDownloadButton
+              url={`/api/card/${id}/download/json`}
+              method = {t`POST`}
+            />
+        
           <ModalWithTrigger
             full
             triggerElement={
@@ -138,6 +188,7 @@ const Item = ({
               size={18}
             />
           </Tooltip>
+          
         </div>
       )}
     </div>

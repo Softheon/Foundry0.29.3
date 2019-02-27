@@ -38,6 +38,7 @@ const SET_FAVORITED = "metabase/questions/SET_FAVORITED";
 const SET_ARCHIVED = "metabase/questions/SET_ARCHIVED";
 const SET_LABELED = "metabase/questions/SET_LABELED";
 const SET_COLLECTION = "metabase/collections/SET_COLLECTION";
+const DOWNLOAD_CARD = "metabase/questions/DOWNLOAD_CARD";
 
 export const loadEntities = createThunkAction(
   LOAD_ENTITIES,
@@ -197,6 +198,15 @@ export const setArchived = createThunkAction(
     };
   },
 );
+
+export const download = createThunkAction(
+  DOWNLOAD_CARD,
+  (cardId, type) =>{
+    return async (dispatch, getState) =>{
+      
+    }
+  }
+)
 
 export const setLabeled = createThunkAction(
   SET_LABELED,

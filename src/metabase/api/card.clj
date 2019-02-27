@@ -29,7 +29,8 @@
              [pulse :as pulse :refer [Pulse]]
              [query :as query]
              [table :refer [Table]]
-             [view-log :refer [ViewLog]]]
+             [view-log :refer [ViewLog]]
+             [field :as field :refer [Field]]]
             [metabase.query-processor
              [interface :as qpi]
              [util :as qputil]]
@@ -65,8 +66,8 @@
   [cards]
   (when (seq cards)
     (let [favorite-card-ids (db/select-field :card_id CardFavorite
-                              :owner_id api/*current-user-id*
-                              :card_id  [:in (map :id cards)])]
+                                             :owner_id api/*current-user-id*
+                                             :card_id  [:in (map :id cards)])]
       (for [card cards]
         (assoc card :favorite (contains? favorite-card-ids (:id card)))))))
 
@@ -114,11 +115,11 @@
   "Return the 10 `Cards` most recently viewed by the current user, sorted by how recently they were viewed."
   []
   (cards-with-ids (map :model_id (db/select [ViewLog :model_id [:%max.timestamp :max]]
-                                   :model   "card"
-                                   :user_id api/*current-user-id*
-                                   {:group-by [:model_id]
-                                    :order-by [[:max :desc]]
-                                    :limit    10}))))
+                                            :model   "card"
+                                            :user_id api/*current-user-id*
+                                            {:group-by [:model_id]
+                                             :order-by [[:max :desc]]
+                                             :limit    10}))))
 
 (defn- cards:popular
   "All `Cards`, sorted by popularity (the total number of times they are viewed in `ViewLogs`).
@@ -126,9 +127,9 @@
   options for the time being)."
   []
   (cards-with-ids (map :model_id (db/select [ViewLog :model_id [:%count.* :count]]
-                                   :model "card"
-                                   {:group-by [:model_id]
-                                    :order-by [[:count :desc]]}))))
+                                            :model "card"
+                                            {:group-by [:model_id]
+                                             :order-by [[:count :desc]]}))))
 
 (defn- cards:archived
   "`Cards` that have been archived."
@@ -158,8 +159,8 @@
     ;; "obs%C5%82uga_klienta". But for some weird reason sometimes the slug is passed in like "obsługa_klientaa" (not
     ;; URL-encoded) so go ahead and URL-encode the input as well so we can match either case
     (api/check-404 (db/select-one-id Collection
-                     {:where [:or [:= :slug collection-slug]
-                              [:= :slug (codec/url-encode collection-slug)]]}))))
+                                     {:where [:or [:= :slug collection-slug]
+                                              [:= :slug (codec/url-encode collection-slug)]]}))))
 
 ;; TODO - do we need to hydrate the cards' collections as well?
 (defn- cards-for-filter-option [filter-option model-id label collection-slug]
@@ -222,7 +223,7 @@
   (u/prog1 (-> (Card id)
                (hydrate :creator :dashboard_count :labels :can_write :collection :in_public_dashboard)
                api/read-check)
-    (events/publish-event! :card-read (assoc <> :actor_id api/*current-user-id*))))
+           (events/publish-event! :card-read (assoc <> :actor_id api/*current-user-id*))))
 
 
 ;;; -------------------------------------------------- Saving Cards --------------------------------------------------
@@ -268,21 +269,21 @@
    metadata_checksum      (s/maybe su/NonBlankString)}
   ;; check that we have permissions to run the query that we're trying to save
   (api/check-403 (perms/set-has-full-permissions-for-set? @api/*current-user-permissions-set*
-                   (card/query-perms-set dataset_query :write)))
+                                                          (card/query-perms-set dataset_query :write)))
   ;; check that we have permissions for the collection we're trying to save this card to, if applicable
   (when collection_id
     (api/check-403 (perms/set-has-full-permissions? @api/*current-user-permissions-set*
-                     (perms/collection-readwrite-path collection_id))))
+                                                    (perms/collection-readwrite-path collection_id))))
   ;; everything is g2g, now save the card
   (let [card (db/insert! Card
-               :creator_id             api/*current-user-id*
-               :dataset_query          dataset_query
-               :description            description
-               :display                display
-               :name                   name
-               :visualization_settings visualization_settings
-               :collection_id          collection_id
-               :result_metadata        (result-metadata dataset_query result_metadata metadata_checksum))]
+                         :creator_id             api/*current-user-id*
+                         :dataset_query          dataset_query
+                         :description            description
+                         :display                display
+                         :name                   name
+                         :visualization_settings visualization_settings
+                         :collection_id          collection_id
+                         :result_metadata        (result-metadata dataset_query result_metadata metadata_checksum))]
     (events/publish-event! :card-create card)
     ;; include same information returned by GET /api/card/:id since frontend replaces the Card it currently has
     ;; with returned one -- See #4283
@@ -469,10 +470,10 @@
       (db/update! Card id
         ;; `collection_id` and `description` can be `nil` (in order to unset them). Other values should only be
         ;; modified if they're passed in as non-nil
-        (u/select-keys-when body
-          :present #{:collection_id :description}
-          :non-nil #{:dataset_query :display :name :visualization_settings :archived :enable_embedding
-                     :embedding_params :result_metadata})))
+                  (u/select-keys-when body
+                                      :present #{:collection_id :description}
+                                      :non-nil #{:dataset_query :display :name :visualization_settings :archived :enable_embedding
+                                                 :embedding_params :result_metadata})))
     ;; Fetch the updated Card from the DB
     (let [card (Card id)]
 
@@ -513,7 +514,7 @@
   [card-id]
   (api/read-check Card card-id)
   (api/let-404 [id (db/select-one-id CardFavorite :card_id card-id, :owner_id api/*current-user-id*)]
-    (db/delete! CardFavorite, :id id))
+               (db/delete! CardFavorite, :id id))
   api/generic-204-no-content)
 
 
@@ -545,8 +546,8 @@
   ;; for each affected card...
   (when (seq card-ids)
     (let [cards (db/select [Card :id :collection_id :dataset_query]
-                  {:where [:and [:in :id (set card-ids)]
-                                [:or [:not= :collection_id new-collection-id-or-nil]
+                           {:where [:and [:in :id (set card-ids)]
+                                    [:or [:not= :collection_id new-collection-id-or-nil]
                                      (when new-collection-id-or-nil
                                        [:= :collection_id nil])]]})] ; poisioned NULLs = ick
       ;; ...check that we have write permissions for it...
@@ -557,7 +558,7 @@
         (api/write-check Collection old-collection-id)))
     ;; ok, everything checks out. Set the new `collection_id` for all the Cards
     (db/update-where! Card {:id [:in (set card-ids)]}
-      :collection_id new-collection-id-or-nil)))
+                      :collection_id new-collection-id-or-nil)))
 
 (api/defendpoint POST "/collections"
   "Bulk update endpoint for Card Collections. Move a set of `Cards` with CARD_IDS into a `Collection` with
@@ -586,8 +587,8 @@
 
 (defn- query-for-card [card parameters constraints]
   (let [query (assoc (:dataset_query card)
-                :constraints constraints
-                :parameters  parameters)
+                     :constraints constraints
+                     :parameters  parameters)
         ttl   (when (public-settings/enable-query-caching)
                 (or (:cache_ttl card)
                     (query-magic-ttl query)))]
@@ -611,30 +612,30 @@
     (api/check-not-archived card)
     (qp/process-query-and-save-execution! query options)))
 
- (defn stream-file
-   "Run the query for Card with PARAMETERS and CONSTRAINTS, and return results in the usual format."
-   {:style/indent 1}
-   [card-id  export-format & {:keys [parameters constraints context dashboard-id]
-                              :or   {constraints qp/default-query-constraints
-                                     context     :question}}]
-   (let [card    (api/read-check (hydrate (Card card-id) :in_public_dashboard))
-         query   (query-for-card card parameters constraints)
-         options {:executed-by  api/*current-user-id*
-                  :context      context
-                  :card-id      card-id
-                  :dashboard-id dashboard-id}]
-     (api/check-not-archived card)
-     (api/let-404 [export-conf (ex/export-formats export-format)]
-                  (if-let [input (qp/downloable-query-result-input 
-                                        query
-                                        (assoc options :export-fn (:export-fn export-conf)))]
-                    {:status 200
-                     :body input
-                     :headers {"Content-Type" (str (:content-type export-conf) "; charset=utf-8")
-                               "Content-Disposition" (str "attachment; filename=\"query_result_" (u/date->iso-8601) "." (:ext export-conf) "\"")}}
-                    {:status 500
-                     :body (str "something went wrong!")}))))
- 
+(defn stream-file
+  "Run the query for Card with PARAMETERS and CONSTRAINTS, and return results in the usual format."
+  {:style/indent 1}
+  [card-id  export-format & {:keys [parameters constraints context dashboard-id]
+                             :or   {constraints qp/default-query-constraints
+                                    context     :question}}]
+  (let [card    (api/read-check (hydrate (Card card-id) :in_public_dashboard))
+        query   (query-for-card card parameters constraints)
+        options {:executed-by  api/*current-user-id*
+                 :context      context
+                 :card-id      card-id
+                 :dashboard-id dashboard-id}]
+    (api/check-not-archived card)
+    (api/let-404 [export-conf (ex/export-formats export-format)]
+                 (if-let [input (qp/downloable-query-result-input
+                                 query
+                                 (assoc options :export-fn (:export-fn export-conf)))]
+                   {:status 200
+                    :body input
+                    :headers {"Content-Type" (str (:content-type export-conf) "; charset=utf-8")
+                              "Content-Disposition" (str "attachment; filename=\"query_result_" (u/date->iso-8601) "." (:ext export-conf) "\"")}}
+                   {:status 500
+                    :body (str "something went wrong!")}))))
+
 (api/defendpoint POST "/:card-id/query"
   "Run the query associated with a Card."
   [card-id :as {{:keys [parameters ignore_cache], :or {ignore_cache false}} :body}]
@@ -689,9 +690,9 @@
   (api/check-not-archived (api/read-check Card card-id))
   {:uuid (or (db/select-one-field :public_uuid Card :id card-id)
              (u/prog1 (str (UUID/randomUUID))
-               (db/update! Card card-id
-                 :public_uuid       <>
-                 :made_public_by_id api/*current-user-id*)))})
+                      (db/update! Card card-id
+                                  :public_uuid       <>
+                                  :made_public_by_id api/*current-user-id*)))})
 
 (api/defendpoint DELETE "/:card-id/public_link"
   "Delete the publicly-accessible link to this Card."
@@ -700,8 +701,8 @@
   (api/check-public-sharing-enabled)
   (api/check-exists? Card :id card-id, :public_uuid [:not= nil])
   (db/update! Card card-id
-    :public_uuid       nil
-    :made_public_by_id nil)
+              :public_uuid       nil
+              :made_public_by_id nil)
   {:status 204, :body nil})
 
 (api/defendpoint GET "/public"
@@ -728,5 +729,122 @@
   "Return related entities for an ad-hoc query."
   [:as {query :body}]
   (related/related (query/adhoc-query query)))
+
+;;; --------------------------------------------- Exporting Card ----------------------------------------------------------------------------------
+
+(defn- dowloable-card-json
+  [id]
+  (u/prog1 (-> (Card id)
+               api/read-check)
+           (events/publish-event! :card-json-download (assoc <> :actor-id api/*current-user-id*))))
+
+(defn- field-with-table-and-field-name
+  [id]
+  (let [field (-> (Field id)
+                  (hydrate :table)
+                  api/read-check)]
+    (if (and (get-in field [:table :name])
+             (:name field))
+      [(get-in field [:table :name]), (:name field)]
+      (throw (Exception. (str "Unable to find field id:" id))))))
+
+(defn- convert-field-id
+  [parameter-array]
+  (if  (not (vector? parameter-array))
+    parameter-array
+    (let [count (count parameter-array)]
+      (loop [i 0
+             size count
+             result []]
+        (if (< i size)
+          (let [current-element (get parameter-array i)]
+            (if (vector? current-element)
+              (recur (+ i 1) size (conj result (convert-field-id current-element)))
+              (let [first-element (get parameter-array 0 nil)
+                    second-element (get parameter-array 1 nil)]
+                (if  (and (= i 0)
+                          first-element
+                          second-element
+                          (= first-element "field-id")
+                          (integer? second-element))
+                  (recur 3 size (conj (conj result "field-id") (field-with-table-and-field-name second-element)))
+                  (recur (+ i 1) size (conj result current-element))))))
+          result)))))
+
+(defn- convert-dimension-format
+  [template-tag]
+  (let [tag-value (second template-tag)
+        value-key-set (set (keys tag-value))]
+    (if (contains? value-key-set :dimension)
+      (let [new-dimension-value (field-with-table-and-field-name (second (:dimension tag-value)))]
+        (assoc template-tag 1 (assoc tag-value :dimension new-dimension-value)))
+      template-tag)))
+
+(defn- update-template-tag
+  [template-tag]
+  (let [result (map convert-dimension-format template-tag)]
+    (into {} result)))
+
+(defn- card-report
+  [card]
+  (try
+    (if (get-in card [:dataset_query :native :template_tags])
+      (update-in card [:dataset_query :native :template_tags] update-template-tag)
+      (when (get-in card [:dataset_query :query])
+        (let [query-parameter (get-in card [:dataset_query :query])
+              transformed-parameter {}]
+          (log/info (identity query-parameter))
+          
+          (log/info "transformed parameters")
+          (log/info (identity transformed-parameter))
+          (assoc-in card [:dataset_query :query] (into transformed-parameter (for [[key value] query-parameter]
+
+                                                                               (if (= (name key) "source_table")
+                                                                                 (do
+                                                                                   (log/info (identity key))
+                                                                                   (log/info "source table name is ")
+                                                                                   (log/info (identity (db/select-one-field :name Table, :id  (get-in card [:dataset_query :query key]))))
+                                                                                   [key (db/select-one-field :name Table, :id value)])
+                                                                                 (do
+                                                                                   (log/info (identity key))
+                                                                                   (log/info "value is ")
+                                                                                   (log/info (identity value))
+                                                                                   [key (convert-field-id value)])))))))
+
+      ; (when (get-in card [:dataset_query :query])
+      ;   (log/info (identity (keys (get-in card [:dataset_query :query]))))
+      ;   (doseq [key (keys (get-in card [:dataset_query :query]))]
+
+      ;     (if (= (name key) "source_table")
+      ;       (do
+      ;         (log/info "source table name is ")
+      ;         (log/info (identity (db/select-one-field :name Table, :id  (get-in card [:dataset_query :query key]))))
+      ;         (update-in card [:dataset_query :query key] #(db/select-one-field :name Table, :id %1)))
+      ;       (update-in card [:dataset_query :query key] #(convert-field-id %1)))
+      ;     ; (log/info "key is ")
+      ;     ; (log/info (identity key))
+      ;     ; (log/info (identity (get-in card [:dataset_query :query key])))
+      ;     )
+
+      ;   (log/info "strucutre query")
+      ;   (log/info (identity card))
+      ;   card)
+      )
+      (catch Exception e nil)))
+
+(api/defendpoint POST "/:card-id/download/:export-format"
+  "Finds a Card with card id, and returns its results as a file in the specified format."
+  [card-id export-format]
+  (let [card (->  card-id
+                  dowloable-card-json
+                  card-report)]
+    (api/let-404 [export-conf (ex/card-export-formats export-format)]
+                 (if-not (nil? card)
+                   {:status  200
+                    :body     ((:export-fn export-conf) card)
+                    :headers {"Content-Type"        (str (:content-type export-conf) "; charset=utf-8")
+                              "Content-Disposition" (str "attachment; filename=\"" (card :name) "." (:ext export-conf) "\"")}}
+                   {:status 500
+                    :body   (str "something went wrong")}))))
 
 (api/define-routes)
