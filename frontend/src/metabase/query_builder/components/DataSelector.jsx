@@ -9,7 +9,7 @@ import AccordianList from "metabase/components/AccordianList.jsx";
 import LoadingAndErrorWrapper from "metabase/components/LoadingAndErrorWrapper";
 
 import { isQueryable, isEDW, hasFolderName, getFolderChildTableName, getFolderName, isProfileTable, isExtensionTable } from "metabase/lib/table";
-import { titleize, humanize, formatCamelCase} from "metabase/lib/formatting";
+import { titleize, humanize } from "metabase/lib/formatting";
 
 import { fetchTableMetadata } from "metabase/redux/metadata";
 import { getMetadata } from "metabase/selectors/metadata";
@@ -203,7 +203,7 @@ export default class DataSelector extends Component {
         const folderName = getFolderName(tableName);
         // Add a folder
         folders[folderName] = folders[folderName] || {
-          name: formatCamelCase(folderName),
+          name: folderName,
           type: "folder",
           profiles: {},
         };
@@ -213,9 +213,9 @@ export default class DataSelector extends Component {
           folders[folderName].profiles[profileName] = profileName &&
             profileName.length > 1 &&
             (folders[folderName].profiles[profileName] || {
-              name: formatCamelCase(profileName),
+              name:profileName,
               profile: {
-                name: formatCamelCase(profileName),
+                name: profileName,
                 type: "profile",
                 table: table,
                 extensions: {}
@@ -232,9 +232,9 @@ export default class DataSelector extends Component {
             profileName.length > 1 &&
             (folders[folderName].profiles[profileName] 
             || {
-              name: formatCamelCase(profileName),
+              name: profileName,
               profile: {
-                name: formatCamelCase(profileName),
+                name: profileName,
                 type: "profile",
                 table: null,
                 extensions: {}
@@ -243,7 +243,7 @@ export default class DataSelector extends Component {
           const extensionName = name.split(" ")[1];
           folders[folderName].profiles[profileName].profile.extensions[extensionName] =
             folders[folderName].profiles[profileName].profile.extensions[extensionName] || {
-              name: formatCamelCase(extensionName),
+              name: extensionName,
               type: "extension",
               table: table,
             };
