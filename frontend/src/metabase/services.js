@@ -44,8 +44,11 @@ export const CardApi = {
   listEmbeddable: GET("/api/card/embeddable"),
   createPublicLink: POST("/api/card/:id/public_link"),
   deletePublicLink: DELETE("/api/card/:id/public_link"),
-  
-  download :POST("/api/card/:cardId/download/json")
+
+  download :POST("/api/card/:cardId/download/json"),
+  card_autocomplete_suggestions: GET(
+    "/api/card/autocomplete_suggestions?prefix=:prefix"
+  ),
 };
 
 export const DashboardApi = {

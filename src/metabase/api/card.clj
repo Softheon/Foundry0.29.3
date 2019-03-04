@@ -2,6 +2,7 @@
   "/api/card endpoints."
   (:require [cheshire.core :as json]
             [clojure.data :as data]
+            [clojure.string :as str]
             [clojure.tools.logging :as log]
             [compojure.core :refer [DELETE GET POST PUT]]
             [medley.core :as m]
@@ -205,6 +206,13 @@
    model_id   (s/maybe su/IntGreaterThanZero)
    label      (s/maybe su/NonBlankString)
    collection (s/maybe s/Str)}
+  (log/info "f")
+  (log/info (identity f))
+  (log/info "model_id")
+  (log/info (identity model_id))
+  (log/info "label")
+  (log/info (identity label))
+
   (let [f (keyword f)]
     (when (contains? #{:database :table} f)
       (api/checkp (integer? model_id) "model_id" (format "model_id is a required parameter when filter mode is '%s'"
@@ -212,6 +220,7 @@
       (case f
         :database (api/read-check Database model_id)
         :table    (api/read-check Database (db/select-one-field :db_id Table, :id model_id))))
+    (log/info (identity (cards-for-filter-option f model_id label collection)))
     (->> (cards-for-filter-option f model_id label collection)
          ;; filterv because we want make sure all the filtering is done while current user perms set is still bound
          (filterv mi/can-read?))))
@@ -846,5 +855,40 @@
                               "Content-Disposition" (str "attachment; filename=\"" (card :name) "." (:ext export-conf) "\"")}}
                    {:status 500
                     :body   (str "something went wrong")}))))
+
+;;; ------------------------------------ GET /api/card/autocomplete_suggestion ------------------
+(defn- cards-contains-name
+  [prefix]
+  (db/select [Card :id :name :display :collection_id :read_permissions]
+             {:where [:and [:= :archived false]
+                      [:like :%lower.name (str "%" (str/lower-case prefix) "%")]]
+              :order-by [[:%lower.name :asc]]}))
+
+(defn- autocomplete-cards
+  [prefix]
+  (let [cards (-> (cards-contains-name prefix)
+                  (hydrate :collection))]
+    (filterv mi/can-read? cards)))
+
+(defn- autocomplete-results
+  [cards]
+  cards)
+
+(defn- autocomplete-suggestions
+  [prefix]
+  (let [cards (autocomplete-cards prefix)]
+    (autocomplete-results cards)))
+
+(api/defendpoint GET "/autocomplete_suggestions"
+  "Return a list of autocomplete suggestioins fro a given PREFIX.
+ This is intened for use with the search box in the collection page when the user is typing search teram.
+Suggesetions include matching card in the application.
+Suggestions are returned in the format `[name, id, icon, collection];"
+  [prefix]
+  {prefix su/NonBlankString}
+  (try
+    (autocomplete-suggestions prefix)
+    (catch Throwable e
+      (log/warn "Errow with card autocomplete: " (.getMessage e)))))
 
 (api/define-routes)
