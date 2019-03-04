@@ -431,7 +431,7 @@ export default class AccordianList extends Component {
                         <h4 className="List-item-title ml1">{item.name}</h4>
                       </a>
                       {this.renderItemExtra(item, itemIndex)}
-                      {showItemArrows && (
+                      {(showItemArrows || item.showItemArrows) && (
                         <div className="List-item-arrow flex align-center px1">
                           <Icon name="chevronright" size={8} />
                         </div>

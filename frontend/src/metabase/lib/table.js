@@ -9,7 +9,13 @@ export function isQueryable(table) {
 }
 
 export function hasFolderName(name){
-  return name.includes("_Profile") || name.includes("_Extension");
+  return name.includes("_Profile") || 
+  name.includes("_Extension") || 
+  name.includes("_Folder") ||
+  name.includes("_Task") ||
+  name.includes("_Flow") ||
+  name.includes("_File") ||
+  name.includes("_Note");
 }
 
 export function getFolderName(name){
@@ -27,6 +33,10 @@ export function isExtensionTable(name) {
 
 export function isEDW (name){
   return name.toUpperCase().endsWith("EDW");
+}
+
+export function isFolderRelatedTable(folderName, tableName){
+  return tableName.includes(folderName);
 }
 
 export function getFolderChildTableName(tableName, folderName, tableType) {
