@@ -31,6 +31,7 @@
   padding-bottom: 20px;
   border-color: #edf5fb;
 }
+
 :local(.suggestionItem) {
 
   composes: flex align-center from "style";
@@ -43,7 +44,13 @@
 :local(.suggestionItemTitle) {
   composes: text-bold from "style";
   color: var(--title-color);
-  font-size: 16px
+  font-size: 18px;
+
+}
+
+:local(.suggestionItemBody) {
+  composes: text-bold from "style";
+  word-break: break-all;
 }
 
 :local(.itemBody) {

@@ -61,7 +61,8 @@ export const QuestionIndexHeader = ({
   questions,
   collections,
   isAdmin,
-  onSearch
+  onSearch,
+  push
 }) => {
   // Some replication of logic for making writing tests easier
   const hasCollections = collections && collections.length > 0;
@@ -76,7 +77,7 @@ export const QuestionIndexHeader = ({
         hasCollections && <ExpandingSearchField onSearch={onSearch} />} */}
       {showSearch && hasCollections &&  (
         <div className="flex align-center ml-auto">
-          <AutosuggestSearchField onSearch={onSearch} />
+          <AutosuggestSearchField onSearch={onSearch} push={push}/>
         </div>
       )}
 
@@ -159,6 +160,7 @@ export class QuestionIndex extends Component {
             collections={collections}
             isAdmin={isAdmin}
             onSearch={this.props.search}
+            push={push}
           />
         )}
 

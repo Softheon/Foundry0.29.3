@@ -16,8 +16,9 @@ import {
 } from "metabase/lib/keyboard";
 import { Motion, spring } from "react-motion";
 import theme from "./theme.css";
-import CollectionBadge from "./CollectionBadge.jsx";
 import { CardApi } from "metabase/services";
+import * as Urls from "metabase/lib/urls";
+import _ from "underscore";
 
 function autocompleteResults(prefix) {
   let apiCall = CardApi.card_autocomplete_suggestions({
@@ -26,114 +27,6 @@ function autocompleteResults(prefix) {
   return apiCall;
 }
 
-const mockSuggestions = [
-  {
-    name:
-      "QHP Enrollees Data - Count of Membership, Grouped by AgeQHP Enrollees Data - Count of Membership, Grouped by AgeQHP Enrollees Data - Count of Membership, Grouped by Age",
-    collection: {
-      name: "AARP Querires",
-      color: "#7172AD"
-    },
-    id: 9,
-    icon: "table"
-  },
-  {
-    name: "QHP Enrollees Data - Dental Coverage",
-    collection: "AARP Querires",
-    id: 9,
-    icon: "table"
-  },
-  {
-    name: "QHP Enrollees Data - Employment Status",
-    collection: "AARP Queries",
-    id: 4,
-    icon: "table"
-  }
-  //   {
-  //     name: "QHP Enrollees Data - Gender Distribution",
-  //     collection: "AARP Queries",
-  //     id: 2,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "[Bar Chart] EDI Export by Age and Gender",
-  //     collection: "EDI Export",
-  //     id: 30,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "QHP Enrollees Data - Employment Status",
-  //     collection: "AARP Queries",
-  //     id: 4,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "QHP Enrollees Data - Gender Distribution",
-  //     collection: "AARP Queries",
-  //     id: 2,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "[Bar Chart] EDI Export by Age and Gender",
-  //     collection: "EDI Export",
-  //     id: 30,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "QHP Enrollees Data - Employment Status",
-  //     collection: "AARP Queries",
-  //     id: 4,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "QHP Enrollees Data - Gender Distribution",
-  //     collection: "AARP Queries",
-  //     id: 2,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "[Bar Chart] EDI Export by Age and Gender",
-  //     collection: "EDI Export",
-  //     id: 30,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "QHP Enrollees Data - Employment Status",
-  //     collection: "AARP Queries",
-  //     id: 4,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "QHP Enrollees Data - Gender Distribution",
-  //     collection: "AARP Queries",
-  //     id: 2,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "[Bar Chart] EDI Export by Age and Gender",
-  //     collection: "EDI Export",
-  //     id: 30,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "QHP Enrollees Data - Employment Status",
-  //     collection: "AARP Queries",
-  //     id: 4,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "QHP Enrollees Data - Gender Distribution",
-  //     collection: "AARP Queries",
-  //     id: 2,
-  //     icon: "table"
-  //   },
-  //   {
-  //     name: "[Bar Chart] EDI Export by Age and Gender",
-  //     collection: "EDI Export",
-  //     id: 30,
-  //     icon: "table"
-  //   }
-];
 const ITEM_ICON_SIZE = 20;
 const SuggestionCollectionBadge = ({ className, collection }) => {
   const color = Color(collection.color);
@@ -145,7 +38,7 @@ const SuggestionCollectionBadge = ({ className, collection }) => {
       style={{
         fontSize: 16,
         color: lightened.isDark() ? "#fff" : darkened,
-        backgroundColor: lightened
+        //backgroundColor: lightened
       }}
     >
       {collection.name}
@@ -154,11 +47,10 @@ const SuggestionCollectionBadge = ({ className, collection }) => {
 };
 const SuggestionItemBody = pure(({ name, collection }) => {
   return (
-    <div className={S.itemBody}>
-      <div className={cx("flex", S.itemTitle)}>
+    <div className={S.suggestionItemBody}>
+      <div className={cx("flex", S.suggestionItemTitle)}>
         <span>{name}</span>
       </div>
-
       {collection &&
         collection.name &&
         collection.color && (
@@ -175,10 +67,10 @@ const SuggestionItem = ({ suggestion, query, isHighlighted }) => (
         className="relative flex ml1 mr2"
         style={{ width: ITEM_ICON_SIZE, height: ITEM_ICON_SIZE }}
       >
-        {suggestion.icon && (
+        {suggestion.display && (
           <Icon
             className="text-light-blue absolute top left visible"
-            name={suggestion.icon}
+            name={suggestion.display}
             size={ITEM_ICON_SIZE}
           />
         )}
@@ -193,12 +85,7 @@ const SuggestionItem = ({ suggestion, query, isHighlighted }) => (
 
 export default class AutosuggestSearchField extends Component {
   static propTypes = {
-    onSearch: PropTypes.func.isRequired,                                                                               
-    autocompleteResultsFn: PropTypes.func.isRequired
-  };
-
-  static defaultProps = {
-    autocompleteResultsFn: v => mockSuggestions
+    onSearch: PropTypes.func.isRequired
   };
 
   constructor(props, context) {
@@ -208,16 +95,21 @@ export default class AutosuggestSearchField extends Component {
       suggestions: [],
       selected: ""
     };
+    this.loadSuggestionThrottled = _.throttle(this.loadSuggestion, 500);
+    this.loadSuggestionDebounced = _.debounce(this.loadSuggestion, 800);
   }
 
   loadSuggestion = async value => {
     try {
       let results = await autocompleteResults(value);
-      console.log("auto complete");
-      console.log(results);
-      this.setState({
-        suggestions: results
-      });
+      if (results.search === this.state.value) {
+        this.setState({
+          suggestions: results.suggestions
+        });
+      }
+      // this.setState({
+      //   suggestions: results.suggestions
+      // });
     } catch (error) {
       console.log("error getting autocompletion card data", error);
       this.setState({
@@ -228,7 +120,11 @@ export default class AutosuggestSearchField extends Component {
 
   onSuggestionsFetchRequested = ({ value, reason }) => {
     if (reason === "input-changed") {
-      this.loadSuggestion(value);
+      if (value.length < 5 || value.endsWith(" ")) {
+        this.loadSuggestionThrottled(value);
+      } else {
+        this.loadSuggestionDebounced(value);
+      }
     }
   };
 
@@ -262,11 +158,10 @@ export default class AutosuggestSearchField extends Component {
     event,
     { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
   ) => {
-    console.log("current suggestion is selected");
-    console.log(suggestion);
     this.setState({
       selected: suggestion
     });
+    this.props.push(Urls.question(suggestion.id));
   };
 
   shouldRenderSuggestions = value => {
@@ -302,18 +197,6 @@ export default class AutosuggestSearchField extends Component {
       value,
       onChange: this.onChange
     };
-
-    // return (
-    //   <Autosuggest
-    //     suggestions={suggestions}
-    //     onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-    //     onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-    //     getSuggestionValue={this.getSuggestionValue}
-    //     renderSuggestion={this.renderSuggestion}
-    //     inputProps={inputProps}
-    //   />
-    // );
-    console.log(theme);
     return (
       <Autosuggest
         suggestions={suggestions}
@@ -326,7 +209,6 @@ export default class AutosuggestSearchField extends Component {
         shouldRenderSuggestions={this.shouldRenderSuggestions}
         renderInputComponent={this.renderInputComponent}
         renderSuggestionsContainer={this.renderSuggestionsContainer}
-        //alwaysRenderSuggestions={true}
       />
     );
   }
@@ -411,7 +293,7 @@ class SuggestionExpandingSearchField extends Component {
           className={cx("ml2 text-grey-3", { "text-brand": active })}
           name="search"
         />
-        <Motion style={{ width: spring(400) }}>
+        <Motion style={{ width: spring(500) }}>
           {interpolatingStyle => (
             <input
               {...inputProps}

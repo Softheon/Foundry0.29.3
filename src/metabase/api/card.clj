@@ -871,13 +871,14 @@
     (filterv mi/can-read? cards)))
 
 (defn- autocomplete-results
-  [cards]
-  cards)
+  [cards, prefix]
+  {:suggestions cards
+   :search prefix})
 
 (defn- autocomplete-suggestions
   [prefix]
   (let [cards (autocomplete-cards prefix)]
-    (autocomplete-results cards)))
+    (autocomplete-results cards prefix)))
 
 (api/defendpoint GET "/autocomplete_suggestions"
   "Return a list of autocomplete suggestioins fro a given PREFIX.
