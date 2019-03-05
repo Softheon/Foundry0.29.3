@@ -206,13 +206,6 @@
    model_id   (s/maybe su/IntGreaterThanZero)
    label      (s/maybe su/NonBlankString)
    collection (s/maybe s/Str)}
-  (log/info "f")
-  (log/info (identity f))
-  (log/info "model_id")
-  (log/info (identity model_id))
-  (log/info "label")
-  (log/info (identity label))
-
   (let [f (keyword f)]
     (when (contains? #{:database :table} f)
       (api/checkp (integer? model_id) "model_id" (format "model_id is a required parameter when filter mode is '%s'"
@@ -220,7 +213,6 @@
       (case f
         :database (api/read-check Database model_id)
         :table    (api/read-check Database (db/select-one-field :db_id Table, :id model_id))))
-    (log/info (identity (cards-for-filter-option f model_id label collection)))
     (->> (cards-for-filter-option f model_id label collection)
          ;; filterv because we want make sure all the filtering is done while current user perms set is still bound
          (filterv mi/can-read?))))
@@ -802,44 +794,14 @@
       (when (get-in card [:dataset_query :query])
         (let [query-parameter (get-in card [:dataset_query :query])
               transformed-parameter {}]
-          (log/info (identity query-parameter))
-          
-          (log/info "transformed parameters")
-          (log/info (identity transformed-parameter))
           (assoc-in card [:dataset_query :query] (into transformed-parameter (for [[key value] query-parameter]
 
                                                                                (if (= (name key) "source_table")
                                                                                  (do
-                                                                                   (log/info (identity key))
-                                                                                   (log/info "source table name is ")
-                                                                                   (log/info (identity (db/select-one-field :name Table, :id  (get-in card [:dataset_query :query key]))))
                                                                                    [key (db/select-one-field :name Table, :id value)])
                                                                                  (do
-                                                                                   (log/info (identity key))
-                                                                                   (log/info "value is ")
-                                                                                   (log/info (identity value))
-                                                                                   [key (convert-field-id value)])))))))
-
-      ; (when (get-in card [:dataset_query :query])
-      ;   (log/info (identity (keys (get-in card [:dataset_query :query]))))
-      ;   (doseq [key (keys (get-in card [:dataset_query :query]))]
-
-      ;     (if (= (name key) "source_table")
-      ;       (do
-      ;         (log/info "source table name is ")
-      ;         (log/info (identity (db/select-one-field :name Table, :id  (get-in card [:dataset_query :query key]))))
-      ;         (update-in card [:dataset_query :query key] #(db/select-one-field :name Table, :id %1)))
-      ;       (update-in card [:dataset_query :query key] #(convert-field-id %1)))
-      ;     ; (log/info "key is ")
-      ;     ; (log/info (identity key))
-      ;     ; (log/info (identity (get-in card [:dataset_query :query key])))
-      ;     )
-
-      ;   (log/info "strucutre query")
-      ;   (log/info (identity card))
-      ;   card)
-      )
-      (catch Exception e nil)))
+                                                                                   [key (convert-field-id value)]))))))))
+    (catch Exception e nil)))
 
 (api/defendpoint POST "/:card-id/download/:export-format"
   "Finds a Card with card id, and returns its results as a file in the specified format."
