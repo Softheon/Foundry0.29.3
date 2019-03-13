@@ -503,3 +503,11 @@ export function formatSQL(sql: string) {
     return sql;
   }
 }
+
+export function formatCamelCase(name: string){
+  if(typeof name === "string") {
+    name = name.replace(/([A-Z])/g, " $1");
+    name.replace(/^./, char => char.toUpperCase());
+    return name;
+  }
+}

@@ -257,7 +257,7 @@ export const initializeQB = (location, params) => {
         );
 
         // if we have deserialized card from the url AND loaded a card by id then the user should be dropped into edit mode
-        uiControls.isEditing = !!options.edit;
+        uiControls.isEditing = !!options.edit;  
 
         // if this is the users first time loading a saved card on the QB then show them the newb modal
         if (params.cardId && currentUser.is_qbnewb) {

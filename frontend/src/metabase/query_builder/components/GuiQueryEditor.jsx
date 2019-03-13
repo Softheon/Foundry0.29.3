@@ -12,7 +12,7 @@ import FilterPopover from "./filters/FilterPopover.jsx";
 import Icon from "metabase/components/Icon.jsx";
 import IconBorder from "metabase/components/IconBorder.jsx";
 import PopoverWithTrigger from "metabase/components/PopoverWithTrigger.jsx";
-import { DatabaseSchemaAndTableDataSelector } from "metabase/query_builder/components/DataSelector";
+import { DatabaseSchemaAndTableDataSelector, DatabaseFolderProfileExtensionDataSelector } from "metabase/query_builder/components/DataSelector";
 
 import cx from "classnames";
 import _ from "underscore";
@@ -52,6 +52,9 @@ type Props = {
   setDatabaseFn: (id: DatabaseId) => void,
   setSourceTableFn: (id: TableId) => void,
   setDatasetQuery: (datasetQuery: DatasetQuery) => void,
+  setFolderFn?: (name: string) => void,
+  setProfileFn?: (name: string) => void,
+  setExtensionFn?: (name: string) => void,
 
   isShowingTutorial: boolean,
   isShowingDataReference: boolean,
@@ -73,6 +76,9 @@ export default class GuiQueryEditor extends Component {
     setDatasetQuery: PropTypes.func.isRequired,
     setDatabaseFn: PropTypes.func,
     setSourceTableFn: PropTypes.func,
+    setFolderFn: PropTypes.func,
+    setProfileFn: PropTypes.func,
+    setExtensionFn: PropTypes.func,
     features: PropTypes.object,
     supportMultipleAggregations: PropTypes.bool,
   };
@@ -319,7 +325,7 @@ export default class GuiQueryEditor extends Component {
       >
         <span className="GuiBuilder-section-label Query-label">{t`Data`}</span>
         {this.props.features.data ? (
-          <DatabaseSchemaAndTableDataSelector
+          <DatabaseFolderProfileExtensionDataSelector
             databases={databases}
             selected={sourceTableId}
             selectedDatabaseId={databaseId}
