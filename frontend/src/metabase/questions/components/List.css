@@ -44,13 +44,14 @@
 :local(.suggestionItemTitle) {
   composes: text-bold from "style";
   color: var(--title-color);
-  font-size: 18px;
+  font-size: 16px;
 
 }
 
 :local(.suggestionItemBody) {
   composes: text-bold from "style";
   word-break: break-all;
+  font-size: 16px;
 }
 
 :local(.itemBody) {
