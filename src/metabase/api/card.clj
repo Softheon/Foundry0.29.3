@@ -2,6 +2,7 @@
   "/api/card endpoints."
   (:require [cheshire.core :as json]
             [clojure.data :as data]
+            [clojure.string :as str]
             [clojure.tools.logging :as log]
             [compojure.core :refer [DELETE GET POST PUT]]
             [medley.core :as m]
@@ -793,44 +794,14 @@
       (when (get-in card [:dataset_query :query])
         (let [query-parameter (get-in card [:dataset_query :query])
               transformed-parameter {}]
-          (log/info (identity query-parameter))
-          
-          (log/info "transformed parameters")
-          (log/info (identity transformed-parameter))
           (assoc-in card [:dataset_query :query] (into transformed-parameter (for [[key value] query-parameter]
 
                                                                                (if (= (name key) "source_table")
                                                                                  (do
-                                                                                   (log/info (identity key))
-                                                                                   (log/info "source table name is ")
-                                                                                   (log/info (identity (db/select-one-field :name Table, :id  (get-in card [:dataset_query :query key]))))
                                                                                    [key (db/select-one-field :name Table, :id value)])
                                                                                  (do
-                                                                                   (log/info (identity key))
-                                                                                   (log/info "value is ")
-                                                                                   (log/info (identity value))
-                                                                                   [key (convert-field-id value)])))))))
-
-      ; (when (get-in card [:dataset_query :query])
-      ;   (log/info (identity (keys (get-in card [:dataset_query :query]))))
-      ;   (doseq [key (keys (get-in card [:dataset_query :query]))]
-
-      ;     (if (= (name key) "source_table")
-      ;       (do
-      ;         (log/info "source table name is ")
-      ;         (log/info (identity (db/select-one-field :name Table, :id  (get-in card [:dataset_query :query key]))))
-      ;         (update-in card [:dataset_query :query key] #(db/select-one-field :name Table, :id %1)))
-      ;       (update-in card [:dataset_query :query key] #(convert-field-id %1)))
-      ;     ; (log/info "key is ")
-      ;     ; (log/info (identity key))
-      ;     ; (log/info (identity (get-in card [:dataset_query :query key])))
-      ;     )
-
-      ;   (log/info "strucutre query")
-      ;   (log/info (identity card))
-      ;   card)
-      )
-      (catch Exception e nil)))
+                                                                                   [key (convert-field-id value)]))))))))
+    (catch Exception e nil)))
 
 (api/defendpoint POST "/:card-id/download/:export-format"
   "Finds a Card with card id, and returns its results as a file in the specified format."
@@ -846,5 +817,41 @@
                               "Content-Disposition" (str "attachment; filename=\"" (card :name) "." (:ext export-conf) "\"")}}
                    {:status 500
                     :body   (str "something went wrong")}))))
+
+;;; ------------------------------------ GET /api/card/autocomplete_suggestion ------------------
+(defn- cards-contains-name
+  [prefix]
+  (db/select [Card :id :name :display :collection_id :read_permissions]
+             {:where [:and [:= :archived false]
+                      [:like :%lower.name (str "%" (str/lower-case prefix) "%")]]
+              :order-by [[:%lower.name :asc]]}))
+
+(defn- autocomplete-cards
+  [prefix]
+  (let [cards (-> (cards-contains-name prefix)
+                  (hydrate :collection))]
+    (filterv mi/can-read? cards)))
+
+(defn- autocomplete-results
+  [cards, prefix]
+  {:suggestions cards
+   :search prefix})
+
+(defn- autocomplete-suggestions
+  [prefix]
+  (let [cards (autocomplete-cards prefix)]
+    (autocomplete-results cards prefix)))
+
+(api/defendpoint GET "/autocomplete_suggestions"
+  "Return a list of autocomplete suggestioins fro a given PREFIX.
+ This is intened for use with the search box in the collection page when the user is typing search teram.
+Suggesetions include matching card in the application.
+Suggestions are returned in the format `[name, id, icon, collection];"
+  [prefix]
+  {prefix su/NonBlankString}
+  (try
+    (autocomplete-suggestions prefix)
+    (catch Throwable e
+      (log/warn "Errow with card autocomplete: " (.getMessage e)))))
 
 (api/define-routes)

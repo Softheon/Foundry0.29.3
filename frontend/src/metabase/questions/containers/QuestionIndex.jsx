@@ -18,13 +18,14 @@ import { loadCollections } from "../collections";
 import {
   getLoadingInitialEntities,
   getAllCollections,
-  getAllEntities,
+  getAllEntities
 } from "../selectors";
 import { getUserIsAdmin } from "metabase/selectors/user";
 
 import { replace, push } from "react-router-redux";
 import EmptyState from "metabase/components/EmptyState";
 import LoadingAndErrorWrapper from "metabase/components/LoadingAndErrorWrapper";
+import AutosuggestSearchField from "../components/AutosuggestSearchField";
 
 export const CollectionEmptyState = () => (
   <div className="flex flex-column sm-flex-row align-center p2 mt4 bordered border-med border-brand rounded bg-grey-0 text-brand">
@@ -35,7 +36,6 @@ export const CollectionEmptyState = () => (
     />
     <div className="flex-full text-centered sm-text-left">
       <h3>{t`Create collections for your saved queries`}</h3>
-      
     </div>
     <Link to="/collections/create" className="mt2 sm-mt0">
       <Button primary>{t`Create a collection`}</Button>
@@ -62,6 +62,7 @@ export const QuestionIndexHeader = ({
   collections,
   isAdmin,
   onSearch,
+  push
 }) => {
   // Some replication of logic for making writing tests easier
   const hasCollections = collections && collections.length > 0;
@@ -72,8 +73,13 @@ export const QuestionIndexHeader = ({
 
   return (
     <div className="flex align-center pt4 pb2">
-      {showSearch &&
-        hasCollections && <ExpandingSearchField onSearch={onSearch} />}
+      {/* {showSearch &&
+        hasCollections && <ExpandingSearchField onSearch={onSearch} />} */}
+      {showSearch && hasCollections &&  (
+        <div className="flex align-center ml-auto">
+          <AutosuggestSearchField onSearch={onSearch} push={push}/>
+        </div>
+      )}
 
       <div className="flex align-center ml-auto">
         <CollectionActions>
@@ -99,14 +105,14 @@ const mapStateToProps = (state, props) => ({
   loading: getLoadingInitialEntities(state, props),
   questions: getAllEntities(state, props),
   collections: getAllCollections(state, props),
-  isAdmin: getUserIsAdmin(state, props),
+  isAdmin: getUserIsAdmin(state, props)
 });
 
 const mapDispatchToProps = {
   search,
   loadCollections,
   replace,
-  push,
+  push
 };
 
 /* connect() is in the end of this file because of the plain QuestionIndex component is used in Jest tests */
@@ -123,7 +129,7 @@ export class QuestionIndex extends Component {
       replace,
       push,
       location,
-      isAdmin,
+      isAdmin
     } = this.props;
 
     const hasCollections = collections && collections.length > 0;
@@ -140,7 +146,7 @@ export class QuestionIndex extends Component {
     return (
       <div
         className={cx("relative px4", {
-          "full-height bg-slate-extra-light": showNoSavedQuestionsState,
+          "full-height bg-slate-extra-light": showNoSavedQuestionsState
         })}
       >
         {/* Use loading wrapper only for displaying the loading indicator as EntityList component should always be in DOM */}
@@ -154,6 +160,7 @@ export class QuestionIndex extends Component {
             collections={collections}
             isAdmin={isAdmin}
             onSearch={this.props.search}
+            push={push}
           />
         )}
 
@@ -176,7 +183,7 @@ export class QuestionIndex extends Component {
             onChangeSection={section =>
               replace({
                 ...location,
-                query: { ...location.query, f: section },
+                query: { ...location.query, f: section }
               })
             }
           />

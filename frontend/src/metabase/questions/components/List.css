@@ -32,6 +32,28 @@
   border-color: #edf5fb;
 }
 
+:local(.suggestionItem) {
+
+  composes: flex align-center from "style";
+  composes: relative from "style";
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-color: #edf5fb;
+}
+
+:local(.suggestionItemTitle) {
+  composes: text-bold from "style";
+  color: var(--title-color);
+  font-size: 16px;
+
+}
+
+:local(.suggestionItemBody) {
+  composes: text-bold from "style";
+  word-break: break-all;
+  font-size: 16px;
+}
+
 :local(.itemBody) {
   composes: flex-full from "style";
 }
