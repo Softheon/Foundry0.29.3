@@ -162,7 +162,7 @@ export default class ProfileLink extends Component {
                 <Icon name={"close"} size={16} />
               </span>
               <div className="text-brand pb2">
-                <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={48} height={48} />
+                <img src="app/assets/img/Softheon_Logo_Color.png" width={48} height={48} />
               </div>
               <h2 style={{ fontSize: "1.75em" }} className="text-dark">
                 {t`Thanks for using`} Softheon Foundry!

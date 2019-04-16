@@ -130,7 +130,7 @@ export default class Navbar extends Component {
       <nav className="Nav sm-py1 relative">
         <ul className="wrapper flex align-center">
           <li>
-             <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={64} height={64} />
+             <img src="app/assets/img/Softheon_Logo_Color.png" width={64} height={64} />
           </li>
         </ul>
       </nav>
@@ -143,7 +143,7 @@ export default class Navbar extends Component {
         <ul className="md-pl4 flex align-center md-pr1">
           <li>
             <Link to="/">
-              <img src="https://www.softheon.com/HTMLCache/Resources/Logo-navbar-01.png" width="155" height="40" />
+              <img src="app/assets/img/Logo-navbar-01.png" width="155" height="40" />
             </Link>
           </li>
           <li className="md-pl3 hide xs-show">

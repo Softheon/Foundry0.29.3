@@ -17,7 +17,7 @@ export default class LogoIcon extends Component {
   render() {
     let { dark, height, width, size } = this.props;
     return (
-      <img src ="https://www.softheon.com/HTMLCache/resources/64x64-logo-01.png" width={64} height={64}/>
+      <img src ="app/assets/img/Softheon_Logo_Color.png" width={64} height={64}/>
     );
   }
 }

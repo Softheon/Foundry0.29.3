@@ -142,7 +142,7 @@ export default class LoginApp extends Component {
           style={blurStyle}
         >
           <div className="Grid-cell flex layout-centered text-brand">
-            <img src="https://www.softheon.com/HTMLCache/media/Softheon_Logo_Color.png" />
+            <img src="app/assets/img/Softheon_Logo_Color.png" />
           </div>
           <div className="Login-content Grid-cell">
             <form

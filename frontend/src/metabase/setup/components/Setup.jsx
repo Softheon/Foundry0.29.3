@@ -76,7 +76,7 @@ export default class Setup extends Component {
       return (
         <div className="relative full-height flex flex-full layout-centered">
           <div className="wrapper wrapper--trim text-centered">
-            <img src="https://www.softheon.com/HTMLCache/Resources/Logo-loginpage-02.png" alt="logo" />
+            <img src="app/assets/img/Softheon_Logo_Color.png" alt="logo" />
             <div
               className="relative z2 text-centered ml-auto mr-auto"
               style={{ maxWidth: 550 }}
@@ -101,7 +101,7 @@ export default class Setup extends Component {
       return (
         <div>
           <nav className="SetupNav text-brand py2 flex layout-centered">
-             <img src="https://www.softheon.com/HTMLCache/Resources/64x64-logo-01.png" width={48} height={48} />
+             <img src="app/assets/img/Softheon_Logo_Color.png"  />
           </nav>
 
           <div className="wrapper wrapper--small">
